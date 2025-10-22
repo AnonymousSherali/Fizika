@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kepler Qonunlari - Interaktiv Model</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            border: none;
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .tab:hover {
+            background: #dee2e6;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #1a2a6c;
+            border-bottom: 3px solid #1a2a6c;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .canvas-section {
+            background: #000;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        canvas {
+            border: 3px solid #1a2a6c;
+            border-radius: 10px;
+            background: #000;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #1a2a6c;
+        }
+        
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            color: #1a2a6c;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            margin: 10px 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1a2a6c;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .value-display {
+            display: inline-block;
+            background: #1a2a6c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 42, 108, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .stats h3 {
+            color: #1a2a6c;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #1a2a6c;
+            padding-bottom: 10px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .stat-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .stat-value {
+            color: #1a2a6c;
+            font-weight: bold;
+        }
+        
+        .info-panel {
+            grid-column: 1 / -1;
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .info-panel h3 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel p {
+            color: #0c5460;
+            line-height: 1.6;
+        }
+        
+        .law-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 5px solid #fdbb2d;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .law-card h4 {
+            color: #1a2a6c;
+            margin-bottom: 10px;
+        }
+        
+        .planet-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .planet-btn {
+            padding: 10px;
+            border: 2px solid #1a2a6c;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .planet-btn:hover {
+            background: #1a2a6c;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .planet-btn.active {
+            background: #1a2a6c;
+            color: white;
+        }
+        
+        @media (max-width: 1024px) {
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪐 Kepler Qonunlari</h1>
+            <p>Sayyoralar harakati qonunlari - Interaktiv Model</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(0)">1-Qonun: Ellips</button>
+            <button class="tab" onclick="switchTab(1)">2-Qonun: Yuzalar</button>
+            <button class="tab" onclick="switchTab(2)">3-Qonun: Davr</button>
+        </div>
+        
+        <!-- 1-QONUN -->
+        <div class="tab-content active" id="tab0">
+            <div class="canvas-section">
+                <canvas id="canvas1" width="800" height="600"></canvas>
+            </div>
+            
+            <div class="controls">
+                <h2 style="color: #1a2a6c; margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                
+                <div class="planet-selector">
+                    <button class="planet-btn active" onclick="selectPlanet('mercury')">Merkuriy</button>
+                    <button class="planet-btn" onclick="selectPlanet('venus')">Venera</button>
+                    <button class="planet-btn" onclick="selectPlanet('earth')">Yer</button>
+                    <button class="planet-btn" onclick="selectPlanet('mars')">Mars</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Yarim katta o'q (AU):
+                        <span class="value-display" id="semiMajorValue">1.00</span>
+                    </label>
+                    <input type="range" id="semiMajorSlider" min="0.39" max="1.52" step="0.01" value="1.00">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Ekssentrisitet (e):
+                        <span class="value-display" id="eccentricityValue">0.017</span>
+                    </label>
+                    <input type="range" id="eccentricitySlider" min="0" max="0.9" step="0.01" value="0.017">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Tezlik:
+                        <span class="value-display" id="speedValue1">1x</span>
+                    </label>
+                    <input type="range" id="speedSlider1" min="0.1" max="5" step="0.1" value="1">
+                </div>
+                
+                <button class="btn-primary" onclick="startAnimation1()">▶️ Boshlash</button>
+                <button class="btn-secondary" onclick="pauseAnimation1()">⏸️ Pauza</button>
+                <button class="btn-secondary" onclick="resetAnimation1()">🔄 Qayta</button>
+                
+                <div class="stats">
+                    <h3>📊 Ma'lumotlar</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Perigeliy:</span>
+                        <span class="stat-value" id="perihelion">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Afeliy:</span>
+                        <span class="stat-value" id="aphelion">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Masofa (AU):</span>
+                        <span class="stat-value" id="currentDistance">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h3>📚 Birinchi Qonun: Ellips Qonuni</h3>
+                <div class="law-card">
+                    <h4>Kepler Birinchi Qonuni</h4>
+                    <p>
+                        <strong>Har bir sayyora Quyosh atrofida ellips shaklidagi orbitada harakat qiladi, 
+                        Quyosh ellipsning fokuslaridan birida joylashgan.</strong>
+                    </p>
+                    <p style="margin-top: 10px;">
+                        • Ellipsning yarim katta o'qi - a<br>
+                        • Ellipsning yarim kichik o'qi - b<br>
+                        • Ekssentrisitet: e = c/a (c - fokus masofasi)<br>
+                        • e = 0 bo'lsa, aylana<br>
+                        • e → 1 bo'lsa, cho'zilgan ellips
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2-QONUN -->
+        <div class="tab-content" id="tab1">
+            <div class="canvas-section">
+                <canvas id="canvas2" width="800" height="600"></canvas>
+            </div>
+            
+            <div class="controls">
+                <h2 style="color: #1a2a6c; margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                
+                <div class="control-group">
+                    <label>
+                        Vaqt oralig'i (kun):
+                        <span class="value-display" id="timeIntervalValue">30</span>
+                    </label>
+                    <input type="range" id="timeIntervalSlider" min="10" max="60" step="5" value="30">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Tezlik:
+                        <span class="value-display" id="speedValue2">1x</span>
+                    </label>
+                    <input type="range" id="speedSlider2" min="0.1" max="3" step="0.1" value="1">
+                </div>
+                
+                <button class="btn-primary" onclick="startAnimation2()">▶️ Boshlash</button>
+                <button class="btn-secondary" onclick="pauseAnimation2()">⏸️ Pauza</button>
+                <button class="btn-secondary" onclick="resetAnimation2()">🔄 Qayta</button>
+                
+                <div class="stats">
+                    <h3>📊 Yuzalar</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Yuza A:</span>
+                        <span class="stat-value" id="area1">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Yuza B:</span>
+                        <span class="stat-value" id="area2">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Nisbat:</span>
+                        <span class="stat-value" id="areaRatio">1.00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h3>📚 Ikkinchi Qonun: Yuzalar Qonuni</h3>
+                <div class="law-card">
+                    <h4>Kepler Ikkinchi Qonuni</h4>
+                    <p>
+                        <strong>Sayyorani Quyosh bilan bog'lovchi radius-vektor teng vaqt oralig'ida 
+                        teng yuzalarni kesib o'tadi.</strong>
+                    </p>
+                    <p style="margin-top: 10px;">
+                        • Sayyora Quyoshga yaqinroq bo'lganda tezroq harakat qiladi<br>
+                        • Sayyora Quyoshdan uzoqroq bo'lganda sekinroq harakat qiladi<br>
+                        • Impuls momenti saqlanish qonunidan kelib chiqadi<br>
+                        • L = mvr = const (angular momentum)
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3-QONUN -->
+        <div class="tab-content" id="tab2">
+            <div class="canvas-section">
+                <canvas id="canvas3" width="800" height="600"></canvas>
+            </div>
+            
+            <div class="controls">
+                <h2 style="color: #1a2a6c; margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="showAllPlanets" checked> Barcha sayyoralarni ko'rsatish
+                    </label>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Tezlik:
+                        <span class="value-display" id="speedValue3">1x</span>
+                    </label>
+                    <input type="range" id="speedSlider3" min="0.1" max="5" step="0.1" value="1">
+                </div>
+                
+                <button class="btn-primary" onclick="startAnimation3()">▶️ Boshlash</button>
+                <button class="btn-secondary" onclick="pauseAnimation3()">⏸️ Pauza</button>
+                <button class="btn-secondary" onclick="resetAnimation3()">🔄 Qayta</button>
+                
+                <div class="stats">
+                    <h3>📊 Sayyoralar Ma'lumotlari</h3>
+                    <div id="planetStats"></div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h3>📚 Uchinchi Qonun: Davr Qonuni</h3>
+                <div class="law-card">
+                    <h4>Kepler Uchinchi Qonuni</h4>
+                    <p>
+                        <strong>Sayyoraning orbital davrining kvadrati, orbit yarim katta o'qining 
+                        kubiga to'g'ri proporsionaldir.</strong>
+                    </p>
+                    <p style="margin-top: 10px;">
+                        <strong>Formula:</strong> T² / a³ = const<br><br>
+                        Bu yerda:<br>
+                        • T - orbital davr (yil)<br>
+                        • a - yarim katta o'q (Astronomik Birlik)<br>
+                        • Yer uchun: T = 1 yil, a = 1 AU → T²/a³ = 1
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Umumiy o'zgaruvchilar
+        let animations = [null, null, null];
+        let isRunning = [false, false, false];
+        
+        // Sayyoralar ma'lumotlari
+        const planetsData = {
+            mercury: { name: 'Merkuriy', a: 0.39, e: 0.206, T: 0.24, color: '#8c7853' },
+            venus: { name: 'Venera', a: 0.72, e: 0.007, T: 0.62, color: '#ffc649' },
+            earth: { name: 'Yer', a: 1.00, e: 0.017, T: 1.00, color: '#4a90e2' },
+            mars: { name: 'Mars', a: 1.52, e: 0.093, T: 1.88, color: '#e27b58' }
+        };
+        
+        let currentPlanet = 'earth';
+        
+        // Tab almashtirish
+        function switchTab(index) {
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.tab-content').forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+            
+            // Animatsiyalarni to'xtatish
+            animations.forEach((anim, i) => {
+                if (anim) cancelAnimationFrame(anim);
+                isRunning[i] = false;
+            });
+        }
+        
+        // Sayyora tanlash
+        function selectPlanet(planet) {
+            currentPlanet = planet;
+            const data = planetsData[planet];
+            
+            document.querySelectorAll('.planet-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('semiMajorSlider').value = data.a;
+            document.getElementById('semiMajorValue').textContent = data.a.toFixed(2);
+            document.getElementById('eccentricitySlider').value = data.e;
+            document.getElementById('eccentricityValue').textContent = data.e.toFixed(3);
+            
+            resetAnimation1();
+        }
+        
+        // ==================== 1-QONUN: ELLIPS ====================
+        const canvas1 = document.getElementById('canvas1');
+        const ctx1 = canvas1.getContext('2d');
+        
+        let orbit1 = { a: 1.0, e: 0.017, angle: 0, speed: 1 };
+        
+        document.getElementById('semiMajorSlider').oninput = function() {
+            orbit1.a = parseFloat(this.value);
+            document.getElementById('semiMajorValue').textContent = this.value;
+        };
+        
+        document.getElementById('eccentricitySlider').oninput = function() {
+            orbit1.e = parseFloat(this.value);
+            document.getElementById('eccentricityValue').textContent = this.value;
+        };
+        
+        document.getElementById('speedSlider1').oninput = function() {
+            orbit1.speed = parseFloat(this.value);
+            document.getElementById('speedValue1').textContent = this.value + 'x';
+        };
+        
+        function drawOrbit1() {
+            ctx1.fillStyle = '#000';
+            ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
+            
+            const centerX = canvas1.width / 2;
+            const centerY = canvas1.height / 2;
+            const scale = 200;
+            
+            const a = orbit1.a * scale;
+            const b = a * Math.sqrt(1 - orbit1.e * orbit1.e);
+            const c = orbit1.e * a;
+            
+            // Ellips chizish
+            ctx1.strokeStyle = '#ffffff40';
+            ctx1.lineWidth = 2;
+            ctx1.beginPath();
+            ctx1.ellipse(centerX + c, centerY, a, b, 0, 0, Math.PI * 2);
+            ctx1.stroke();
+            
+            // Quyosh
+            const gradient = ctx1.createRadialGradient(centerX, centerY, 0, centerX, centerY, 20);
+            gradient.addColorStop(0, '#ffff00');
+            gradient.addColorStop(1, '#ff6600');
+            ctx1.fillStyle = gradient;
+            ctx1.beginPath();
+            ctx1.arc(centerX, centerY, 20, 0, Math.PI * 2);
+            ctx1.fill();
+            
+            // Sayyora
+            const x = centerX + c + a * Math.cos(orbit1.angle);
+            const y = centerY + b * Math.sin(orbit1.angle);
+            
+            const planetColor = planetsData[currentPlanet].color;
+            ctx1.fillStyle = planetColor;
+            ctx1.beginPath();
+            ctx1.arc(x, y, 15, 0, Math.PI * 2);
+            ctx1.fill();
+            ctx1.strokeStyle = '#fff';
+            ctx1.lineWidth = 2;
+            ctx1.stroke();
+            
+            // Radius-vektor
+            ctx1.strokeStyle = '#00ff0080';
+            ctx1.lineWidth = 1;
+            ctx1.beginPath();
+            ctx1.moveTo(centerX, centerY);
+            ctx1.lineTo(x, y);
+            ctx1.stroke();
+            
+            // Fokuslar
+            ctx1.fillStyle = '#ff0000';
+            ctx1.beginPath();
+            ctx1.arc(centerX, centerY, 5, 0, Math.PI * 2);
+            ctx1.arc(centerX + 2 * c, centerY, 5, 0, Math.PI * 2);
+            ctx1.fill();
+            
+            // Ma'lumotlarni yangilash
+            const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)) / scale;
+            document.getElementById('currentDistance').textContent = distance.toFixed(3) + ' AU';
+            document.getElementById('perihelion').textContent = (orbit1.a * (1 - orbit1.e)).toFixed(3) + ' AU';
+            document.getElementById('aphelion').textContent = (orbit1.a * (1 + orbit1.e)).toFixed(3) + ' AU';
+            
+            // Harakat
+            if (isRunning[0]) {
+                orbit1.angle += 0.02 * orbit1.speed;
+                animations[0] = requestAnimationFrame(drawOrbit1);
+            }
+        }
+        
+        function startAnimation1() {
+            isRunning[0] = true;
+            drawOrbit1();
+        }
+        
+        function pauseAnimation1() {
+            isRunning[0] = false;
+            if (animations[0]) cancelAnimationFrame(animations[0]);
+        }
+        
+        function resetAnimation1() {
+            pauseAnimation1();
+            orbit1.angle = 0;
+            drawOrbit1();
+        }
+        
+        // ==================== 2-QONUN: YUZALAR ====================
+        const canvas2 = document.getElementById('canvas2');
+        const ctx2 = canvas2.getContext('2d');
+        
+        let orbit2 = { 
+            a: 1.0, 
+            e: 0.6, 
+            angle: 0, 
+            speed: 1,
+            positions: [],
+            areas: [0, 0]
+        };
+        
+        document.getElementById('timeIntervalSlider').oninput = function() {
+            document.getElementById('timeIntervalValue').textContent = this.value;
+        };
+        
+        document.getElementById('speedSlider2').oninput = function() {
+            orbit2.speed = parseFloat(this.value);
+            document.getElementById('speedValue2').textContent = this.value + 'x';
+        };
+        
+        function drawOrbit2() {
+            ctx2.fillStyle = '#000';
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+            
+            const centerX = canvas2.width / 2;
+            const centerY = canvas2.height / 2;
+            const scale = 180;
+            
+            const a = orbit2.a * scale;
+            const b = a * Math.sqrt(1 - orbit2.e * orbit2.e);
+            const c = orbit2.e * a;
+            
+            // Ellips
+            ctx2.strokeStyle = '#ffffff40';
+            ctx2.lineWidth = 2;
+            ctx2.beginPath();
+            ctx2.ellipse(centerX + c, centerY, a, b, 0, 0, Math.PI * 2);
+            ctx2.stroke();
+            
+            // Quyosh
+            const gradient = ctx2.createRadialGradient(centerX, centerY, 0, centerX, centerY, 20);
+            gradient.addColorStop(0, '#ffff00');
+            gradient.addColorStop(1, '#ff6600');
+            ctx2.fillStyle = gradient;
+            ctx2.beginPath();
+            ctx2.arc(centerX, centerY, 20, 0, Math.PI * 2);
+            ctx2.fill();
+            
+            // Sayyora
+            const x = centerX + c + a * Math.cos(orbit2.angle);
+            const y = centerY + b * Math.sin(orbit2.angle);
+            
+            orbit2.positions.push({ x, y });
+            if (orbit2.positions.length > 30) orbit2.positions.shift();
+            
+            // Yuzalarni chizish
+            if (orbit2.positions.length > 1) {
+                // Yuza 1 (perigeliy)
+                ctx2.fillStyle = '#ff000040';
+                ctx2.beginPath();
+                ctx2.moveTo(centerX, centerY);
+                for (let i = 0; i < Math.min(15, orbit2.positions.length); i++) {
+                    ctx2.lineTo(orbit2.positions[i].x, orbit2.positions[i].y);
+                }
+                ctx2.closePath();
+                ctx2.fill();
+                
+                // Yuza 2 (afeliy)
+                if (orbit2.positions.length > 15) {
+                    ctx2.fillStyle = '#0000ff40';
+                    ctx2.beginPath();
+                    ctx2.moveTo(centerX, centerY);
+                    for (let i = 15; i < orbit2.positions.length; i++) {
+                        ctx2.lineTo(orbit2.positions[i].x, orbit2.positions[i].y);
+                    }
+                    ctx2.closePath();
+                    ctx2.fill();
+                }
+            }
+            
+            // Sayyora
+            ctx2.fillStyle = '#4a90e2';
+            ctx2.beginPath();
+            ctx2.arc(x, y, 12, 0, Math.PI * 2);
+            ctx2.fill();
+            
+            // Izlar
+            ctx2.strokeStyle = '#ffffff60';
+            ctx2.lineWidth = 2;
+            ctx2.beginPath();
+            for (let i = 0; i < orbit2.positions.length; i++) {
+                if (i === 0) ctx2.moveTo(orbit2.positions[i].x, orbit2.positions[i].y);
+                else ctx2.lineTo(orbit2.positions[i].x, orbit2.positions[i].y);
+            }
+            ctx2.stroke();
+            
+            // Harakat
+            if (isRunning[1]) {
+                const r = a * (1 - orbit2.e * orbit2.e) / (1 + orbit2.e * Math.cos(orbit2.angle));
+                const angularSpeed = 0.01 * orbit2.speed * (a / r);
+                orbit2.angle += angularSpeed;
+                
+                animations[1] = requestAnimationFrame(drawOrbit2);
+            }
+        }
+        
+        function startAnimation2() {
+            isRunning[1] = true;
+            drawOrbit2();
+        }
+        
+        function pauseAnimation2() {
+            isRunning[1] = false;
+            if (animations[1]) cancelAnimationFrame(animations[1]);
+        }
+        
+        function resetAnimation2() {
+            pauseAnimation2();
+            orbit2.angle = 0;
+            orbit2.positions = [];
+            drawOrbit2();
+        }
+        
+        // ==================== 3-QONUN: DAVR ====================
+        const canvas3 = document.getElementById('canvas3');
+        const ctx3 = canvas3.getContext('2d');
+        
+        let planets3 = [];
+        
+        function initPlanets3() {
+            planets3 = Object.entries(planetsData).map(([key, data]) => ({
+                ...data,
+                angle: 0,
+                key: key
+            }));
+            updatePlanetStats();
+        }
+        
+        function updatePlanetStats() {
+            const statsDiv = document.getElementById('planetStats');
+            statsDiv.innerHTML = planets3.map(planet => `
+                <div class="stat-item">
+                    <span class="stat-label">${planet.name}:</span>
+                    <span class="stat-value">T²/a³ = ${(planet.T * planet.T / (planet.a * planet.a * planet.a)).toFixed(3)}</span>
+                </div>
+            `).join('');
+        }
+        
+        document.getElementById('speedSlider3').oninput = function() {
+            document.getElementById('speedValue3').textContent = this.value + 'x';
+        };
+        
+        function drawOrbit3() {
+            ctx3.fillStyle = '#000';
+            ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+            
+            const centerX = canvas3.width / 2;
+            const centerY = canvas3.height / 2;
+            const scale = 100;
+            
+            // Quyosh
+            const gradient = ctx3.createRadialGradient(centerX, centerY, 0, centerX, centerY, 25);
+            gradient.addColorStop(0, '#ffff00');
+            gradient.addColorStop(1, '#ff6600');
+            ctx3.fillStyle = gradient;
+            ctx3.beginPath();
+            ctx3.arc(centerX, centerY, 25, 0, Math.PI * 2);
+            ctx3.fill();
+            
+            // Sayyoralar
+            const showAll = document.getElementById('showAllPlanets').checked;
+            planets3.forEach(planet => {
+                const a = planet.a * scale;
+                const b = a * Math.sqrt(1 - planet.e * planet.e);
+                const c = planet.e * a;
+                
+                // Orbit
+                ctx3.strokeStyle = planet.color + '40';
+                ctx3.lineWidth = 1;
+                ctx3.beginPath();
+                ctx3.ellipse(centerX + c, centerY, a, b, 0, 0, Math.PI * 2);
+                ctx3.stroke();
+                
+                // Sayyora pozitsiyasi
+                const x = centerX + c + a * Math.cos(planet.angle);
+                const y = centerY + b * Math.sin(planet.angle);
+                
+                // Sayyora
+                ctx3.fillStyle = planet.color;
+                ctx3.beginPath();
+                const size = 8 + planet.a * 3;
+                ctx3.arc(x, y, size, 0, Math.PI * 2);
+                ctx3.fill();
+                ctx3.strokeStyle = '#fff';
+                ctx3.lineWidth = 2;
+                ctx3.stroke();
+                
+                // Nomi
+                ctx3.fillStyle = '#fff';
+                ctx3.font = '12px Arial';
+                ctx3.fillText(planet.name, x + size + 5, y);
+                
+                // Harakat
+                if (isRunning[2]) {
+                    const speed = parseFloat(document.getElementById('speedSlider3').value);
+                    planet.angle += (0.02 / planet.T) * speed;
+                }
+            });
+            
+            if (isRunning[2]) {
+                animations[2] = requestAnimationFrame(drawOrbit3);
+            }
+        }
+        
+        function startAnimation3() {
+            isRunning[2] = true;
+            drawOrbit3();
+        }
+        
+        function pauseAnimation3() {
+            isRunning[2] = false;
+            if (animations[2]) cancelAnimationFrame(animations[2]);
+        }
+        
+        function resetAnimation3() {
+            pauseAnimation3();
+            planets3.forEach(planet => planet.angle = 0);
+            drawOrbit3();
+        }
+        
+        // Boshlang'ich holat
+        resetAnimation1();
+        resetAnimation2();
+        initPlanets3();
+        resetAnimation3();
+    </script>
+</body>
+</html>

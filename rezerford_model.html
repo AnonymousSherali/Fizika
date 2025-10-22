@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezerford Tajribasi - Interaktiv Model</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .canvas-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        canvas {
+            border: 3px solid #2a5298;
+            border-radius: 10px;
+            background: #000;
+            display: block;
+            width: 100%;
+            cursor: crosshair;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #2a5298;
+        }
+        
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            color: #2a5298;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            margin: 10px 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2a5298;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .value-display {
+            display: inline-block;
+            background: #2a5298;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .stats h3 {
+            color: #2a5298;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #2a5298;
+            padding-bottom: 10px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .stat-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .stat-value {
+            color: #2a5298;
+            font-weight: bold;
+        }
+        
+        .info-panel {
+            grid-column: 1 / -1;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .info-panel h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel p {
+            color: #856404;
+            line-height: 1.6;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #333;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Rezerford Tajribasi</h1>
+            <p>Alfa zarralarining oltin folga bilan ta'siri</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="canvas-section">
+                <canvas id="experimentCanvas" width="800" height="600"></canvas>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff0000;"></div>
+                        <span>Alfa zarralar</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffd700;"></div>
+                        <span>Oltin yadro (+79e)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #00ff00;"></div>
+                        <span>O'tgan zarralar</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff6b6b;"></div>
+                        <span>Qaytgan zarralar</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                
+                <div class="control-group">
+                    <label>
+                        Alfa zarralar tezligi (m/s):
+                        <span class="value-display" id="speedValue">1.5e7</span>
+                    </label>
+                    <input type="range" id="speedSlider" min="1" max="3" step="0.1" value="1.5">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Nishonga masofa (nm):
+                        <span class="value-display" id="distanceValue">50</span>
+                    </label>
+                    <input type="range" id="distanceSlider" min="10" max="100" step="5" value="50">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Zarralar soni:
+                        <span class="value-display" id="countValue">20</span>
+                    </label>
+                    <input type="range" id="countSlider" min="5" max="50" step="5" value="20">
+                </div>
+                
+                <button class="btn-primary" onclick="startExperiment()">▶️ Tajribani Boshlash</button>
+                <button class="btn-secondary" onclick="pauseExperiment()">⏸️ Pauza</button>
+                <button class="btn-secondary" onclick="resetExperiment()">🔄 Qayta Boshlash</button>
+                
+                <div class="stats">
+                    <h3>📊 Statistika</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Umumiy zarralar:</span>
+                        <span class="stat-value" id="totalParticles">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">O'tgan:</span>
+                        <span class="stat-value" id="passedParticles">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Sochilgan:</span>
+                        <span class="stat-value" id="scatteredParticles">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Qaytgan:</span>
+                        <span class="stat-value" id="reflectedParticles">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Sochilish %:</span>
+                        <span class="stat-value" id="scatteringRate">0%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h3>📚 Nazariy Ma'lumot</h3>
+                <p>
+                    <strong>Rezerford tajribasi (1909-yil)</strong> - Atom tuzilishini o'rganishda muhim rol o'ynagan tajriba.
+                    Ernest Rezerford musbat zaryadlangan alfa zarralarni yupqa oltin folgaga yo'naltirdi.
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>Asosiy xulosalar:</strong><br>
+                    • Atomning markazida kichik, og'ir, musbat zaryadlangan yadro mavjud<br>
+                    • Atomning ko'p qismi bo'sh joy<br>
+                    • Elektronlar yadro atrofida aylanadi<br>
+                    • ~1/8000 alfa zarra orqaga qaytadi
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('experimentCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId;
+        let isRunning = false;
+        let particles = [];
+        let nucleus = { x: canvas.width / 2, y: canvas.height / 2, radius: 20 };
+        
+        // Statistika
+        let stats = {
+            total: 0,
+            passed: 0,
+            scattered: 0,
+            reflected: 0
+        };
+        
+        // Sozlamalar
+        let settings = {
+            speed: 1.5e7,
+            distance: 50,
+            count: 20
+        };
+        
+        // Slider hodisalari
+        document.getElementById('speedSlider').oninput = function() {
+            settings.speed = parseFloat(this.value) * 1e7;
+            document.getElementById('speedValue').textContent = settings.speed.toExponential(1);
+        };
+        
+        document.getElementById('distanceSlider').oninput = function() {
+            settings.distance = parseInt(this.value);
+            document.getElementById('distanceValue').textContent = this.value;
+        };
+        
+        document.getElementById('countSlider').oninput = function() {
+            settings.count = parseInt(this.value);
+            document.getElementById('countValue').textContent = this.value;
+        };
+        
+        class AlphaParticle {
+            constructor(y) {
+                this.x = 50;
+                this.y = y;
+                this.vx = 5;
+                this.vy = 0;
+                this.charge = 2;
+                this.mass = 6.64e-27;
+                this.trail = [];
+                this.status = 'flying'; // flying, passed, scattered, reflected
+                this.color = '#ff0000';
+            }
+            
+            update() {
+                if (this.status !== 'flying') return;
+                
+                // Kulonning kuchi
+                const dx = this.x - nucleus.x;
+                const dy = this.y - nucleus.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < nucleus.radius) {
+                    // To'qnashish
+                    this.status = 'reflected';
+                    this.color = '#ff6b6b';
+                    stats.reflected++;
+                } else if (distance < 150) {
+                    // Sochilish
+                    const force = 5000 / (distance * distance);
+                    const angle = Math.atan2(dy, dx);
+                    this.vx += Math.cos(angle) * force * 0.1;
+                    this.vy += Math.sin(angle) * force * 0.1;
+                    
+                    if (this.status === 'flying') {
+                        this.status = 'scattered';
+                        stats.scattered++;
+                    }
+                }
+                
+                // Harakat
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Trail qo'shish
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 30) this.trail.shift();
+                
+                // Chegaradan chiqishni tekshirish
+                if (this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    if (this.status === 'flying') {
+                        this.status = 'passed';
+                        this.color = '#00ff00';
+                        stats.passed++;
+                    }
+                }
+            }
+            
+            draw() {
+                // Trail chizish
+                ctx.strokeStyle = this.color + '40';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let i = 0; i < this.trail.length - 1; i++) {
+                    ctx.moveTo(this.trail[i].x, this.trail[i].y);
+                    ctx.lineTo(this.trail[i + 1].x, this.trail[i + 1].y);
+                }
+                ctx.stroke();
+                
+                // Zarra chizish
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+        
+        function createParticles() {
+            particles = [];
+            const spacing = (canvas.height - 100) / settings.count;
+            for (let i = 0; i < settings.count; i++) {
+                setTimeout(() => {
+                    particles.push(new AlphaParticle(50 + i * spacing));
+                    stats.total++;
+                    updateStats();
+                }, i * 200);
+            }
+        }
+        
+        function drawNucleus() {
+            // Yadro
+            const gradient = ctx.createRadialGradient(nucleus.x, nucleus.y, 0, nucleus.x, nucleus.y, nucleus.radius);
+            gradient.addColorStop(0, '#ffd700');
+            gradient.addColorStop(1, '#ff8c00');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(nucleus.x, nucleus.y, nucleus.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Yadro chegarasi
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Elektr maydon chiziqlari
+            ctx.strokeStyle = '#ffd70030';
+            ctx.lineWidth = 1;
+            for (let r = 40; r < 200; r += 20) {
+                ctx.beginPath();
+                ctx.arc(nucleus.x, nucleus.y, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Yadro belgisi
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('+79', nucleus.x, nucleus.y + 5);
+        }
+        
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawNucleus();
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            
+            updateStats();
+            
+            if (isRunning) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('totalParticles').textContent = stats.total;
+            document.getElementById('passedParticles').textContent = stats.passed;
+            document.getElementById('scatteredParticles').textContent = stats.scattered;
+            document.getElementById('reflectedParticles').textContent = stats.reflected;
+            
+            const scatterRate = stats.total > 0 ? ((stats.scattered + stats.reflected) / stats.total * 100).toFixed(1) : 0;
+            document.getElementById('scatteringRate').textContent = scatterRate + '%';
+        }
+        
+        function startExperiment() {
+            if (!isRunning) {
+                isRunning = true;
+                if (particles.length === 0) {
+                    createParticles();
+                }
+                animate();
+            }
+        }
+        
+        function pauseExperiment() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        function resetExperiment() {
+            pauseExperiment();
+            particles = [];
+            stats = { total: 0, passed: 0, scattered: 0, reflected: 0 };
+            updateStats();
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawNucleus();
+        }
+        
+        // Boshlang'ich holat
+        resetExperiment();
+    </script>
+</body>
+</html>
