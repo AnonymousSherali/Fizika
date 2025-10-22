@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loyiha Algoritmi - Vizual Diagramma</title>
+    <title>Fizika Modellari - Algoritm Diagrammasi</title>
     <style>
         * {
             margin: 0;
@@ -15,73 +15,153 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
-            min-height: 100vh;
+            overflow-x: auto;
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
+        .main-container {
+            background: linear-gradient(135deg, #4a5f8f 0%, #5a4d8a 100%);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            min-width: 1400px;
+            max-width: 2000px;
+            margin: 0 auto;
         }
         
         .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #36467a 0%, #4a3d6d 100%);
             color: white;
             padding: 30px;
+            border-radius: 15px;
             text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         
         .header h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header h1::before {
+            content: '📊 ';
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.95;
         }
         
         .tabs {
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
+            gap: 0;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         
         .tab {
             flex: 1;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: bold;
-            background: #e9ecef;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
             border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
             transition: all 0.3s;
+            border-right: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .tab:last-child {
+            border-right: none;
         }
         
         .tab:hover {
-            background: #dee2e6;
+            background: rgba(255,255,255,0.15);
         }
         
         .tab.active {
-            background: white;
-            color: #1e3c72;
-            border-bottom: 3px solid #667eea;
+            background: rgba(255,255,255,0.95);
+            color: #36467a;
+            box-shadow: inset 0 -4px 0 #667eea;
         }
         
-        .content {
+        .canvas-container {
+            background: white;
+            border-radius: 15px;
             padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: auto;
+            max-height: 1000px;
         }
         
         canvas {
-            border: 3px solid #1e3c72;
-            border-radius: 10px;
             display: block;
-            margin: 20px auto;
-            cursor: pointer;
+            margin: 0 auto;
             background: #f8f9fa;
+            border-radius: 10px;
+            cursor: grab;
+        }
+        
+        canvas:active {
+            cursor: grabbing;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-print {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+        
+        .btn-zoom {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: #212529;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .zoom-level {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
         }
         
         .legend {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
@@ -89,170 +169,240 @@
         .legend-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid;
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            border-left: 5px solid;
         }
         
         .legend-box {
-            width: 30px;
-            height: 30px;
-            margin-right: 10px;
-            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin-right: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
         .info-box {
-            background: #d1ecf1;
-            border-left: 4px solid #0c5460;
+            background: rgba(255,255,255,0.2);
+            border-left: 5px solid #ffc107;
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            margin: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
         }
         
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .info-box h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-container">
         <div class="header">
-            <h1>📊 LOYIHA ALGORITMI</h1>
+            <h1>LOYIHA ALGORITMI</h1>
             <p>Fizika Modellarini Yaratish va Deploy Qilish Jarayoni</p>
         </div>
         
         <div class="tabs">
-            <button class="tab active" onclick="showDiagram(1)">1. Umumiy Arxitektura</button>
-            <button class="tab" onclick="showDiagram(2)">2. Model Ishlash</button>
-            <button class="tab" onclick="showDiagram(3)">3. Deploy Jarayoni</button>
-            <button class="tab" onclick="showDiagram(4)">4. Foydalanuvchi Oqimi</button>
+            <button class="tab active" onclick="changeDiagram(0)">1. Umumiy Arxitektura</button>
+            <button class="tab" onclick="changeDiagram(1)">2. Model Ishlash</button>
+            <button class="tab" onclick="changeDiagram(2)">3. Deploy Jarayoni</button>
+            <button class="tab" onclick="changeDiagram(3)">4. Foydalanuvchi Oqimi</button>
         </div>
         
-        <div class="content">
-            <canvas id="diagramCanvas" width="1300" height="800"></canvas>
-            
-            <div class="info-box" id="infoBox">
-                <h3>ℹ️ Ma'lumot</h3>
-                <p id="infoText">Diagramma ustiga bosing yoki o'xga o'ting ko'proq ma'lumot olish uchun.</p>
+        <div class="controls">
+            <button class="btn btn-zoom" onclick="zoomIn()">➕ Zoom In</button>
+            <div class="zoom-level" id="zoomLevel">100%</div>
+            <button class="btn btn-zoom" onclick="zoomOut()">➖ Zoom Out</button>
+            <button class="btn btn-download" onclick="downloadDiagram()">💾 Yuklab Olish</button>
+            <button class="btn btn-print" onclick="printDiagram()">🖨️ Chop Etish</button>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="mainCanvas" width="2400" height="1400"></canvas>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item" style="border-color: #28a745;">
+                <div class="legend-box" style="background: #28a745;"></div>
+                <span><strong>Yashil:</strong> Jarayon va Harakatlar</span>
             </div>
-            
-            <div class="legend">
-                <div class="legend-item" style="border-color: #667eea;">
-                    <div class="legend-box" style="background: #667eea;"></div>
-                    <span>Boshlang'ich Jarayon</span>
-                </div>
-                <div class="legend-item" style="border-color: #28a745;">
-                    <div class="legend-box" style="background: #28a745;"></div>
-                    <span>Ishlov Berish</span>
-                </div>
-                <div class="legend-item" style="border-color: #ffc107;">
-                    <div class="legend-box" style="background: #ffc107;"></div>
-                    <span>Qaror Qabul Qilish</span>
-                </div>
-                <div class="legend-item" style="border-color: #dc3545;">
-                    <div class="legend-box" style="background: #dc3545;"></div>
-                    <span>Yakuniy Natija</span>
-                </div>
-                <div class="legend-item" style="border-color: #17a2b8;">
-                    <div class="legend-box" style="background: #17a2b8;"></div>
-                    <span>Ma'lumotlar Bazasi</span>
-                </div>
-                <div class="legend-item" style="border-color: #6f42c1;">
-                    <div class="legend-box" style="background: #6f42c1;"></div>
-                    <span>Foydalanuvchi</span>
-                </div>
+            <div class="legend-item" style="border-color: #007bff;">
+                <div class="legend-box" style="background: #007bff;"></div>
+                <span><strong>Ko'k:</strong> Ma'lumotlar va Repository</span>
             </div>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn" onclick="downloadDiagram()">📥 Diagrammani Yuklab Olish</button>
-                <button class="btn" onclick="printDiagram()">🖨️ Chop Etish</button>
+            <div class="legend-item" style="border-color: #ffc107;">
+                <div class="legend-box" style="background: #ffc107;"></div>
+                <span><strong>Sariq:</strong> Qaror va Tanlash</span>
             </div>
+            <div class="legend-item" style="border-color: #17a2b8;">
+                <div class="legend-box" style="background: #17a2b8;"></div>
+                <span><strong>Turkuaz:</strong> Modellar va Komponentlar</span>
+            </div>
+            <div class="legend-item" style="border-color: #dc3545;">
+                <div class="legend-box" style="background: #dc3545;"></div>
+                <span><strong>Qizil:</strong> Natija va Maqsad</span>
+            </div>
+            <div class="legend-item" style="border-color: #6f42c1;">
+                <div class="legend-box" style="background: #6f42c1;"></div>
+                <span><strong>Binafsha:</strong> Foydalanuvchi va Live</span>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>💡 Ko'rsatma</h3>
+            <p>Tab tugmalaridan diagrammani tanlang. Zoom In/Out bilan kattalashtirishingiz mumkin. PNG formatda yuklab oling yoki to'g'ridan-to'g'ri chop eting.</p>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('diagramCanvas');
+        const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
-        let currentDiagram = 1;
         
-        // Rang palitra
-        const colors = {
-            start: '#667eea',
-            process: '#28a745',
-            decision: '#ffc107',
-            end: '#dc3545',
-            data: '#17a2b8',
-            user: '#6f42c1',
+        let currentDiagram = 0;
+        let currentZoom = 1;
+        
+        // Ranglar
+        const C = {
+            green: '#28a745',
+            blue: '#007bff',
+            yellow: '#ffc107',
+            cyan: '#17a2b8',
+            red: '#dc3545',
+            purple: '#6f42c1',
+            text: '#212529',
             arrow: '#495057'
         };
         
-        // To'rtburchak chizish
-        function drawRect(x, y, w, h, color, text, icon = '') {
-            // Soya
-            ctx.shadowColor = 'rgba(0,0,0,0.2)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 3;
-            ctx.shadowOffsetY = 3;
-            
-            // Gradient
-            const gradient = ctx.createLinearGradient(x, y, x, y + h);
-            gradient.addColorStop(0, color);
-            gradient.addColorStop(1, shadeColor(color, -20));
-            
-            ctx.fillStyle = gradient;
-            ctx.roundRect(x, y, w, h, 10);
-            ctx.fill();
-            
-            // Chegara
-            ctx.shadowColor = 'transparent';
-            ctx.strokeStyle = shadeColor(color, -40);
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // Matn
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            // Ikon
-            if (icon) {
-                ctx.font = '20px Arial';
-                ctx.fillText(icon, x + w/2, y + h/2 - 15);
-                ctx.font = 'bold 14px Arial';
-                ctx.fillText(text, x + w/2, y + h/2 + 10);
-            } else {
-                wrapText(ctx, text, x + w/2, y + h/2, w - 20, 18);
+        // Yordamchi funksiyalar
+        function roundRect(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.arcTo(x + w, y, x + w, y + r, r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+            ctx.lineTo(x + r, y + h);
+            ctx.arcTo(x, y + h, x, y + h - r, r);
+            ctx.lineTo(x, y + r);
+            ctx.arcTo(x, y, x + r, y, r);
+            ctx.closePath();
+        }
+        
+        function shade(color, percent) {
+            let R = parseInt(color.substring(1,3),16);
+            let G = parseInt(color.substring(3,5),16);
+            let B = parseInt(color.substring(5,7),16);
+            R = Math.min(255, Math.max(0, parseInt(R * (100 + percent) / 100)));
+            G = Math.min(255, Math.max(0, parseInt(G * (100 + percent) / 100)));
+            B = Math.min(255, Math.max(0, parseInt(B * (100 + percent) / 100)));
+            const RR = R.toString(16).padStart(2, '0');
+            const GG = G.toString(16).padStart(2, '0');
+            const BB = B.toString(16).padStart(2, '0');
+            return "#" + RR + GG + BB;
+        }
+        
+        function wrapText(text, x, y, maxW, lineH) {
+            const words = text.split(' ');
+            let line = '';
+            const lines = [];
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxW && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+            const startY = y - (lines.length - 1) * lineH / 2;
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], x, startY + i * lineH);
             }
         }
         
-        // Romb (decision) chizish
-        function drawDiamond(x, y, w, h, color, text) {
-            ctx.shadowColor = 'rgba(0,0,0,0.2)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 3;
-            ctx.shadowOffsetY = 3;
+        function drawBox(x, y, w, h, color, text, icon = '') {
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
             
-            const gradient = ctx.createLinearGradient(x, y - h/2, x, y + h/2);
-            gradient.addColorStop(0, color);
-            gradient.addColorStop(1, shadeColor(color, -20));
+            const grad = ctx.createLinearGradient(x, y, x, y + h);
+            grad.addColorStop(0, color);
+            grad.addColorStop(1, shade(color, -20));
+            ctx.fillStyle = grad;
+            roundRect(x, y, w, h, 12);
+            ctx.fill();
             
-            ctx.fillStyle = gradient;
+            ctx.shadowColor = 'transparent';
+            ctx.strokeStyle = shade(color, -40);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            if (icon) {
+                ctx.font = '28px Arial';
+                ctx.fillText(icon, x + w/2, y + h/2 - 18);
+                ctx.font = 'bold 16px Arial';
+                wrapText(text, x + w/2, y + h/2 + 18, w - 25, 20);
+            } else {
+                ctx.font = 'bold 16px Arial';
+                wrapText(text, x + w/2, y + h/2, w - 25, 20);
+            }
+        }
+        
+        function drawCirc(x, y, r, color, text, icon = '') {
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
+            
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+            grad.addColorStop(0, color);
+            grad.addColorStop(1, shade(color, -20));
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.shadowColor = 'transparent';
+            ctx.strokeStyle = shade(color, -40);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            if (icon) {
+                ctx.font = '32px Arial';
+                ctx.fillText(icon, x, y - 15);
+                ctx.font = 'bold 14px Arial';
+                wrapText(text, x, y + 20, r * 1.6, 18);
+            } else {
+                ctx.font = 'bold 16px Arial';
+                wrapText(text, x, y, r * 1.6, 18);
+            }
+        }
+        
+        function drawDiam(x, y, w, h, color, text) {
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
+            
+            const grad = ctx.createLinearGradient(x - w/2, y, x + w/2, y);
+            grad.addColorStop(0, color);
+            grad.addColorStop(1, shade(color, -20));
+            ctx.fillStyle = grad;
             ctx.beginPath();
             ctx.moveTo(x, y - h/2);
             ctx.lineTo(x + w/2, y);
@@ -262,585 +412,401 @@
             ctx.fill();
             
             ctx.shadowColor = 'transparent';
-            ctx.strokeStyle = shadeColor(color, -40);
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = shade(color, -40);
+            ctx.lineWidth = 3;
             ctx.stroke();
             
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 13px Arial';
+            ctx.fillStyle = C.text;
+            ctx.font = 'bold 15px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            wrapText(ctx, text, x, y, w - 30, 16);
+            wrapText(text, x, y, w - 45, 19);
         }
         
-        // Doira chizish
-        function drawCircle(x, y, r, color, text, icon = '') {
-            ctx.shadowColor = 'rgba(0,0,0,0.2)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 3;
-            ctx.shadowOffsetY = 3;
-            
-            const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
-            gradient.addColorStop(0, color);
-            gradient.addColorStop(1, shadeColor(color, -20));
-            
-            ctx.fillStyle = gradient;
+        function arrow(x1, y1, x2, y2, label = '', dash = false) {
+            ctx.strokeStyle = C.arrow;
+            ctx.lineWidth = 3;
+            if (dash) ctx.setLineDash([10, 5]);
             ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.shadowColor = 'transparent';
-            ctx.strokeStyle = shadeColor(color, -40);
-            ctx.lineWidth = 2;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
             ctx.stroke();
+            ctx.setLineDash([]);
             
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            if (icon) {
-                ctx.font = '24px Arial';
-                ctx.fillText(icon, x, y - 10);
-                ctx.font = 'bold 12px Arial';
-                ctx.fillText(text, x, y + 15);
-            } else {
-                wrapText(ctx, text, x, y, r * 1.6, 16);
-            }
-        }
-        
-        // O'q chizish
-        function drawArrow(x1, y1, x2, y2, label = '', curved = false) {
-            ctx.strokeStyle = colors.arrow;
-            ctx.lineWidth = 2;
-            ctx.fillStyle = colors.arrow;
-            
-            if (curved) {
-                const cp = {x: (x1 + x2) / 2 + 50, y: (y1 + y2) / 2};
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.quadraticCurveTo(cp.x, cp.y, x2, y2);
-                ctx.stroke();
-            } else {
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            }
-            
-            // O'q boshi
             const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.fillStyle = C.arrow;
             ctx.beginPath();
             ctx.moveTo(x2, y2);
-            ctx.lineTo(x2 - 15 * Math.cos(angle - Math.PI/6), y2 - 15 * Math.sin(angle - Math.PI/6));
-            ctx.lineTo(x2 - 15 * Math.cos(angle + Math.PI/6), y2 - 15 * Math.sin(angle + Math.PI/6));
+            ctx.lineTo(x2 - 18 * Math.cos(angle - Math.PI/6), y2 - 18 * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(x2 - 18 * Math.cos(angle + Math.PI/6), y2 - 18 * Math.sin(angle + Math.PI/6));
             ctx.closePath();
             ctx.fill();
             
-            // Label
             if (label) {
                 const mx = (x1 + x2) / 2;
                 const my = (y1 + y2) / 2;
                 ctx.fillStyle = '#fff';
-                ctx.fillRect(mx - 30, my - 10, 60, 20);
-                ctx.fillStyle = colors.arrow;
-                ctx.font = 'bold 12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(label, mx, my + 5);
+                ctx.fillRect(mx - 40, my - 12, 80, 24);
+                ctx.strokeStyle = C.arrow;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(mx - 40, my - 12, 80, 24);
+                ctx.fillStyle = C.arrow;
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText(label, mx, my);
             }
         }
         
-        // Matnni o'rash
-        function wrapText(context, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-            const lines = [];
-            
-            for (let n = 0; n < words.length; n++) {
-                const testLine = line + words[n] + ' ';
-                const metrics = context.measureText(testLine);
-                if (metrics.width > maxWidth && n > 0) {
-                    lines.push(line);
-                    line = words[n] + ' ';
-                } else {
-                    line = testLine;
-                }
-            }
-            lines.push(line);
-            
-            const startY = y - (lines.length - 1) * lineHeight / 2;
-            for (let i = 0; i < lines.length; i++) {
-                context.fillText(lines[i], x, startY + i * lineHeight);
-            }
-        }
-        
-        // Rangni to'q/och qilish
-        function shadeColor(color, percent) {
-            let R = parseInt(color.substring(1,3),16);
-            let G = parseInt(color.substring(3,5),16);
-            let B = parseInt(color.substring(5,7),16);
-            
-            R = parseInt(R * (100 + percent) / 100);
-            G = parseInt(G * (100 + percent) / 100);
-            B = parseInt(B * (100 + percent) / 100);
-            
-            R = (R<255)?R:255;  
-            G = (G<255)?G:255;  
-            B = (B<255)?B:255;  
-            
-            const RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
-            const GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
-            const BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
-            
-            return "#"+RR+GG+BB;
-        }
-        
-        // RoundRect polyfill
-        if (!CanvasRenderingContext2D.prototype.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-                this.beginPath();
-                this.moveTo(x + r, y);
-                this.lineTo(x + w - r, y);
-                this.arcTo(x + w, y, x + w, y + r, r);
-                this.lineTo(x + w, y + h - r);
-                this.arcTo(x + w, y + h, x + w - r, y + h, r);
-                this.lineTo(x + r, y + h);
-                this.arcTo(x, y + h, x, y + h - r, r);
-                this.lineTo(x, y + r);
-                this.arcTo(x, y, x + r, y, r);
-                this.closePath();
-            };
-        }
-        
-        // DIAGRAMMA 1: Umumiy Arxitektura
-        function drawDiagram1() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Sarlavha
-            ctx.fillStyle = '#1e3c72';
-            ctx.font = 'bold 24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('UMUMIY LOYIHA ARXITEKTURASI', canvas.width/2, 40);
-            
-            // 1. Boshlash
-            drawCircle(150, 120, 50, colors.start, 'BOSHLASH', '🚀');
-            
-            // 2. Talablarni aniqlash
-            drawRect(80, 200, 140, 70, colors.process, 'Talablarni Aniqlash', '📋');
-            drawArrow(150, 170, 150, 200);
-            
-            // 3. Dizayn
-            drawRect(80, 300, 140, 70, colors.process, 'UI/UX Dizayn', '🎨');
-            drawArrow(150, 270, 150, 300);
-            
-            // 4. Model yaratish (3 ta model)
-            const modelY = 450;
-            
-            // Rezerford
-            drawRect(50, modelY, 150, 90, colors.data, 'Rezerford\nTajribasi\nModeli', '⚛️');
-            drawArrow(150, 370, 125, modelY);
-            
-            // Kepler
-            drawRect(250, modelY, 150, 90, colors.data, 'Kepler\nQonunlari\nModeli', '🪐');
-            drawArrow(150, 370, 325, modelY);
-            
-            // Meme
-            drawRect(450, modelY, 150, 90, colors.data, 'Sarkazm\nMeme\nModeli', '😏');
-            drawArrow(150, 370, 525, modelY);
-            
-            // 5. Dars ishlanmalar
-            drawRect(700, 200, 150, 80, colors.process, 'Dars\nIshlanmalar', '📚');
-            drawArrow(220, 235, 700, 240);
-            
-            // 6. Testlar
-            drawRect(700, 310, 150, 80, colors.process, 'Testlar\nYaratish', '📝');
-            drawArrow(220, 335, 700, 350);
-            
-            // 7. Metodika
-            drawRect(700, 420, 150, 80, colors.process, 'Metodika\nQo\'llanma', '👨‍🏫');
-            drawArrow(600, 495, 700, 460);
-            
-            // 8. GitHub
-            drawRect(950, 280, 140, 70, colors.decision, 'GitHub\nRepository', '🔧');
-            drawArrow(850, 240, 950, 305);
-            drawArrow(850, 350, 950, 325);
-            drawArrow(850, 460, 950, 335);
-            
-            // 9. Deploy
-            drawDiamond(1020, 450, 140, 100, colors.decision, 'Deploy\nPlatforma?');
-            drawArrow(1020, 350, 1020, 400);
-            
-            // Deploy variantlari
-            drawRect(900, 580, 100, 60, colors.end, 'Netlify', '🌐');
-            drawArrow(990, 500, 950, 580, 'Oson');
-            
-            drawRect(1020, 580, 100, 60, colors.end, 'Railway', '🚂');
-            drawArrow(1020, 500, 1070, 580, 'Flexible');
-            
-            drawRect(1140, 580, 100, 60, colors.end, 'Vercel', '▲');
-            drawArrow(1050, 500, 1190, 580, 'Pro');
-            
-            // 10. Live Website
-            drawCircle(1020, 720, 60, colors.user, 'JONLI SAYT', '🌍');
-            drawArrow(950, 640, 980, 680);
-            drawArrow(1070, 640, 1050, 680);
-            drawArrow(1190, 640, 1060, 680);
-        }
-        
-        // DIAGRAMMA 2: Model Ishlashi
-        function drawDiagram2() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#1e3c72';
-            ctx.font = 'bold 24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('INTERAKTIV MODEL ISHLASH ALGORITMI', canvas.width/2, 40);
-            
-            // Foydalanuvchi
-            drawCircle(150, 120, 50, colors.user, 'Foydalanuvchi', '👤');
-            
-            // Brauzer
-            drawRect(80, 200, 140, 60, colors.start, 'Brauzer\nOchish', '🌐');
-            drawArrow(150, 170, 150, 200);
-            
-            // HTML yuklash
-            drawRect(80, 290, 140, 60, colors.process, 'HTML\nYuklash', '📄');
-            drawArrow(150, 260, 150, 290);
-            
-            // JavaScript init
-            drawRect(80, 380, 140, 60, colors.process, 'JavaScript\nInit', '⚙️');
-            drawArrow(150, 350, 150, 380);
-            
-            // Canvas
-            drawRect(80, 470, 140, 60, colors.data, 'Canvas\nYaratish', '🎨');
-            drawArrow(150, 440, 150, 470);
-            
-            // Event listeners
-            drawRect(270, 470, 140, 60, colors.process, 'Event\nListeners', '👆');
-            drawArrow(220, 500, 270, 500);
-            
-            // User input
-            drawDiamond(340, 600, 140, 100, colors.decision, 'Foydalanuvchi\nHarakati?');
-            drawArrow(340, 530, 340, 550);
-            
-            // Slider
-            drawRect(150, 680, 120, 50, colors.process, 'Slider\nO\'zgartirish', '🎚️');
-            drawArrow(300, 630, 210, 680, 'Slider');
-            
-            // Button
-            drawRect(300, 680, 120, 50, colors.process, 'Tugma\nBosish', '🔘');
-            drawArrow(340, 650, 360, 680, 'Button');
-            
-            // Click
-            drawRect(450, 680, 120, 50, colors.process, 'Canvas\nClick', '🖱️');
-            drawArrow(380, 630, 510, 680, 'Click');
-            
-            // Update state
-            drawRect(600, 580, 140, 60, colors.data, 'State\nYangilash', '💾');
-            drawArrow(270, 705, 600, 610);
-            drawArrow(360, 705, 600, 610);
-            drawArrow(510, 705, 600, 610);
-            
-            // Calculate
-            drawRect(600, 470, 140, 60, colors.process, 'Hisoblashlar\nBajarish', '🧮');
-            drawArrow(670, 580, 670, 530);
-            
-            // Draw
-            drawRect(600, 360, 140, 60, colors.process, 'Canvas\nChizish', '✏️');
-            drawArrow(670, 470, 670, 420);
-            
-            // Animate
-            drawDiamond(670, 260, 140, 100, colors.decision, 'Animatsiya\nKerakmi?');
-            drawArrow(670, 360, 670, 310);
-            
-            // RequestAnimationFrame
-            drawRect(820, 240, 160, 60, colors.process, 'Request\nAnimation\nFrame', '🎬');
-            drawArrow(740, 260, 820, 270, 'Ha');
-            
-            // Loop back
-            drawArrow(900, 300, 900, 500);
-            drawArrow(900, 500, 740, 500);
-            
-            // Display
-            drawCircle(670, 150, 50, colors.end, 'Ekranda\nKo\'rsatish', '📺');
-            drawArrow(670, 210, 670, 200, 'Yo\'q');
-            
-            // User sees
-            drawArrow(670, 100, 500, 100);
-            drawArrow(500, 100, 500, 600, 'Yana harakat');
-            drawArrow(500, 600, 410, 600);
-            
-            // Legend
-            ctx.font = 'bold 12px Arial';
-            ctx.fillStyle = '#666';
-            ctx.textAlign = 'left';
-            ctx.fillText('Real-time interaktiv loop', 900, 400);
-        }
-        
-        // DIAGRAMMA 3: Deploy Jarayoni
-        function drawDiagram3() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#1e3c72';
-            ctx.font = 'bold 24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('DEPLOY JARAYONI ALGORITMI', canvas.width/2, 40);
-            
-            // Developer
-            drawCircle(150, 120, 50, colors.user, 'Developer', '👨‍💻');
-            
-            // Local development
-            drawRect(80, 200, 140, 70, colors.process, 'Local\nDevelopment', '💻');
-            drawArrow(150, 170, 150, 200);
-            
-            // Git commit
-            drawRect(80, 300, 140, 70, colors.process, 'Git Commit', '📝');
-            drawArrow(150, 270, 150, 300);
-            
-            // Git push
-            drawRect(80, 400, 140, 70, colors.data, 'Git Push\nGitHub', '☁️');
-            drawArrow(150, 370, 150, 400);
-            
-            // GitHub
-            drawRect(300, 380, 160, 110, colors.start, 'GitHub\nRepository\n(Source Code)', '🔧');
-            drawArrow(220, 435, 300, 435);
-            
-            // Choose platform
-            drawDiamond(550, 435, 160, 120, colors.decision, 'Deploy\nPlatforma\nTanlash?');
-            drawArrow(460, 435, 470, 435);
-            
-            // NETLIFY yo'li
-            const netlifyX = 300;
-            const netlifyY = 600;
-            
-            drawRect(netlifyX, netlifyY, 140, 60, colors.process, 'Netlify\nConnect', '🌐');
-            drawArrow(520, 470, netlifyX + 70, netlifyY, 'Netlify');
-            
-            drawRect(netlifyX, netlifyY + 90, 140, 60, colors.process, 'Auto Build', '🔨');
-            drawArrow(netlifyX + 70, netlifyY + 60, netlifyX + 70, netlifyY + 90);
-            
-            drawCircle(netlifyX + 70, netlifyY + 200, 50, colors.end, 'Live!', '✅');
-            drawArrow(netlifyX + 70, netlifyY + 150, netlifyX + 70, netlifyY + 150);
-            
-            // RAILWAY yo'li
-            const railwayX = 550;
-            const railwayY = 600;
-            
-            drawRect(railwayX, railwayY, 140, 60, colors.process, 'Railway\nConnect', '🚂');
-            drawArrow(550, 495, railwayX + 70, railwayY);
-            
-            drawRect(railwayX, railwayY + 90, 140, 60, colors.process, 'Nixpacks\nBuild', '📦');
-            drawArrow(railwayX + 70, railwayY + 60, railwayX + 70, railwayY + 90);
-            
-            drawCircle(railwayX + 70, railwayY + 200, 50, colors.end, 'Live!', '✅');
-            drawArrow(railwayX + 70, railwayY + 150, railwayX + 70, railwayY + 150);
-            
-            // VERCEL yo'li
-            const vercelX = 800;
-            const vercelY = 600;
-            
-            drawRect(vercelX, vercelY, 140, 60, colors.process, 'Vercel\nConnect', '▲');
-            drawArrow(580, 470, vercelX + 70, vercelY, 'Vercel');
-            
-            drawRect(vercelX, vercelY + 90, 140, 60, colors.process, 'Auto\nOptimize', '⚡');
-            drawArrow(vercelX + 70, vercelY + 60, vercelX + 70, vercelY + 90);
-            
-            drawCircle(vercelX + 70, vercelY + 200, 50, colors.end, 'Live!', '✅');
-            drawArrow(vercelX + 70, vercelY + 150, vercelX + 70, vercelY + 150);
-            
-            // Domain
-            drawRect(1050, 380, 150, 110, colors.data, 'Custom Domain\n(Ixtiyoriy)\nexample.com', '🌍');
-            drawArrow(940, 750, 1050, 435);
-            drawArrow(690, 750, 1050, 435);
-            drawArrow(370, 750, 1050, 435);
-            
-            // Users
-            drawCircle(1050, 600, 60, colors.user, 'Foydalanuvchilar', '👥');
-            drawArrow(1125, 435, 1100, 550);
-            
-            // Analytics
-            drawRect(1050, 700, 150, 60, colors.process, 'Analytics &\nMonitoring', '📊');
-            drawArrow(1125, 660, 1125, 700);
-        }
-        
-        // DIAGRAMMA 4: Foydalanuvchi Oqimi
-        function drawDiagram4() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#1e3c72';
-            ctx.font = 'bold 24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('FOYDALANUVCHI OQIMI (USER FLOW)', canvas.width/2, 40);
-            
-            // O'quvchi
-            drawCircle(150, 120, 50, colors.user, 'O\'quvchi', '👨‍🎓');
-            
-            // Saytga kirish
-            drawRect(80, 200, 140, 60, colors.start, 'Saytga\nKirish', '🌐');
-            drawArrow(150, 170, 150, 200);
-            
-            // Index sahifa
-            drawRect(80, 290, 140, 60, colors.process, 'Index.html\nOchiladi', '🏠');
-            drawArrow(150, 260, 150, 290);
-            
-            // Model tanlash
-            drawDiamond(150, 430, 180, 120, colors.decision, 'Qaysi Model\nKerak?');
-            drawArrow(150, 350, 150, 370);
-            
-            // Rezerford
-            const rezX = 150;
-            const rezY = 550;
-            drawRect(rezX - 200, rezY, 160, 70, colors.data, 'Rezerford\nTajribasi', '⚛️');
-            drawArrow(110, 460, rezX - 120, rezY, 'Atom');
-            
-            // Sozlamalar
-            drawRect(rezX - 200, rezY + 100, 160, 60, colors.process, 'Parametr\nSozlash', '⚙️');
-            drawArrow(rezX - 120, rezY + 70, rezX - 120, rezY + 100);
-            
-            // Tajriba
-            drawRect(rezX - 200, rezY + 190, 160, 60, colors.process, 'Tajriba\nO\'tkazish', '🧪');
-            drawArrow(rezX - 120, rezY + 160, rezX - 120, rezY + 190);
-            
-            // Natija
-            drawRect(rezX - 200, rezY + 280, 160, 60, colors.end, 'Natijalarni\nTahlil', '📊');
-            drawArrow(rezX - 120, rezY + 250, rezX - 120, rezY + 280);
-            
-            // Kepler
-            const kepX = 150;
-            const kepY = 550;
-            drawRect(kepX + 40, kepY, 160, 70, colors.data, 'Kepler\nQonunlari', '🪐');
-            drawArrow(150, 490, kepX + 120, kepY);
-            
-            // Qonun tanlash
-            drawDiamond(kepX + 120, kepY + 120, 160, 100, colors.decision, 'Qaysi\nQonun?');
-            drawArrow(kepX + 120, kepY + 70, kepX + 120, kepY + 70);
-            
-            // 3 ta qonun
-            drawRect(kepX + 250, kepY + 90, 120, 50, colors.process, '1. Ellips', '○');
-            drawArrow(kepX + 190, kepY + 120, kepX + 250, kepY + 115, '1');
-            
-            drawRect(kepX + 250, kepY + 160, 120, 50, colors.process, '2. Yuzalar', '△');
-            drawArrow(kepX + 190, kepY + 120, kepX + 250, kepY + 185, '2');
-            
-            drawRect(kepX + 250, kepY + 230, 120, 50, colors.process, '3. Davr', '⊙');
-            drawArrow(kepX + 190, kepY + 120, kepX + 250, kepY + 255, '3');
-            
-            // Animatsiya
-            drawRect(kepX + 40, kepY + 240, 160, 60, colors.end, 'Animatsiya\nKuzatish', '👁️');
-            drawArrow(kepX + 370, kepY + 115, kepX + 200, kepY + 270);
-            drawArrow(kepX + 370, kepY + 185, kepX + 200, kepY + 270);
-            drawArrow(kepX + 370, kepY + 255, kepX + 200, kepY + 270);
-            
-            // Meme
-            drawRect(600, 550, 160, 70, colors.data, 'Sarkazm\nMeme', '😏');
-            drawArrow(230, 460, 600, 585, 'Hazil');
-            
-            drawRect(600, 650, 160, 60, colors.process, 'Tosh\nUchirish', '🪨');
-            drawArrow(680, 620, 680, 650);
-            
-            drawCircle(680, 760, 50, colors.end, 'Kulish!', '😂');
-            drawArrow(680, 710, 680, 710);
-            
-            // Dars ishlanma
-            drawRect(850, 400, 160, 70, colors.process, 'Dars\nIshlanma', '📚');
-            drawArrow(230, 430, 850, 435);
-            
-            // Testlar
-            drawRect(850, 500, 160, 70, colors.process, 'Testlarni\nYechish', '✏️');
-            drawArrow(230, 430, 850, 535);
-            
-            // Metodika
-            drawRect(850, 600, 160, 70, colors.process, 'Metodika\nO\'qish', '👨‍🏫');
-            drawArrow(230, 430, 850, 635);
-            
-            // O'rganish
-            drawCircle(1100, 500, 60, colors.end, 'Bilim Olish!', '🎓');
-            drawArrow(1010, 435, 1050, 480);
-            drawArrow(1010, 535, 1050, 510);
-            drawArrow(1010, 635, 1050, 530);
-            
-            // Share
-            drawRect(1100, 600, 140, 60, colors.user, 'Do\'stlar Bilan\nBo\'lishish', '👥');
-            drawArrow(1125, 560, 1170, 600);
-            
-            // Yana kirish
-            ctx.setLineDash([5, 5]);
-            drawArrow(1170, 660, 1170, 750);
-            drawArrow(1170, 750, 150, 750);
-            drawArrow(150, 750, 150, 170);
+        function border(x, y, w, h, color, label) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 5;
+            ctx.setLineDash([18, 8]);
+            roundRect(x, y, w, h, 15);
+            ctx.stroke();
             ctx.setLineDash([]);
-        }
-        
-        // Diagrammalarni almashtirish
-        function showDiagram(num) {
-            currentDiagram = num;
             
-            // Tab aktivini o'zgartirish
-            document.querySelectorAll('.tab').forEach((tab, index) => {
-                tab.classList.toggle('active', index + 1 === num);
-            });
-            
-            // Diagramma chizish
-            switch(num) {
-                case 1:
-                    drawDiagram1();
-                    updateInfo('Loyihaning umumiy arxitekturasi: boshlang\'ichdan yakuniy natijagacha barcha bosqichlar.');
-                    break;
-                case 2:
-                    drawDiagram2();
-                    updateInfo('Interaktiv modelning ishlash mexanizmi: foydalanuvchi harakatidan ekranda ko\'rsatilishigacha.');
-                    break;
-                case 3:
-                    drawDiagram3();
-                    updateInfo('Deploy jarayoni: lokal kompyuterdan jonli saytgacha. 3 ta platforma varianti.');
-                    break;
-                case 4:
-                    drawDiagram4();
-                    updateInfo('Foydalanuvchi oqimi: o\'quvchi saytga kirib, modellarda ishlashi va bilim olishi.');
-                    break;
+            if (label) {
+                ctx.fillStyle = color;
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(label, x + 25, y + h + 35);
             }
         }
         
-        // Info yangilash
-        function updateInfo(text) {
-            document.getElementById('infoText').textContent = text;
+        // DIAGRAMMA 1
+        function draw1() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = C.text;
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('UMUMIY LOYIHA ARXITEKTURASI', 1200, 50);
+            
+            drawCirc(200, 140, 60, C.green, 'START', '🚀');
+            drawBox(120, 230, 160, 80, C.green, 'Talablarni Aniqlash', '📋');
+            arrow(200, 200, 200, 230);
+            
+            drawBox(120, 340, 160, 80, C.green, 'UI/UX Dizayn', '🎨');
+            arrow(200, 310, 200, 340);
+            
+            drawBox(50, 480, 180, 95, C.cyan, 'Rezerford Modeli', '⚛️');
+            arrow(160, 420, 140, 480);
+            
+            drawBox(280, 480, 180, 95, C.cyan, 'Kepler Modeli', '🪐');
+            arrow(200, 420, 370, 480);
+            
+            drawBox(510, 480, 180, 95, C.cyan, 'Meme Modeli', '😏');
+            arrow(240, 420, 600, 480);
+            
+            drawBox(800, 230, 180, 80, C.green, 'Dars Ishlanma', '📚');
+            arrow(280, 270, 800, 270);
+            
+            drawBox(800, 340, 180, 80, C.green, 'Testlar', '📝');
+            arrow(280, 380, 800, 380);
+            
+            drawBox(800, 450, 180, 80, C.green, 'Metodika', '👨‍🏫');
+            arrow(690, 527, 800, 490);
+            
+            drawBox(1100, 320, 180, 90, C.yellow, 'GitHub Repo', '🔧');
+            arrow(980, 270, 1100, 350);
+            arrow(980, 380, 1100, 370);
+            arrow(980, 490, 1100, 390);
+            
+            drawDiam(1190, 540, 180, 110, C.yellow, 'Deploy Platform?');
+            arrow(1190, 410, 1190, 485);
+            
+            drawBox(980, 700, 130, 70, C.red, 'Netlify', '🌐');
+            arrow(1130, 580, 1045, 700, 'Oson');
+            
+            drawBox(1150, 700, 130, 70, C.red, 'Railway', '🚂');
+            arrow(1190, 595, 1215, 700, 'Flex');
+            
+            drawBox(1320, 700, 130, 70, C.red, 'Vercel', '▲');
+            arrow(1250, 580, 1385, 700, 'Pro');
+            
+            drawCirc(1215, 880, 70, C.purple, 'LIVE SITE', '🌍');
+            arrow(1045, 770, 1160, 830);
+            arrow(1215, 770, 1215, 810);
+            arrow(1385, 770, 1270, 830);
+            
+            drawBox(1500, 950, 180, 80, C.purple, 'Users', '👥');
+            arrow(1280, 910, 1500, 990);
+            
+            border(940, 820, 550, 240, C.purple, '🌐 JONLI INTERNET');
         }
         
-        // Yuklab olish
+        // DIAGRAMMA 2
+        function draw2() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = C.text;
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('MODEL ISHLASH ALGORITMI', 1200, 50);
+            
+            drawCirc(200, 140, 60, C.purple, 'User', '👤');
+            drawBox(120, 230, 160, 75, C.green, 'Brauzer', '🌐');
+            arrow(200, 200, 200, 230);
+            
+            drawBox(120, 335, 160, 75, C.green, 'HTML', '📄');
+            arrow(200, 305, 200, 335);
+            
+            drawBox(120, 440, 160, 75, C.green, 'JavaScript', '⚙️');
+            arrow(200, 410, 200, 440);
+            
+            drawBox(120, 545, 160, 75, C.cyan, 'Canvas', '🎨');
+            arrow(200, 515, 200, 545);
+            
+            drawBox(380, 545, 180, 75, C.green, 'Event Listeners', '👆');
+            arrow(280, 582, 380, 582);
+            
+            drawDiam(470, 720, 180, 110, C.yellow, 'User Harakat?');
+            arrow(470, 620, 470, 665);
+            
+            drawBox(200, 860, 150, 65, C.green, 'Slider', '🎚️');
+            arrow(415, 760, 275, 860, 'Slider');
+            
+            drawBox(400, 860, 150, 65, C.green, 'Button', '🔘');
+            arrow(470, 775, 475, 860, 'Click');
+            
+            drawBox(600, 860, 150, 65, C.green, 'Canvas', '🖱️');
+            arrow(525, 760, 675, 860, 'Move');
+            
+            drawBox(900, 750, 170, 75, C.cyan, 'State Update', '💾');
+            arrow(350, 892, 900, 787);
+            arrow(550, 892, 900, 787);
+            arrow(750, 892, 900, 787);
+            
+            drawBox(900, 620, 170, 75, C.green, 'Calculate', '🧮');
+            arrow(985, 750, 985, 695);
+            
+            drawBox(900, 490, 170, 75, C.green, 'Draw', '✏️');
+            arrow(985, 620, 985, 565);
+            
+            drawDiam(985, 370, 170, 100, C.yellow, 'Animate?');
+            arrow(985, 490, 985, 420);
+            
+            drawBox(1190, 345, 190, 70, C.green, 'Request Frame', '🎬');
+            arrow(1070, 370, 1190, 380, 'Ha');
+            
+            ctx.setLineDash([8, 4]);
+            arrow(1380, 415, 1380, 650);
+            arrow(1380, 650, 1070, 657);
+            ctx.setLineDash([]);
+            
+            drawCirc(985, 240, 65, C.red, 'Display', '📺');
+            arrow(985, 320, 985, 305, 'Yo\'q');
+        }
+        
+        // DIAGRAMMA 3
+        function draw3() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = C.text;
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('DEPLOY JARAYONI', 1200, 50);
+            
+            drawCirc(200, 140, 60, C.purple, 'Developer', '👨‍💻');
+            
+            drawBox(120, 230, 160, 80, C.green, 'Local Dev', '💻');
+            arrow(200, 200, 200, 230);
+            
+            drawBox(120, 340, 160, 80, C.green, 'Git Commit', '📝');
+            arrow(200, 310, 200, 340);
+            
+            drawBox(120, 450, 160, 80, C.cyan, 'Git Push', '☁️');
+            arrow(200, 420, 200, 450);
+            
+            drawBox(400, 420, 200, 110, C.blue, 'GitHub Repo', '🔧');
+            arrow(280, 490, 400, 475);
+            
+            drawDiam(750, 475, 200, 120, C.yellow, 'Platform?');
+            arrow(600, 475, 650, 475);
+            
+            drawBox(450, 680, 180, 85, C.green, 'Netlify', '🌐');
+            arrow(700, 520, 540, 680, 'Fast');
+            
+            drawBox(750, 680, 180, 85, C.green, 'Railway', '🚂');
+            arrow(750, 535, 840, 680);
+            
+            drawBox(1050, 680, 180, 85, C.green, 'Vercel', '▲');
+            arrow(800, 520, 1140, 680, 'Pro');
+            
+            drawBox(450, 805, 180, 75, C.green, 'Build', '🔨');
+            arrow(540, 765, 540, 805);
+            
+            drawBox(750, 805, 180, 75, C.green, 'Build', '📦');
+            arrow(840, 765, 840, 805);
+            
+            drawBox(1050, 805, 180, 75, C.green, 'Build', '⚡');
+            arrow(1140, 765, 1140, 805);
+            
+            drawCirc(540, 970, 65, C.red, 'Live!', '✅');
+            arrow(540, 880, 540, 905);
+            
+            drawCirc(840, 970, 65, C.red, 'Live!', '✅');
+            arrow(840, 880, 840, 905);
+            
+            drawCirc(1140, 970, 65, C.red, 'Live!', '✅');
+            arrow(1140, 880, 1140, 905);
+            
+            drawBox(1450, 420, 200, 110, C.cyan, 'Domain', '🌍');
+            arrow(540, 1035, 1500, 530);
+            arrow(840, 1035, 1520, 530);
+            arrow(1140, 1035, 1560, 530);
+            
+            drawCirc(1550, 740, 75, C.purple, 'Users', '👥');
+            arrow(1550, 530, 1550, 665);
+            
+            drawBox(1380, 920, 190, 80, C.green, 'Analytics', '📊');
+            arrow(1550, 815, 1520, 920);
+            
+            border(400, 900, 870, 150, C.red, '✅ LIVE SITES');
+        }
+        
+        // DIAGRAMMA 4
+        function draw4() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = C.text;
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('FOYDALANUVCHI OQIMI', 1200, 50);
+            
+            drawCirc(200, 140, 60, C.purple, 'O\'quvchi', '👨‍🎓');
+            
+            drawBox(120, 230, 160, 75, C.green, 'Sayt Kirish', '🌐');
+            arrow(200, 200, 200, 230);
+            
+            drawBox(120, 335, 160, 75, C.blue, 'Index.html', '🏠');
+            arrow(200, 305, 200, 335);
+            
+            drawDiam(200, 490, 200, 110, C.yellow, 'Model?');
+            arrow(200, 410, 200, 435);
+            
+            // Rezerford
+            drawBox(50, 640, 200, 85, C.cyan, 'Rezerford', '⚛️');
+            arrow(140, 530, 150, 640, 'Atom');
+            
+            drawBox(50, 755, 200, 75, C.green, 'Sozlash', '⚙️');
+            arrow(150, 725, 150, 755);
+            
+            drawBox(50, 860, 200, 75, C.green, 'Tajriba', '🧪');
+            arrow(150, 830, 150, 860);
+            
+            drawBox(50, 965, 200, 75, C.red, 'Tahlil', '📊');
+            arrow(150, 935, 150, 965);
+            
+            border(30, 610, 240, 470, C.red, '⚛️ Atom');
+            
+            // Kepler
+            drawBox(500, 640, 200, 85, C.cyan, 'Kepler', '🪐');
+            arrow(230, 530, 600, 640);
+            
+            drawDiam(600, 800, 180, 100, C.yellow, 'Qonun?');
+            arrow(600, 725, 600, 750);
+            
+            drawBox(820, 750, 150, 60, C.green, '1. Ellips', '○');
+            arrow(690, 800, 820, 780, '1');
+            
+            drawBox(820, 830, 150, 60, C.green, '2. Yuzalar', '△');
+            arrow(690, 800, 820, 860, '2');
+            
+            drawBox(820, 910, 150, 60, C.green, '3. Davr', '⊙');
+            arrow(690, 800, 820, 940, '3');
+            
+            drawBox(500, 950, 200, 75, C.red, 'Animatsiya', '👁️');
+            arrow(970, 780, 700, 987);
+            arrow(970, 860, 700, 987);
+            arrow(970, 940, 700, 987);
+            
+            border(470, 610, 530, 455, C.red, '🪐 Kepler');
+            
+            // Meme
+            drawBox(1100, 640, 180, 85, C.cyan, 'Meme', '😏');
+            arrow(260, 530, 1100, 682, 'Fun');
+            
+            drawBox(1100, 755, 180, 75, C.green, 'Tosh', '🪨');
+            arrow(1190, 725, 1190, 755);
+            
+            drawCirc(1190, 920, 65, C.red, 'Kulish!', '😂');
+            arrow(1190, 830, 1190, 855);
+            
+            // Dars
+            drawBox(1450, 640, 180, 75, C.green, 'Dars', '📚');
+            arrow(280, 490, 1450, 677);
+            
+            drawBox(1450, 745, 180, 75, C.green, 'Test', '✏️');
+            arrow(280, 490, 1450, 782);
+            
+            drawBox(1450, 850, 180, 75, C.green, 'Metodika', '👨‍🏫');
+            arrow(280, 490, 1450, 887);
+            
+            drawCirc(1800, 800, 70, C.red, 'Bilim!', '🎓');
+            arrow(1630, 677, 1740, 760);
+            arrow(1630, 782, 1750, 790);
+            arrow(1630, 887, 1740, 830);
+            
+            drawBox(1700, 970, 180, 75, C.purple, 'Bo\'lishish', '👥');
+            arrow(1800, 870, 1790, 970);
+            
+            ctx.setLineDash([8, 4]);
+            arrow(1790, 1045, 1790, 1130);
+            arrow(1790, 1130, 200, 1130);
+            arrow(200, 1130, 200, 200);
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = C.blue;
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText('🔄 Sikl: Qayta Qaytish', 1000, 1160);
+        }
+        
+        // Diagramma almashtirish
+        function changeDiagram(n) {
+            currentDiagram = n;
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach((t, i) => t.classList.toggle('active', i === n));
+            
+            if (n === 0) draw1();
+            else if (n === 1) draw2();
+            else if (n === 2) draw3();
+            else if (n === 3) draw4();
+        }
+        
+        // Zoom
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom + 0.1, 2);
+            canvas.style.transform = `scale(${currentZoom})`;
+            canvas.style.transformOrigin = 'top left';
+            document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+        }
+        
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom - 0.1, 0.5);
+            canvas.style.transform = `scale(${currentZoom})`;
+            canvas.style.transformOrigin = 'top left';
+            document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+        }
+        
+        // Download
         function downloadDiagram() {
+            const names = ['arxitektura', 'model-ishlash', 'deploy', 'user-flow'];
             const link = document.createElement('a');
-            link.download = `loyiha-algoritm-${currentDiagram}.png`;
-            link.href = canvas.toDataURL();
+            link.download = `fizika-${names[currentDiagram]}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
             link.click();
         }
         
-        // Chop etish
+        // Print
         function printDiagram() {
-            const dataUrl = canvas.toDataURL();
-            const windowContent = '<!DOCTYPE html>';
-            const printWin = window.open('', '', 'width=1400,height=900');
-            printWin.document.write(windowContent);
-            printWin.document.write('<html><head><title>Loyiha Algoritmi</title></head><body>');
-            printWin.document.write('<img src="' + dataUrl + '" style="width:100%;">');
-            printWin.document.write('</body></html>');
-            printWin.document.close();
-            printWin.focus();
-            printWin.print();
-            printWin.close();
+            const url = canvas.toDataURL('image/png', 1.0);
+            const w = window.open('');
+            w.document.write('<html><head><title>Print</title></head><body style="margin:0;text-align:center;">');
+            w.document.write('<img src="' + url + '" style="max-width:100%;">');
+            w.document.write('</body></html>');
+            w.document.close();
+            w.focus();
+            setTimeout(() => w.print(), 250);
         }
         
-        // Boshlang'ich diagramma
-        showDiagram(1);
-        
-        // Canvas ustiga click
-        canvas.addEventListener('click', function(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            console.log(`Click: (${x.toFixed(0)}, ${y.toFixed(0)})`);
-            updateInfo(`Click joyi: X=${x.toFixed(0)}, Y=${y.toFixed(0)}. Elementlar ustiga bosib batafsil ma'lumot olishingiz mumkin (keyingi versiyada).`);
-        });
+        // Boshlash
+        draw1();
     </script>
 </body>
 </html>
