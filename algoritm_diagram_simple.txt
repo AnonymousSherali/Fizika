@@ -1,0 +1,361 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    FIZIKA MODELLARI LOYIHASI - ALGORITM                       ║
+║                      (Rezerford va Kepler Qonunlari)                          ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     1. UMUMIY LOYIHA ARXITEKTURASI                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    START (🚀)
+       │
+       ▼
+┌─────────────┐
+│  Talablarni │
+│  Aniqlash   │◄─── Fizika o'qituvchilari bilan konsultatsiya
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  UI/UX      │
+│  Dizayn     │◄─── PhET platformasiga o'xshash interfeys
+└──────┬──────┘
+       │
+       ├──────────┬──────────┬──────────┐
+       ▼          ▼          ▼          ▼
+   ┌───────┐ ┌───────┐ ┌───────┐ ┌──────────┐
+   │Rezer- │ │Kepler │ │Meme   │ │  Dars    │
+   │ford   │ │Model  │ │Model  │ │Ishlanma  │
+   │Model  │ │       │ │       │ │          │
+   └───┬───┘ └───┬───┘ └───┬───┘ └────┬─────┘
+       │         │         │          │
+       └─────────┴─────────┴──────────┘
+                 │
+                 ▼
+           ┌──────────┐
+           │  GitHub  │
+           │Repository│
+           └────┬─────┘
+                │
+                ▼
+         ┌──────────────┐
+         │Deploy Tanlash│
+         └──┬───┬───┬───┘
+            │   │   │
+    ┌───────┘   │   └───────┐
+    ▼           ▼           ▼
+┌────────┐ ┌────────┐ ┌────────┐
+│Netlify │ │Railway │ │Vercel  │
+└───┬────┘ └───┬────┘ └───┬────┘
+    └──────────┴──────────┘
+               │
+               ▼
+         ┌──────────┐
+         │LIVE SITE │ (🌍)
+         └──────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    2. INTERAKTIV MODEL ISHLASH ALGORITMI                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Foydalanuvchi (👤)
+       │
+       ▼
+┌──────────────┐
+│ Brauzer Och  │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ HTML Yuklash │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ JavaScript   │
+│ Initialize   │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ Canvas       │
+│ Yaratish     │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ Event        │
+│ Listeners    │
+└──────┬───────┘
+       │
+   ┌───┴───┐
+   │       │
+   ▼       ▼
+╔══════════════╗     ┌──────────┐
+║Foydalanuvchi ║────▶│  Slider  │
+║   Harakati?  ║     │O'zgartir │
+╚══════╦═══════╝     └────┬─────┘
+       ║                  │
+       ║     ┌────────────┘
+       ║     │
+       ▼     ▼
+   ┌──────────────┐
+   │  State       │
+   │  Yangilash   │
+   └──────┬───────┘
+          │
+          ▼
+   ┌──────────────┐
+   │ Hisoblashlar │
+   │   Bajarish   │
+   └──────┬───────┘
+          │
+          ▼
+   ┌──────────────┐
+   │   Canvas     │
+   │   Chizish    │
+   └──────┬───────┘
+          │
+      ╔═══▼════════╗
+      ║ Animatsiya ║
+      ║  Kerakmi?  ║
+      ╚═══╦════╦═══╝
+      Ha  │    │ Yo'q
+          │    │
+          ▼    ▼
+   ┌────────────────┐
+   │requestAnimation│
+   │    Frame       │
+   └───────┬────────┘
+           │
+           │ (Loop)
+           └──────────┐
+                      │
+                      ▼
+                ┌──────────┐
+                │ Ekranda  │
+                │Ko'rsatish│
+                └────┬─────┘
+                     │
+                     └─────► (Yana harakat)
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          3. DEPLOY JARAYONI                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Developer (👨‍💻)
+     │
+     ▼
+┌────────────┐
+│   Local    │
+│Development │
+└─────┬──────┘
+      │
+      ▼
+┌────────────┐
+│Git Commit  │
+└─────┬──────┘
+      │
+      ▼
+┌────────────┐
+│ Git Push   │
+│  GitHub    │
+└─────┬──────┘
+      │
+      ▼
+┌────────────┐
+│   GitHub   │
+│ Repository │
+└─────┬──────┘
+      │
+  ╔═══▼════════╗
+  ║  Platform  ║
+  ║  Tanlash?  ║
+  ╚═══╦═══╦═══╦╝
+      │   │   │
+ ┌────┘   │   └────┐
+ │        │        │
+ ▼        ▼        ▼
+
+NETLIFY      RAILWAY      VERCEL
+   │            │            │
+   ▼            ▼            ▼
+┌──────┐    ┌──────┐    ┌──────┐
+│Auto  │    │Nixp. │    │Auto  │
+│Build │    │Build │    │Optim.│
+└──┬───┘    └──┬───┘    └──┬───┘
+   │           │           │
+   └───────────┴───────────┘
+               │
+               ▼
+         ┌──────────┐
+         │Custom    │
+         │Domain    │(Ixtiyoriy)
+         └────┬─────┘
+              │
+              ▼
+        ┌───────────┐
+        │   LIVE    │
+        │  WEBSITE  │ (🌍)
+        └─────┬─────┘
+              │
+              ▼
+        Foydalanuvchilar (👥)
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      4. FOYDALANUVCHI OQIMI (USER FLOW)                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+O'quvchi (👨‍🎓)
+     │
+     ▼
+┌────────────┐
+│Saytga Kirsh│
+└─────┬──────┘
+      │
+      ▼
+┌────────────┐
+│ Index.html │
+│  Ochiladi  │
+└─────┬──────┘
+      │
+  ╔═══▼═════════╗
+  ║ Qaysi Model ║
+  ║   Kerak?    ║
+  ╚═══╦═══╦═══╦═╝
+      │   │   │
+  ┌───┘   │   └───┐
+  │       │       │
+  ▼       ▼       ▼
+
+REZERFORD  KEPLER   MEME
+MODEL      MODEL    MODEL
+  │          │        │
+  ▼          ▼        ▼
+┌──────┐  ┌──────┐ ┌──────┐
+│Sozla-│  │Qonun │ │Tosh  │
+│malar │  │Tanla │ │Uchir │
+└──┬───┘  └──┬───┘ └──┬───┘
+   │         │        │
+   ▼         ▼        ▼
+┌──────┐  ┌──────┐ ┌──────┐
+│Tajri-│  │Anima-│ │Kulish│
+│ba    │  │tsiya │ │      │
+└──┬───┘  └──┬───┘ └──────┘
+   │         │
+   ▼         ▼
+┌──────┐  ┌──────┐
+│Natija│  │Kuzat │
+│Tahlil│  │      │
+└──────┘  └──────┘
+
+            ┌──────────────┐
+            │ Dars         │
+            │ Ishlanmalar  │
+            └──────┬───────┘
+                   │
+            ┌──────────────┐
+            │ Testlar      │
+            └──────┬───────┘
+                   │
+            ┌──────────────┐
+            │ Metodika     │
+            └──────┬───────┘
+                   │
+                   ▼
+            ┌──────────────┐
+            │  BILIM OLISH │ (🎓)
+            └──────┬───────┘
+                   │
+                   ▼
+            ┌──────────────┐
+            │  Do'stlar    │
+            │  Bilan       │
+            │  Bo'lishish  │
+            └──────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           TEXNIK STACK                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Frontend:
+  ├─ HTML5 (Structure)
+  ├─ CSS3 (Styling + Animations)
+  ├─ JavaScript (Logic + Canvas API)
+  └─ Responsive Design
+
+Backend:
+  ├─ Static Hosting (No server needed)
+  └─ Python HTTP Server (Railway uchun)
+
+Tools:
+  ├─ Git/GitHub (Version Control)
+  ├─ Netlify/Railway/Vercel (Hosting)
+  └─ Canvas API (Graphics)
+
+Files:
+  ├─ rezerford_model.html (⚛️)
+  ├─ kepler_model.html (🪐)
+  ├─ mevali_daraxt_meme.html (😏)
+  ├─ index.html (🏠)
+  ├─ Dars ishlanmalar (.md)
+  ├─ Testlar (.md)
+  └─ Metodika (.md)
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         NATIJA VA KUTILAYOTGAN EFFECT                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+INPUT:                          PROCESS:                      OUTPUT:
+┌──────────┐                    ┌──────────┐                  ┌──────────┐
+│ O'quvchi │──────────────────▶ │Interaktiv│────────────────▶ │  Bilim   │
+│ (❌ Zerik)│                    │  Model   │                  │(✅ Qiziq) │
+└──────────┘                    └──────────┘                  └──────────┘
+                                     │
+                                     ▼
+                               ┌──────────┐
+                               │Vizualizat│
+                               │   siya   │
+                               └──────────┘
+                                     │
+                                     ▼
+                               ┌──────────┐
+                               │  Tushuni│
+                               │    sh    │
+                               └──────────┘
+
+METRICS:
+├─ O'zlashtirish: +20-30% ⬆️
+├─ Qiziqish: +50% ⬆️
+├─ DTM ball: +5-10% ⬆️
+└─ Tushunish: +40% ⬆️
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              SUMMARY (Xulosa)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. LOYIHA MAQSADI:
+   Fizika darslarini interaktiv va qiziqarli qilish
+
+2. YONDASHUV:
+   PhET-ga o'xshash zamonaviy web-based modellar
+
+3. TEXNOLOGIYA:
+   HTML5 + CSS3 + JavaScript (Canvas API)
+
+4. DEPLOY:
+   GitHub → (Netlify/Railway/Vercel) → Live Website
+
+5. FOYDALANUVCHILAR:
+   10-11 sinf o'quvchilari va o'qituvchilar
+
+6. NATIJA:
+   Bilim sifatini oshirish va qiziqish uyg'otish
+
+═══════════════════════════════════════════════════════════════════════════════
