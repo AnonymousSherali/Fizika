@@ -898,49 +898,99 @@
             
             const centerX = canvas3.width / 2;
             const centerY = canvas3.height / 2;
-            const scale = 18; // Kichikroq scale barcha sayyoralar uchun
+            const scale = 13; // 25 juda katta edi, 13 - optimal
             
-            // Quyosh
-            const gradient = ctx3.createRadialGradient(centerX, centerY, 0, centerX, centerY, 25);
+            // Grid
+            ctx3.strokeStyle = '#ffffff10';
+            ctx3.lineWidth = 1;
+            for (let i = 50; i < canvas3.width; i += 50) {
+                ctx3.beginPath();
+                ctx3.moveTo(i, 0);
+                ctx3.lineTo(i, canvas3.height);
+                ctx3.stroke();
+            }
+            for (let i = 50; i < canvas3.height; i += 50) {
+                ctx3.beginPath();
+                ctx3.moveTo(0, i);
+                ctx3.lineTo(canvas3.width, i);
+                ctx3.stroke();
+            }
+            
+            // QUYOSH - KATTA VA CHIROYLI
+            const sunSize = 18; // Katta quyosh
+            const gradient = ctx3.createRadialGradient(centerX, centerY, 0, centerX, centerY, sunSize);
             gradient.addColorStop(0, '#ffff00');
+            gradient.addColorStop(0.3, '#ffdd00');
+            gradient.addColorStop(0.6, '#ffaa00');
             gradient.addColorStop(1, '#ff6600');
             ctx3.fillStyle = gradient;
             ctx3.beginPath();
-            ctx3.arc(centerX, centerY, 25, 0, Math.PI * 2);
+            ctx3.arc(centerX, centerY, sunSize, 0, Math.PI * 2);
             ctx3.fill();
             
-            // Sayyoralar
+            // Quyosh nuri effekti
+            ctx3.strokeStyle = '#ffff0040';
+            ctx3.lineWidth = 3;
+            ctx3.beginPath();
+            ctx3.arc(centerX, centerY, sunSize + 3, 0, Math.PI * 2);
+            ctx3.stroke();
+            ctx3.strokeStyle = '#ffff0020';
+            ctx3.lineWidth = 2;
+            ctx3.beginPath();
+            ctx3.arc(centerX, centerY, sunSize + 6, 0, Math.PI * 2);
+            ctx3.stroke();
+            
+            // Sayyoralar orbitlari va pozitsiyalari
             const showAll = document.getElementById('showAllPlanets').checked;
             planets3.forEach(planet => {
                 const a = planet.a * scale;
-                const b = a * Math.sqrt(1 - planet.e * planet.e);
-                const c = planet.e * a;
                 
-                // Orbit
+                // Orbit doirasi
                 ctx3.strokeStyle = planet.color + '40';
                 ctx3.lineWidth = 1;
                 ctx3.beginPath();
-                ctx3.ellipse(centerX - c, centerY, a, b, 0, 0, Math.PI * 2);
+                ctx3.arc(centerX, centerY, a, 0, Math.PI * 2);
                 ctx3.stroke();
                 
                 // Sayyora pozitsiyasi
-                const x = centerX - c + a * Math.cos(planet.angle);
-                const y = centerY + b * Math.sin(planet.angle);
+                const angle = planet.angle;
+                const x = centerX + a * Math.cos(angle);
+                const y = centerY + a * Math.sin(angle);
                 
-                // Sayyora
-                ctx3.fillStyle = planet.color;
+                // Sayyora o'lchami - proporsional
+                let size;
+                if (planet.a < 2) { // Ichki sayyoralar
+                    size = Math.max(4, planet.size / 2);
+                } else if (planet.a < 10) { // Yupiter, Saturn
+                    size = Math.max(6, planet.size / 1.5);
+                } else { // Uran, Neptun
+                    size = Math.max(5, planet.size / 2);
+                }
+                
+                // Sayyora gradient
+                const planetGrad = ctx3.createRadialGradient(x, y, 0, x, y, size);
+                planetGrad.addColorStop(0, planet.color);
+                planetGrad.addColorStop(1, shadeColor(planet.color, -40));
+                ctx3.fillStyle = planetGrad;
                 ctx3.beginPath();
-                const size = Math.max(4, planet.size / 2);
                 ctx3.arc(x, y, size, 0, Math.PI * 2);
                 ctx3.fill();
                 ctx3.strokeStyle = '#fff';
-                ctx3.lineWidth = 1;
+                ctx3.lineWidth = 1.5;
                 ctx3.stroke();
                 
-                // Nomi
+                // Nomi - yaxshi ko'rinadigan
                 ctx3.fillStyle = '#fff';
-                ctx3.font = '11px Arial';
-                ctx3.fillText(planet.name, x + size + 3, y);
+                ctx3.font = 'bold 11px Arial';
+                ctx3.textAlign = 'left';
+                
+                // Matn fon
+                const textWidth = ctx3.measureText(planet.name).width;
+                ctx3.fillStyle = '#00000080';
+                ctx3.fillRect(x + size + 3, y - 8, textWidth + 4, 14);
+                
+                ctx3.fillStyle = '#fff';
+                ctx3.fillText(planet.name, x + size + 5, y + 4);
                 
                 // Harakat
                 if (isRunning[2]) {
