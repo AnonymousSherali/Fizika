@@ -190,6 +190,8 @@
             padding: 15px;
             border-radius: 10px;
             margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
         }
         
         .stats h3 {
@@ -253,19 +255,20 @@
         
         .planet-selector {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin: 15px 0;
         }
         
         .planet-btn {
-            padding: 10px;
+            padding: 10px 5px;
             border: 2px solid #1a2a6c;
             border-radius: 8px;
             background: white;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: bold;
+            font-size: 0.9em;
         }
         
         .planet-btn:hover {
@@ -313,6 +316,10 @@
                     <button class="planet-btn" onclick="selectPlanet('venus')">Venera</button>
                     <button class="planet-btn" onclick="selectPlanet('earth')">Yer</button>
                     <button class="planet-btn" onclick="selectPlanet('mars')">Mars</button>
+                    <button class="planet-btn" onclick="selectPlanet('jupiter')">Yupiter</button>
+                    <button class="planet-btn" onclick="selectPlanet('saturn')">Saturn</button>
+                    <button class="planet-btn" onclick="selectPlanet('uranus')">Uran</button>
+                    <button class="planet-btn" onclick="selectPlanet('neptune')">Neptun</button>
                 </div>
                 
                 <div class="control-group">
@@ -320,7 +327,7 @@
                         Yarim katta o'q (AU):
                         <span class="value-display" id="semiMajorValue">1.00</span>
                     </label>
-                    <input type="range" id="semiMajorSlider" min="0.39" max="1.52" step="0.01" value="1.00">
+                    <input type="range" id="semiMajorSlider" min="0.39" max="30" step="0.1" value="1.00">
                 </div>
                 
                 <div class="control-group">
@@ -328,7 +335,7 @@
                         Ekssentrisitet (e):
                         <span class="value-display" id="eccentricityValue">0.017</span>
                     </label>
-                    <input type="range" id="eccentricitySlider" min="0" max="0.9" step="0.01" value="0.017">
+                    <input type="range" id="eccentricitySlider" min="0" max="0.9" step="0.001" value="0.017">
                 </div>
                 
                 <div class="control-group">
@@ -373,7 +380,9 @@
                         • Ellipsning yarim kichik o'qi - b<br>
                         • Ekssentrisitet: e = c/a (c - fokus masofasi)<br>
                         • e = 0 bo'lsa, aylana<br>
-                        • e → 1 bo'lsa, cho'zilgan ellips
+                        • e → 1 bo'lsa, cho'zilgan ellips<br>
+                        • Perigeliy (eng yaqin): a(1-e)<br>
+                        • Afeliy (eng uzoq): a(1+e)
                     </p>
                 </div>
             </div>
@@ -489,7 +498,8 @@
                         Bu yerda:<br>
                         • T - orbital davr (yil)<br>
                         • a - yarim katta o'q (Astronomik Birlik)<br>
-                        • Yer uchun: T = 1 yil, a = 1 AU → T²/a³ = 1
+                        • Yer uchun: T = 1 yil, a = 1 AU → T²/a³ = 1<br>
+                        • Barcha sayyoralar uchun bu nisbat doimiy!
                     </p>
                 </div>
             </div>
@@ -501,12 +511,16 @@
         let animations = [null, null, null];
         let isRunning = [false, false, false];
         
-        // Sayyoralar ma'lumotlari
+        // ✅ TO'G'RILANGAN: BARCHA 8 TA SAYYORA
         const planetsData = {
-            mercury: { name: 'Merkuriy', a: 0.39, e: 0.206, T: 0.24, color: '#8c7853' },
-            venus: { name: 'Venera', a: 0.72, e: 0.007, T: 0.62, color: '#ffc649' },
-            earth: { name: 'Yer', a: 1.00, e: 0.017, T: 1.00, color: '#4a90e2' },
-            mars: { name: 'Mars', a: 1.52, e: 0.093, T: 1.88, color: '#e27b58' }
+            mercury: { name: 'Merkuriy', a: 0.39, e: 0.206, T: 0.24, color: '#8c7853', size: 4 },
+            venus: { name: 'Venera', a: 0.72, e: 0.007, T: 0.62, color: '#ffc649', size: 9 },
+            earth: { name: 'Yer', a: 1.00, e: 0.017, T: 1.00, color: '#4a90e2', size: 10 },
+            mars: { name: 'Mars', a: 1.52, e: 0.093, T: 1.88, color: '#e27b58', size: 5 },
+            jupiter: { name: 'Yupiter', a: 5.20, e: 0.048, T: 11.86, color: '#d8a664', size: 25 },
+            saturn: { name: 'Saturn', a: 9.54, e: 0.054, T: 29.46, color: '#f4e4c1', size: 22 },
+            uranus: { name: 'Uran', a: 19.19, e: 0.047, T: 84.01, color: '#4fd0e7', size: 16 },
+            neptune: { name: 'Neptun', a: 30.07, e: 0.009, T: 164.79, color: '#4166f5', size: 15 }
         };
         
         let currentPlanet = 'earth';
@@ -556,7 +570,7 @@
         
         document.getElementById('eccentricitySlider').oninput = function() {
             orbit1.e = parseFloat(this.value);
-            document.getElementById('eccentricityValue').textContent = this.value;
+            document.getElementById('eccentricityValue').textContent = parseFloat(this.value).toFixed(3);
         };
         
         document.getElementById('speedSlider1').oninput = function() {
@@ -570,58 +584,118 @@
             
             const centerX = canvas1.width / 2;
             const centerY = canvas1.height / 2;
-            const scale = 200;
+            const scale = Math.min(150, 300 / orbit1.a);
             
             const a = orbit1.a * scale;
             const b = a * Math.sqrt(1 - orbit1.e * orbit1.e);
             const c = orbit1.e * a;
             
-            // Ellips chizish
-            ctx1.strokeStyle = '#ffffff40';
+            // ✅ TO'G'RILANGAN: ELLIPS to'g'ri chiziladi
+            // Quyosh CHAPDA (fokusda)
+            const focusX = centerX - c;
+            
+            // Grid
+            ctx1.strokeStyle = '#ffffff20';
+            ctx1.lineWidth = 1;
+            for (let i = 50; i < canvas1.width; i += 50) {
+                ctx1.beginPath();
+                ctx1.moveTo(i, 0);
+                ctx1.lineTo(i, canvas1.height);
+                ctx1.stroke();
+            }
+            for (let i = 50; i < canvas1.height; i += 50) {
+                ctx1.beginPath();
+                ctx1.moveTo(0, i);
+                ctx1.lineTo(canvas1.width, i);
+                ctx1.stroke();
+            }
+            
+            // Ellips chizish (markazda, keyin Quyosh fokusga)
+            ctx1.strokeStyle = '#ffffff60';
             ctx1.lineWidth = 2;
             ctx1.beginPath();
-            ctx1.ellipse(centerX + c, centerY, a, b, 0, 0, Math.PI * 2);
+            ctx1.ellipse(centerX, centerY, a, b, 0, 0, Math.PI * 2);
             ctx1.stroke();
             
-            // Quyosh
-            const gradient = ctx1.createRadialGradient(centerX, centerY, 0, centerX, centerY, 20);
+            // Quyosh (fokusda - chapda)
+            const gradient = ctx1.createRadialGradient(focusX, centerY, 0, focusX, centerY, 25);
             gradient.addColorStop(0, '#ffff00');
+            gradient.addColorStop(0.5, '#ff8800');
             gradient.addColorStop(1, '#ff6600');
             ctx1.fillStyle = gradient;
             ctx1.beginPath();
-            ctx1.arc(centerX, centerY, 20, 0, Math.PI * 2);
-            ctx1.fill();
-            
-            // Sayyora
-            const x = centerX + c + a * Math.cos(orbit1.angle);
-            const y = centerY + b * Math.sin(orbit1.angle);
-            
-            const planetColor = planetsData[currentPlanet].color;
-            ctx1.fillStyle = planetColor;
-            ctx1.beginPath();
-            ctx1.arc(x, y, 15, 0, Math.PI * 2);
+            ctx1.arc(focusX, centerY, 25, 0, Math.PI * 2);
             ctx1.fill();
             ctx1.strokeStyle = '#fff';
             ctx1.lineWidth = 2;
             ctx1.stroke();
             
-            // Radius-vektor
-            ctx1.strokeStyle = '#00ff0080';
-            ctx1.lineWidth = 1;
+            // Sayyora pozitsiyasi (ellips bo'ylab)
+            const x = centerX + a * Math.cos(orbit1.angle);
+            const y = centerY + b * Math.sin(orbit1.angle);
+            
+            // Sayyora
+            const planetColor = planetsData[currentPlanet].color;
+            const planetSize = Math.max(12, planetsData[currentPlanet].size);
+            
+            const planetGrad = ctx1.createRadialGradient(x, y, 0, x, y, planetSize);
+            planetGrad.addColorStop(0, planetColor);
+            planetGrad.addColorStop(1, shadeColor(planetColor, -40));
+            ctx1.fillStyle = planetGrad;
             ctx1.beginPath();
-            ctx1.moveTo(centerX, centerY);
-            ctx1.lineTo(x, y);
+            ctx1.arc(x, y, planetSize, 0, Math.PI * 2);
+            ctx1.fill();
+            ctx1.strokeStyle = '#fff';
+            ctx1.lineWidth = 2;
             ctx1.stroke();
             
-            // Fokuslar
+            // Radius-vektor (Quyoshdan sayyoragacha)
+            ctx1.strokeStyle = '#00ff0080';
+            ctx1.lineWidth = 2;
+            ctx1.setLineDash([5, 5]);
+            ctx1.beginPath();
+            ctx1.moveTo(focusX, centerY);
+            ctx1.lineTo(x, y);
+            ctx1.stroke();
+            ctx1.setLineDash([]);
+            
+            // Fokuslarni belgilash
             ctx1.fillStyle = '#ff0000';
             ctx1.beginPath();
-            ctx1.arc(centerX, centerY, 5, 0, Math.PI * 2);
-            ctx1.arc(centerX + 2 * c, centerY, 5, 0, Math.PI * 2);
+            ctx1.arc(focusX, centerY, 6, 0, Math.PI * 2);
+            ctx1.arc(centerX + c, centerY, 6, 0, Math.PI * 2);
             ctx1.fill();
             
+            // Fokus yorliqlari
+            ctx1.fillStyle = '#fff';
+            ctx1.font = 'bold 14px Arial';
+            ctx1.fillText('F1 (Quyosh)', focusX - 45, centerY - 35);
+            ctx1.fillText('F2', centerX + c + 10, centerY - 35);
+            
+            // O'qlar
+            ctx1.strokeStyle = '#ffff0080';
+            ctx1.lineWidth = 2;
+            ctx1.setLineDash([10, 5]);
+            // Katta o'q
+            ctx1.beginPath();
+            ctx1.moveTo(centerX - a, centerY);
+            ctx1.lineTo(centerX + a, centerY);
+            ctx1.stroke();
+            // Kichik o'q
+            ctx1.beginPath();
+            ctx1.moveTo(centerX, centerY - b);
+            ctx1.lineTo(centerX, centerY + b);
+            ctx1.stroke();
+            ctx1.setLineDash([]);
+            
+            // Labels
+            ctx1.fillStyle = '#ffff00';
+            ctx1.font = 'bold 16px Arial';
+            ctx1.fillText('a', centerX + a - 20, centerY + 20);
+            ctx1.fillText('b', centerX + 10, centerY - b + 20);
+            
             // Ma'lumotlarni yangilash
-            const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)) / scale;
+            const distance = Math.sqrt(Math.pow(x - focusX, 2) + Math.pow(y - centerY, 2)) / scale;
             document.getElementById('currentDistance').textContent = distance.toFixed(3) + ' AU';
             document.getElementById('perihelion').textContent = (orbit1.a * (1 - orbit1.e)).toFixed(3) + ' AU';
             document.getElementById('aphelion').textContent = (orbit1.a * (1 + orbit1.e)).toFixed(3) + ' AU';
@@ -631,6 +705,16 @@
                 orbit1.angle += 0.02 * orbit1.speed;
                 animations[0] = requestAnimationFrame(drawOrbit1);
             }
+        }
+        
+        function shadeColor(color, percent) {
+            let R = parseInt(color.substring(1,3),16);
+            let G = parseInt(color.substring(3,5),16);
+            let B = parseInt(color.substring(5,7),16);
+            R = Math.min(255, Math.max(0, parseInt(R * (100 + percent) / 100)));
+            G = Math.min(255, Math.max(0, parseInt(G * (100 + percent) / 100)));
+            B = Math.min(255, Math.max(0, parseInt(B * (100 + percent) / 100)));
+            return "#" + R.toString(16).padStart(2,'0') + G.toString(16).padStart(2,'0') + B.toString(16).padStart(2,'0');
         }
         
         function startAnimation1() {
@@ -683,24 +767,26 @@
             const b = a * Math.sqrt(1 - orbit2.e * orbit2.e);
             const c = orbit2.e * a;
             
+            const focusX = centerX - c;
+            
             // Ellips
             ctx2.strokeStyle = '#ffffff40';
             ctx2.lineWidth = 2;
             ctx2.beginPath();
-            ctx2.ellipse(centerX + c, centerY, a, b, 0, 0, Math.PI * 2);
+            ctx2.ellipse(centerX, centerY, a, b, 0, 0, Math.PI * 2);
             ctx2.stroke();
             
             // Quyosh
-            const gradient = ctx2.createRadialGradient(centerX, centerY, 0, centerX, centerY, 20);
+            const gradient = ctx2.createRadialGradient(focusX, centerY, 0, focusX, centerY, 20);
             gradient.addColorStop(0, '#ffff00');
             gradient.addColorStop(1, '#ff6600');
             ctx2.fillStyle = gradient;
             ctx2.beginPath();
-            ctx2.arc(centerX, centerY, 20, 0, Math.PI * 2);
+            ctx2.arc(focusX, centerY, 20, 0, Math.PI * 2);
             ctx2.fill();
             
             // Sayyora
-            const x = centerX + c + a * Math.cos(orbit2.angle);
+            const x = centerX + a * Math.cos(orbit2.angle);
             const y = centerY + b * Math.sin(orbit2.angle);
             
             orbit2.positions.push({ x, y });
@@ -711,7 +797,7 @@
                 // Yuza 1 (perigeliy)
                 ctx2.fillStyle = '#ff000040';
                 ctx2.beginPath();
-                ctx2.moveTo(centerX, centerY);
+                ctx2.moveTo(focusX, centerY);
                 for (let i = 0; i < Math.min(15, orbit2.positions.length); i++) {
                     ctx2.lineTo(orbit2.positions[i].x, orbit2.positions[i].y);
                 }
@@ -722,7 +808,7 @@
                 if (orbit2.positions.length > 15) {
                     ctx2.fillStyle = '#0000ff40';
                     ctx2.beginPath();
-                    ctx2.moveTo(centerX, centerY);
+                    ctx2.moveTo(focusX, centerY);
                     for (let i = 15; i < orbit2.positions.length; i++) {
                         ctx2.lineTo(orbit2.positions[i].x, orbit2.positions[i].y);
                     }
@@ -736,6 +822,9 @@
             ctx2.beginPath();
             ctx2.arc(x, y, 12, 0, Math.PI * 2);
             ctx2.fill();
+            ctx2.strokeStyle = '#fff';
+            ctx2.lineWidth = 2;
+            ctx2.stroke();
             
             // Izlar
             ctx2.strokeStyle = '#ffffff60';
@@ -809,7 +898,7 @@
             
             const centerX = canvas3.width / 2;
             const centerY = canvas3.height / 2;
-            const scale = 100;
+            const scale = 18; // Kichikroq scale barcha sayyoralar uchun
             
             // Quyosh
             const gradient = ctx3.createRadialGradient(centerX, centerY, 0, centerX, centerY, 25);
@@ -831,27 +920,27 @@
                 ctx3.strokeStyle = planet.color + '40';
                 ctx3.lineWidth = 1;
                 ctx3.beginPath();
-                ctx3.ellipse(centerX + c, centerY, a, b, 0, 0, Math.PI * 2);
+                ctx3.ellipse(centerX - c, centerY, a, b, 0, 0, Math.PI * 2);
                 ctx3.stroke();
                 
                 // Sayyora pozitsiyasi
-                const x = centerX + c + a * Math.cos(planet.angle);
+                const x = centerX - c + a * Math.cos(planet.angle);
                 const y = centerY + b * Math.sin(planet.angle);
                 
                 // Sayyora
                 ctx3.fillStyle = planet.color;
                 ctx3.beginPath();
-                const size = 8 + planet.a * 3;
+                const size = Math.max(4, planet.size / 2);
                 ctx3.arc(x, y, size, 0, Math.PI * 2);
                 ctx3.fill();
                 ctx3.strokeStyle = '#fff';
-                ctx3.lineWidth = 2;
+                ctx3.lineWidth = 1;
                 ctx3.stroke();
                 
                 // Nomi
                 ctx3.fillStyle = '#fff';
-                ctx3.font = '12px Arial';
-                ctx3.fillText(planet.name, x + size + 5, y);
+                ctx3.font = '11px Arial';
+                ctx3.fillText(planet.name, x + size + 3, y);
                 
                 // Harakat
                 if (isRunning[2]) {
