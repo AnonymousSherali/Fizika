@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
+    <title>Onlayn Testlar - Fizika</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 { font-size: 2.2em; margin-bottom: 8px; }
+        .header p { opacity: 0.9; }
+
+        .back-link {
+            position: absolute; left: 20px; top: 20px;
+            color: white; text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px; border-radius: 20px;
+            font-size: 0.9em; transition: all 0.3s;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.35); }
+
+        .progress-wrap {
+            background: #e9ecef;
+            height: 10px;
+        }
+        .progress-bar {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s;
+        }
+
+        .content { padding: 35px; }
+
+        /* Start screen */
+        .start-screen { text-align: center; }
+        .start-screen .quiz-icon { font-size: 4em; margin-bottom: 15px; }
+        .start-screen h2 { color: #1e3c72; margin-bottom: 15px; }
+        .start-screen p { color: #555; line-height: 1.7; margin-bottom: 12px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .info-card {
+            background: #f5f7fa;
+            border-radius: 12px;
+            padding: 18px;
+            border-left: 4px solid #667eea;
+        }
+        .info-card .num { font-size: 1.8em; font-weight: bold; color: #667eea; }
+        .info-card .lbl { color: #666; font-size: 0.9em; margin-top: 5px; }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none;
+            border-radius: 25px;
+            font-size: 1.1em; font-weight: bold;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-outline {
+            background: white; color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        /* Question screen */
+        .q-meta { color: #888; font-size: 0.9em; margin-bottom: 8px; }
+        .q-tag {
+            display: inline-block;
+            background: #e7f1ff; color: #2a5298;
+            padding: 3px 12px; border-radius: 12px;
+            font-size: 0.8em; font-weight: bold; margin-bottom: 14px;
+        }
+        .q-text { font-size: 1.3em; color: #222; margin-bottom: 25px; line-height: 1.5; }
+
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option {
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.05em;
+            display: flex; align-items: center;
+        }
+        .option:hover { border-color: #667eea; background: #f0f3ff; }
+        .option .letter {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            background: #667eea; color: white;
+            border-radius: 50%; font-weight: bold;
+            margin-right: 14px; flex-shrink: 0;
+        }
+        .option.selected { border-color: #667eea; background: #e7f1ff; }
+        .option.correct { border-color: #28a745; background: #d4edda; }
+        .option.correct .letter { background: #28a745; }
+        .option.wrong { border-color: #dc3545; background: #f8d7da; }
+        .option.wrong .letter { background: #dc3545; }
+        .option.disabled { pointer-events: none; }
+
+        .nav-row {
+            display: flex; justify-content: space-between;
+            margin-top: 30px; gap: 12px;
+        }
+
+        /* Result screen */
+        .result-screen { text-align: center; }
+        .score-circle {
+            width: 180px; height: 180px;
+            margin: 20px auto;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .score-circle .pct { font-size: 3em; font-weight: bold; }
+        .score-circle .frac { opacity: 0.9; }
+        .grade { font-size: 1.6em; font-weight: bold; margin: 15px 0; }
+        .result-detail { color: #555; margin-bottom: 20px; line-height: 1.7; }
+
+        .review-list { text-align: left; margin: 25px 0; }
+        .review-item {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+        .review-item.ok { background: #d4edda; border-color: #28a745; }
+        .review-item.no { background: #f8d7da; border-color: #dc3545; }
+        .review-item .rq { font-weight: bold; margin-bottom: 6px; color: #222; }
+        .review-item .ra { font-size: 0.92em; color: #444; }
+
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .content { padding: 20px; }
+            .q-text { font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Bosh sahifa</a>
+            <h1>📝 Onlayn Testlar</h1>
+            <p>Rezerford tajribasi va Kepler qonunlari</p>
+        </div>
+
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+        <div class="content">
+            <!-- START -->
+            <div id="startScreen" class="start-screen">
+                <div class="quiz-icon">🎯</div>
+                <h2>Bilimingizni sinab ko'ring!</h2>
+                <p>Quyidagi test 4 bo'limdan iborat: Rezerford va Kepler mavzulari bo'yicha
+                   asosiy va chuqur tushunish savollari.</p>
+                <div class="info-grid">
+                    <div class="info-card"><div class="num" id="totalQ">40</div><div class="lbl">Savol</div></div>
+                    <div class="info-card"><div class="num">~15</div><div class="lbl">Daqiqa</div></div>
+                    <div class="info-card"><div class="num">60%</div><div class="lbl">O'tish balli</div></div>
+                </div>
+                <p style="font-size:0.9em; color:#888;">Har bir savolni belgilang va keyingisiga o'ting.
+                   Yakunda natijangiz va to'g'ri javoblar ko'rsatiladi.</p>
+                <br>
+                <button class="btn" onclick="startQuiz()">▶️ Testni Boshlash</button>
+            </div>
+
+            <!-- QUESTION -->
+            <div id="quizScreen" class="hidden">
+                <div class="q-meta" id="qCounter">Savol 1 / 40</div>
+                <span class="q-tag" id="qTag">Rezerford · Asosiy</span>
+                <div class="q-text" id="qText"></div>
+                <div class="options" id="options"></div>
+                <div class="nav-row">
+                    <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()">← Oldingi</button>
+                    <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Keyingi →</button>
+                </div>
+            </div>
+
+            <!-- RESULT -->
+            <div id="resultScreen" class="result-screen hidden">
+                <h2 style="color:#1e3c72;">Natija</h2>
+                <div class="score-circle" id="scoreCircle">
+                    <div class="pct" id="scorePct">0%</div>
+                    <div class="frac" id="scoreFrac">0/40</div>
+                </div>
+                <div class="grade" id="gradeText"></div>
+                <div class="result-detail" id="resultDetail"></div>
+                <div class="review-list" id="reviewList"></div>
+                <button class="btn" onclick="restartQuiz()">🔄 Qaytadan Yechish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
+        const questions = [
+            // ===== Rezerford - Asosiy =====
+            { tag: "Rezerford · Asosiy", q: "Rezerford tajribasi qaysi yilda o'tkazilgan?", o: ["1905","1909","1915","1920"], correct: 1 },
+            { tag: "Rezerford · Asosiy", q: "Tajribada qanday zarralar ishlatilgan?", o: ["Elektronlar","Protonlar","Alfa zarralar","Beta zarralar"], correct: 2 },
+            { tag: "Rezerford · Asosiy", q: "Nishon sifatida nimadan foydalanilgan?", o: ["Alyuminiy folga","Oltin folga","Kumush folga","Mis folga"], correct: 1 },
+            { tag: "Rezerford · Asosiy", q: "Alfa zarra qanday zaryadga ega?", o: ["Manfiy","Neytral","Musbat","O'zgaruvchan"], correct: 2 },
+            { tag: "Rezerford · Asosiy", q: "Alfa zarraning zaryadi nechaga teng?", o: ["+e","+2e","+3e","-2e"], correct: 1 },
+            { tag: "Rezerford · Asosiy", q: "Oltin atomi yadrosining zaryad soni (Z)?", o: ["47","79","82","92"], correct: 1 },
+            { tag: "Rezerford · Asosiy", q: "Tajribada alfa zarralarning taxminan qancha qismi orqaga qaytdi?", o: ["1/2","1/100","1/1000","1/8000"], correct: 3 },
+            { tag: "Rezerford · Asosiy", q: "Rezerford qanday xulosaga keldi?", o: ["Atom bo'sh","Atomda yadro bor","Elektronlar yadro ichida","Atom bo'linmaydi"], correct: 1 },
+            { tag: "Rezerford · Asosiy", q: "Alfa zarralar qanday energiyaga ega edi?", o: ["1-2 MeV","3-4 MeV","5-7 MeV","10-15 MeV"], correct: 2 },
+            { tag: "Rezerford · Asosiy", q: "Tajribada qanday detektor ishlatilgan?", o: ["Fotoplenka","Geiger hisoblagichi","Sink sulfid ekrani","Ionizatsion kamera"], correct: 2 },
+            // ===== Rezerford - Chuqur =====
+            { tag: "Rezerford · Chuqur", q: "Nima uchun ko'pchilik alfa zarralar to'g'ri o'tdi?", o: ["Yadro juda kichik va atom asosan bo'sh","Alfa zarralar juda tez harakat qiladi","Oltin folga juda yupqa","Elektronlar to'sqinlik qilmaydi"], correct: 0 },
+            { tag: "Rezerford · Chuqur", q: "Alfa zarrani orqaga qaytarish uchun nima kerak?", o: ["To'qnashish katta musbat zaryadli yadro bilan","Elektronlar bilan to'qnashish","Juda qalin folga","Yuqori harorat"], correct: 0 },
+            { tag: "Rezerford · Chuqur", q: "Kulonning qanday kuchi ta'sir qiladi?", o: ["Itaruvchanlik kuchi","Tortishish kuchi","Magnit kuchi","Yadro kuchi"], correct: 0 },
+            { tag: "Rezerford · Chuqur", q: "Sochilish burchagi nimaga bog'liq?", o: ["Faqat tezlikka","Faqat masofaga","Tezlik va yadrodan o'tish masofasiga","Faqat zaryadga"], correct: 2 },
+            { tag: "Rezerford · Chuqur", q: "Rezerford modeli qanday nomlanadi?", o: ["Planeta (sayyorasimon) modeli","Qaymoqli tort modeli","Kvant modeli","Bulutsimon model"], correct: 0 },
+            { tag: "Rezerford · Chuqur", q: "Minimal yaqinlashuv masofasi qanday topiladi?", o: ["E_k = E_p","F = ma","p = mv","E = mc²"], correct: 0 },
+            { tag: "Rezerford · Chuqur", q: "Nima uchun oltin tanlangan?", o: ["Arzon","Yumshoq, yupqa qatlam yasash oson","Radioaktiv","Magnit xossasi bor"], correct: 1 },
+            { tag: "Rezerford · Chuqur", q: "Atomning qaysi qismi eng og'ir?", o: ["Elektronlar","Yadro","Neytronlar alohida","Barcha teng"], correct: 1 },
+            { tag: "Rezerford · Chuqur", q: "Tajriba natijasi qanday atom modeliga olib keldi?", o: ["Tomson modeli","Rezerford modeli","Bor modeli","Kvant modeli"], correct: 1 },
+            { tag: "Rezerford · Chuqur", q: "Alfa zarralar qaysi elementdan chiqadi?", o: ["Uran","Radiy","Plutoniy","Toriy"], correct: 1 },
+            // ===== Kepler - Asosiy =====
+            { tag: "Kepler · Asosiy", q: "Kepler nechta qonun kashf etdi?", o: ["2","3","4","5"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Kepler qonunlari nimaga tegishli?", o: ["Atom tuzilishi","Sayyoralar harakati","Yorug'lik","Elektr toki"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Birinchi qonunga ko'ra, sayyoralar qanday orbitada harakat qiladi?", o: ["Aylana","Ellips","Parabola","Giperbola"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Quyosh ellipsning qayerida joylashgan?", o: ["Markazda","Fokuslaridan birida","Ellips tashqarisida","Yarim katta o'qda"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Ekssentrisitet (e) nimani bildiradi?", o: ["Orbitaning cho'zilganlik darajasi","Sayyora tezligi","Massa","Harorat"], correct: 0 },
+            { tag: "Kepler · Asosiy", q: "e = 0 bo'lsa, orbit qanday shaklda?", o: ["Ellips","Aylana","Parabola","To'g'ri chiziq"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Ikkinchi qonun nimani ta'kidlaydi?", o: ["Tezlik o'zgarmas","Yuza tezligi o'zgarmas","Tezlanish o'zgarmas","Kuch o'zgarmas"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Sayyora Quyoshga yaqinroq bo'lganda qanday harakat qiladi?", o: ["Sekinroq","Tezroq","O'zgarmas tezlikda","To'xtaydi"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Uchinchi qonun formulasi qanday?", o: ["T = a","T² = a³","T³ = a²","T = a²"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "1 AU (Astronomik Birlik) nimaga teng?", o: ["Oy-Yer masofasi","Quyosh-Yer masofasi","Yer diametri","Yorug'lik yili"], correct: 1 },
+            // ===== Kepler - Chuqur =====
+            { tag: "Kepler · Chuqur", q: "Nima uchun sayyoralar ellips bo'ylab harakat qiladi?", o: ["Gravitatsiya kuchi tufayli","Magnit kuchi tufayli","Elektr kuchi tufayli","Yadro kuchi tufayli"], correct: 0 },
+            { tag: "Kepler · Chuqur", q: "Perigeliy nima?", o: ["Quyoshdan eng uzoq nuqta","Quyoshga eng yaqin nuqta","Ellips markazi","Fokus"], correct: 1 },
+            { tag: "Kepler · Chuqur", q: "Afeliy nima?", o: ["Quyoshga eng yaqin nuqta","Quyoshdan eng uzoq nuqta","Ellips markazi","Fokus"], correct: 1 },
+            { tag: "Kepler · Chuqur", q: "Ikkinchi qonun qanday qonunga asoslangan?", o: ["Energiya saqlanish qonuni","Impuls momenti saqlanish qonuni","Massa saqlanish qonuni","Zaryad saqlanish qonuni"], correct: 1 },
+            { tag: "Kepler · Chuqur", q: "L = mvr nima deyiladi?", o: ["Energiya","Impuls","Impuls momenti","Kuch"], correct: 2 },
+            { tag: "Kepler · Chuqur", q: "Qaysi sayyora eng katta ekssentrisitetga ega?", o: ["Yer","Venera","Merkuriy","Mars"], correct: 2 },
+            { tag: "Kepler · Chuqur", q: "Qaysi sayyora orbitasi aylanaga eng yaqin?", o: ["Merkuriy","Venera","Yer","Mars"], correct: 1 },
+            { tag: "Kepler · Chuqur", q: "T²/a³ qiymati nechaga teng (Quyosh sistemasi, yil va AU)?", o: ["0","1","π","e"], correct: 1 },
+            { tag: "Kepler · Chuqur", q: "Yer perigeliyda qachon bo'ladi?", o: ["Mart","Iyun","Sentyabr","Yanvar"], correct: 3 },
+            { tag: "Kepler · Chuqur", q: "Uchinchi qonunni kim nazariy asoslab berdi?", o: ["Galiley","Kepler","Nyuton","Eynshteyn"], correct: 2 }
+        ];
+
+        let current = 0;
+        let answers = new Array(questions.length).fill(null);
+
+        document.getElementById('totalQ').textContent = questions.length;
+
+        function startQuiz() {
+            current = 0;
+            answers = new Array(questions.length).fill(null);
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[current];
+            document.getElementById('qCounter').textContent = `Savol ${current + 1} / ${questions.length}`;
+            document.getElementById('qTag').textContent = q.tag;
+            document.getElementById('qText').textContent = q.q;
+
+            const letters = ['A', 'B', 'C', 'D'];
+            const optsEl = document.getElementById('options');
+            optsEl.innerHTML = '';
+            q.o.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'option' + (answers[current] === i ? ' selected' : '');
+                div.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+                div.onclick = () => selectOption(i);
+                optsEl.appendChild(div);
+            });
+
+            // Progress
+            const answered = answers.filter(a => a !== null).length;
+            document.getElementById('progressBar').style.width = (answered / questions.length * 100) + '%';
+
+            // Tugmalar
+            document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+            document.getElementById('nextBtn').disabled = answers[current] === null;
+            document.getElementById('nextBtn').textContent = current === questions.length - 1 ? '✓ Yakunlash' : 'Keyingi →';
+        }
+
+        function selectOption(i) {
+            answers[current] = i;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if (answers[current] === null) return;
+            if (current === questions.length - 1) {
+                showResult();
+            } else {
+                current++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (current > 0) { current--; renderQuestion(); }
+        }
+
+        function showResult() {
+            let correct = 0;
+            questions.forEach((q, i) => { if (answers[i] === q.correct) correct++; });
+            const pct = Math.round(correct / questions.length * 100);
+
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            document.getElementById('progressBar').style.width = '100%';
+
+            document.getElementById('scorePct').textContent = pct + '%';
+            document.getElementById('scoreFrac').textContent = correct + '/' + questions.length;
+
+            // Baho
+            let grade, color, msg;
+            if (pct >= 90) { grade = '🏆 "5" (A\'lo)'; color = 'linear-gradient(135deg,#28a745,#20c997)'; msg = 'Ajoyib natija! Mavzuni mukammal o\'zlashtirgansiz.'; }
+            else if (pct >= 75) { grade = '⭐ "4" (Yaxshi)'; color = 'linear-gradient(135deg,#17a2b8,#4facfe)'; msg = 'Yaxshi natija! Ozgina mashq bilan a\'loga yetasiz.'; }
+            else if (pct >= 60) { grade = '✓ "3" (Qoniqarli)'; color = 'linear-gradient(135deg,#ffc107,#ff9800)'; msg = 'Qoniqarli. Xatolaringizni ko\'rib chiqing va takrorlang.'; }
+            else { grade = '✗ "2" (Qoniqarsiz)'; color = 'linear-gradient(135deg,#dc3545,#e83e8c)'; msg = 'Mavzuni qayta o\'rganib, modellar bilan mashq qiling.'; }
+
+            document.getElementById('scoreCircle').style.background = color;
+            document.getElementById('gradeText').textContent = grade;
+            document.getElementById('resultDetail').textContent = msg;
+
+            // Review (faqat xato qilinganlar)
+            const letters = ['A', 'B', 'C', 'D'];
+            const reviewEl = document.getElementById('reviewList');
+            reviewEl.innerHTML = '';
+            const wrong = questions.filter((q, i) => answers[i] !== q.correct);
+            if (wrong.length === 0) {
+                reviewEl.innerHTML = '<div class="review-item ok"><div class="rq">🎉 Barcha savollarga to\'g\'ri javob berdingiz!</div></div>';
+            } else {
+                const heading = document.createElement('p');
+                heading.style.cssText = 'font-weight:bold;color:#dc3545;margin-bottom:12px;';
+                heading.textContent = `Xato javoblar (${wrong.length} ta):`;
+                reviewEl.appendChild(heading);
+                questions.forEach((q, i) => {
+                    if (answers[i] === q.correct) return;
+                    const div = document.createElement('div');
+                    div.className = 'review-item no';
+                    const yourAns = answers[i] === null ? 'belgilanmagan' : `${letters[answers[i]]}) ${q.o[answers[i]]}`;
+                    div.innerHTML = `<div class="rq">${i + 1}. ${q.q}</div>
+                        <div class="ra">❌ Sizning javobingiz: ${yourAns}<br>
+                        ✅ To'g'ri javob: ${letters[q.correct]}) ${q.o[q.correct]}</div>`;
+                    reviewEl.appendChild(div);
+                });
+            }
+        }
+
+        function restartQuiz() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('progressBar').style.width = '0%';
+        }
+    </script>
+</body>
+</html>

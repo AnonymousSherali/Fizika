@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Matematik mayatnik interaktiv modeli - erkin tushish tezlanishini aniqlash. 10-11 sinflar fizika.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕰️%3C/text%3E%3C/svg%3E">
+    <title>Matematik Mayatnik - Interaktiv Model</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f3443 0%, #34e89e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+
+        .back-link {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.35); }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .canvas-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        canvas {
+            border: 3px solid #0f3443;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
+            display: block;
+            width: 100%;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #0f3443;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            color: #0f3443;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            margin: 10px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none; -webkit-appearance: none;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: #0f3443;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .value-display {
+            display: inline-block;
+            background: #0f3443;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .planet-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .planet-btn {
+            padding: 8px 4px;
+            border: 2px solid #0f3443;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 0.82em;
+        }
+        .planet-btn:hover { background: #0f3443; color: white; }
+        .planet-btn.active { background: #0f3443; color: white; }
+
+        button.action {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #0f3443 0%, #34e89e 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(15,52,67,0.4); }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .stats h3 {
+            color: #0f3443;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #0f3443;
+            padding-bottom: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .stat-label { font-weight: bold; color: #495057; }
+        .stat-value { color: #0f3443; font-weight: bold; }
+        .stat-value.highlight { color: #d35400; }
+
+        .info-panel {
+            grid-column: 1 / -1;
+            background: #e8f8f0;
+            border-left: 4px solid #34e89e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .info-panel h3 { color: #0f3443; margin-bottom: 10px; }
+        .info-panel p { color: #2c3e50; line-height: 1.7; }
+
+        .formula {
+            background: #0f3443;
+            color: #34e89e;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Bosh sahifa</a>
+            <h1>🕰️ Matematik Mayatnik</h1>
+            <p>Tebranish davri orqali erkin tushish tezlanishini aniqlash</p>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-section">
+                <canvas id="pendulumCanvas" width="800" height="600"></canvas>
+            </div>
+
+            <div class="controls">
+                <h2 style="color: #0f3443; margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+
+                <div class="control-group">
+                    <label>Ip uzunligi (L):
+                        <span class="value-display" id="lengthValue">1.00 m</span>
+                    </label>
+                    <input type="range" id="lengthSlider" min="0.2" max="3" step="0.05" value="1">
+                </div>
+
+                <div class="control-group">
+                    <label>Boshlang'ich burchak (θ₀):
+                        <span class="value-display" id="angleValue">20°</span>
+                    </label>
+                    <input type="range" id="angleSlider" min="5" max="80" step="1" value="20">
+                </div>
+
+                <div class="control-group">
+                    <label>Osmoniy jism (g tezlanishi):</label>
+                    <div class="planet-selector">
+                        <button class="planet-btn active" onclick="selectBody('earth', event)">Yer<br>9.81</button>
+                        <button class="planet-btn" onclick="selectBody('moon', event)">Oy<br>1.62</button>
+                        <button class="planet-btn" onclick="selectBody('mars', event)">Mars<br>3.71</button>
+                        <button class="planet-btn" onclick="selectBody('jupiter', event)">Yupiter<br>24.79</button>
+                        <button class="planet-btn" onclick="selectBody('venus', event)">Venera<br>8.87</button>
+                        <button class="planet-btn" onclick="selectBody('sun', event)">Quyosh<br>274</button>
+                    </div>
+                </div>
+
+                <button class="action btn-primary" onclick="startPendulum()">▶️ Boshlash</button>
+                <button class="action btn-secondary" onclick="pausePendulum()">⏸️ Pauza</button>
+                <button class="action btn-secondary" onclick="resetPendulum()">🔄 Qayta</button>
+
+                <div class="stats">
+                    <h3>📊 O'lchovlar</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Davr (T):</span>
+                        <span class="stat-value" id="periodValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Chastota (f):</span>
+                        <span class="stat-value" id="frequencyValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tebranishlar:</span>
+                        <span class="stat-value" id="oscValue">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">O'lchangan g:</span>
+                        <span class="stat-value highlight" id="measuredG">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>📚 Nazariy Ma'lumot</h3>
+                <p>
+                    <strong>Matematik mayatnik</strong> — cho'zilmaydigan vaznsiz ipga osilgan moddiy nuqta.
+                    Kichik tebranishlar uchun tebranish davri faqat ip uzunligi (L) va erkin tushish
+                    tezlanishiga (g) bog'liq:
+                </p>
+                <div class="formula">T = 2π √(L / g)</div>
+                <p>
+                    Bu formuladan <strong>g</strong> ni topish mumkin:
+                </p>
+                <div class="formula">g = 4π² L / T²</div>
+                <p style="margin-top: 10px;">
+                    💡 <strong>Tajriba:</strong> Ip uzunligini va davrni o'lchab, erkin tushish
+                    tezlanishini aniqlang. Diqqat: burchak katta bo'lsa (θ &gt; 15°), formula taxminiy
+                    bo'ladi — modelda haqiqiy fizika hisoblangani uchun katta burchakda o'lchangan
+                    g biroz farq qiladi.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('pendulumCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const bodies = {
+            earth:   { name: 'Yer',     g: 9.81 },
+            moon:    { name: 'Oy',      g: 1.62 },
+            mars:    { name: 'Mars',    g: 3.71 },
+            jupiter: { name: 'Yupiter', g: 24.79 },
+            venus:   { name: 'Venera',  g: 8.87 },
+            sun:     { name: 'Quyosh',  g: 274.0 }
+        };
+
+        let state = {
+            L: 1.0,            // ip uzunligi (m)
+            theta0: 20 * Math.PI / 180, // boshlang'ich burchak (rad)
+            theta: 20 * Math.PI / 180,  // joriy burchak
+            omega: 0,          // burchak tezligi
+            g: 9.81,
+            running: false,
+            time: 0,
+            oscillations: 0,
+            lastSign: 1,
+            measuredPeriods: []
+        };
+
+        let animationId = null;
+        let lastTimestamp = null;
+
+        // Sliderlar
+        document.getElementById('lengthSlider').oninput = function() {
+            state.L = parseFloat(this.value);
+            document.getElementById('lengthValue').textContent = state.L.toFixed(2) + ' m';
+            resetPendulum();
+        };
+
+        document.getElementById('angleSlider').oninput = function() {
+            const deg = parseInt(this.value);
+            state.theta0 = deg * Math.PI / 180;
+            document.getElementById('angleValue').textContent = deg + '°';
+            resetPendulum();
+        };
+
+        function selectBody(key, evt) {
+            document.querySelectorAll('.planet-btn').forEach(b => b.classList.remove('active'));
+            const t = (evt || window.event) ? (evt || window.event).target : null;
+            if (t) (t.closest ? t.closest('.planet-btn') : t).classList.add('active');
+            state.g = bodies[key].g;
+            resetPendulum();
+        }
+
+        function theoreticalPeriod() {
+            return 2 * Math.PI * Math.sqrt(state.L / state.g);
+        }
+
+        function updatePhysics(dt) {
+            // Haqiqiy mayatnik tenglamasi: θ'' = -(g/L) sin θ
+            // Yarim qadamli (semi-implicit Euler) integratsiya
+            const steps = 8;
+            const h = dt / steps;
+            for (let i = 0; i < steps; i++) {
+                const alpha = -(state.g / state.L) * Math.sin(state.theta);
+                state.omega += alpha * h;
+                const prevTheta = state.theta;
+                state.theta += state.omega * h;
+
+                // Markazdan o'tishni sanash (to'liq tebranish = 2 ta o'tish)
+                if (prevTheta < 0 && state.theta >= 0 || prevTheta > 0 && state.theta <= 0) {
+                    state.oscillations += 0.5;
+                }
+            }
+            state.time += dt;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Fon gradient (canvas allaqachon bor, lekin tozalaganimizda qayta chizamiz)
+            const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bg.addColorStop(0, '#e0f7fa');
+            bg.addColorStop(1, '#b2ebf2');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const pivotX = canvas.width / 2;
+            const pivotY = 80;
+
+            // Masshtab: L (m) -> piksel
+            const pxPerMeter = 150;
+            const lenPx = state.L * pxPerMeter;
+            const maxLen = canvas.height - pivotY - 60;
+            const drawLen = Math.min(lenPx, maxLen);
+
+            const bobX = pivotX + drawLen * Math.sin(state.theta);
+            const bobY = pivotY + drawLen * Math.cos(state.theta);
+
+            // Shift (tavan)
+            ctx.fillStyle = '#5d4037';
+            ctx.fillRect(pivotX - 60, pivotY - 12, 120, 12);
+            for (let i = -50; i <= 50; i += 14) {
+                ctx.strokeStyle = '#3e2723';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(pivotX + i, pivotY - 12);
+                ctx.lineTo(pivotX + i - 8, pivotY);
+                ctx.stroke();
+            }
+
+            // Muvozanat chizig'i (vertikal)
+            ctx.strokeStyle = '#90a4ae';
+            ctx.setLineDash([6, 6]);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(pivotX, pivotY);
+            ctx.lineTo(pivotX, pivotY + drawLen + 30);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Burchak yoyi
+            ctx.strokeStyle = '#d35400';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const arcR = 50;
+            const a0 = Math.PI / 2;
+            ctx.arc(pivotX, pivotY, arcR, a0, a0 + state.theta, state.theta < 0);
+            ctx.stroke();
+            ctx.fillStyle = '#d35400';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText((state.theta * 180 / Math.PI).toFixed(1) + '°', pivotX + 16, pivotY + 40);
+
+            // Ip
+            ctx.strokeStyle = '#37474f';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(pivotX, pivotY);
+            ctx.lineTo(bobX, bobY);
+            ctx.stroke();
+
+            // Sharcha (bob)
+            const grad = ctx.createRadialGradient(bobX - 6, bobY - 6, 2, bobX, bobY, 22);
+            grad.addColorStop(0, '#80d8ff');
+            grad.addColorStop(1, '#0277bd');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(bobX, bobY, 22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#01579b';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Pivot nuqta
+            ctx.fillStyle = '#263238';
+            ctx.beginPath();
+            ctx.arc(pivotX, pivotY, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ma'lumot matni
+            ctx.fillStyle = '#0f3443';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('L = ' + state.L.toFixed(2) + ' m', 20, 40);
+            ctx.fillText('g = ' + state.g.toFixed(2) + ' m/s²', 20, 66);
+        }
+
+        function loop(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            let dt = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+            // dt ni cheklash (tab almashganda sakrashning oldini olish)
+            if (dt > 0.05) dt = 0.05;
+
+            if (state.running) {
+                updatePhysics(dt);
+                updateStats();
+            }
+            draw();
+
+            if (state.running) {
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        function updateStats() {
+            const T = theoreticalPeriod();
+            document.getElementById('periodValue').textContent = T.toFixed(3) + ' s';
+            document.getElementById('frequencyValue').textContent = (1 / T).toFixed(3) + ' Hz';
+            document.getElementById('oscValue').textContent = Math.floor(state.oscillations);
+
+            // O'lchangan g ni real davrdan hisoblash:
+            // kamida 1 to'liq tebranishdan keyin
+            if (state.oscillations >= 1) {
+                const realPeriod = state.time / Math.floor(state.oscillations);
+                const gMeasured = 4 * Math.PI * Math.PI * state.L / (realPeriod * realPeriod);
+                document.getElementById('measuredG').textContent = gMeasured.toFixed(2) + ' m/s²';
+            }
+        }
+
+        function startPendulum() {
+            if (!state.running) {
+                state.running = true;
+                lastTimestamp = null;
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        function pausePendulum() {
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+
+        function resetPendulum() {
+            pausePendulum();
+            state.theta = state.theta0;
+            state.omega = 0;
+            state.time = 0;
+            state.oscillations = 0;
+            document.getElementById('periodValue').textContent = theoreticalPeriod().toFixed(3) + ' s';
+            document.getElementById('frequencyValue').textContent = (1 / theoreticalPeriod()).toFixed(3) + ' Hz';
+            document.getElementById('oscValue').textContent = '0';
+            document.getElementById('measuredG').textContent = '-';
+            draw();
+        }
+
+        // Boshlang'ich holat
+        resetPendulum();
+    </script>
+</body>
+</html>
