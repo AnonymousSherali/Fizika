@@ -6,159 +6,113 @@
     <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            --primary: #2a5298;
+            --primary-dark: #1e3c72;
+            --accent: #667eea;
+            --accent-2: #764ba2;
+            --page-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --header-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --container-max: 800px;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
+        .header h1 { font-size: 2.2em; }
 
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-        }
-
-        .header h1 { font-size: 2.2em; margin-bottom: 8px; }
-        .header p { opacity: 0.9; }
-
-        .back-link {
-            position: absolute; left: 20px; top: 20px;
-            color: white; text-decoration: none;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px; border-radius: 20px;
-            font-size: 0.9em; transition: all 0.3s;
-        }
-        .back-link:hover { background: rgba(255,255,255,0.35); }
-
-        .progress-wrap {
-            background: #e9ecef;
-            height: 10px;
-        }
+        .progress-wrap { background: var(--border); height: 10px; }
         .progress-bar {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            height: 100%;
-            width: 0%;
-            transition: width 0.4s;
+            height: 100%; width: 0%; transition: width 0.4s;
         }
 
-        .content { padding: 35px; }
+        .content { padding: 35px; color: var(--text); }
 
         /* Start screen */
         .start-screen { text-align: center; }
         .start-screen .quiz-icon { font-size: 4em; margin-bottom: 15px; }
-        .start-screen h2 { color: #1e3c72; margin-bottom: 15px; }
-        .start-screen p { color: #555; line-height: 1.7; margin-bottom: 12px; }
+        .start-screen h2 { color: var(--primary); margin-bottom: 15px; }
+        .start-screen p { color: var(--text-muted); line-height: 1.7; margin-bottom: 12px; }
 
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin: 25px 0;
+            gap: 15px; margin: 25px 0;
         }
         .info-card {
-            background: #f5f7fa;
-            border-radius: 12px;
-            padding: 18px;
-            border-left: 4px solid #667eea;
+            background: var(--panel-bg);
+            border-radius: 12px; padding: 18px;
+            border-left: 4px solid var(--accent);
         }
-        .info-card .num { font-size: 1.8em; font-weight: bold; color: #667eea; }
-        .info-card .lbl { color: #666; font-size: 0.9em; margin-top: 5px; }
+        .info-card .num { font-size: 1.8em; font-weight: bold; color: var(--accent); }
+        .info-card .lbl { color: var(--text-muted); font-size: 0.9em; margin-top: 5px; }
 
         .btn {
             display: inline-block;
             padding: 14px 40px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none;
-            border-radius: 25px;
-            font-size: 1.1em; font-weight: bold;
-            cursor: pointer; transition: all 0.3s;
+            color: white; border: none; border-radius: 25px;
+            font-size: 1.1em; font-weight: bold; cursor: pointer; transition: all 0.3s;
         }
         .btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-        .btn-outline {
-            background: white; color: #667eea;
-            border: 2px solid #667eea;
-        }
+        .btn-outline { background: var(--container-bg); color: var(--accent); border: 2px solid var(--accent); }
 
         /* Question screen */
-        .q-meta { color: #888; font-size: 0.9em; margin-bottom: 8px; }
+        .q-meta { color: var(--text-muted); font-size: 0.9em; margin-bottom: 8px; }
         .q-tag {
             display: inline-block;
             background: #e7f1ff; color: #2a5298;
             padding: 3px 12px; border-radius: 12px;
             font-size: 0.8em; font-weight: bold; margin-bottom: 14px;
         }
-        .q-text { font-size: 1.3em; color: #222; margin-bottom: 25px; line-height: 1.5; }
+        body.dark .q-tag { background: #243049; color: #8ab4ff; }
+        .q-text { font-size: 1.3em; color: var(--text); margin-bottom: 25px; line-height: 1.5; }
 
         .options { display: flex; flex-direction: column; gap: 12px; }
         .option {
             padding: 16px 20px;
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1.05em;
-            display: flex; align-items: center;
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px; cursor: pointer; transition: all 0.2s;
+            font-size: 1.05em; display: flex; align-items: center;
+            color: var(--text);
         }
-        .option:hover { border-color: #667eea; background: #f0f3ff; }
+        .option:hover { border-color: var(--accent); }
         .option .letter {
             display: inline-flex; align-items: center; justify-content: center;
             width: 32px; height: 32px;
-            background: #667eea; color: white;
+            background: var(--accent); color: white;
             border-radius: 50%; font-weight: bold;
             margin-right: 14px; flex-shrink: 0;
         }
-        .option.selected { border-color: #667eea; background: #e7f1ff; }
-        .option.correct { border-color: #28a745; background: #d4edda; }
+        .option.selected { border-color: var(--accent); background: #e7f1ff; color: #1e3c72; }
+        body.dark .option.selected { background: #243049; color: #e0e0e0; }
+        .option.correct { border-color: #28a745; background: #d4edda; color: #155724; }
         .option.correct .letter { background: #28a745; }
-        .option.wrong { border-color: #dc3545; background: #f8d7da; }
+        .option.wrong { border-color: #dc3545; background: #f8d7da; color: #721c24; }
         .option.wrong .letter { background: #dc3545; }
         .option.disabled { pointer-events: none; }
 
-        .nav-row {
-            display: flex; justify-content: space-between;
-            margin-top: 30px; gap: 12px;
-        }
+        .nav-row { display: flex; justify-content: space-between; margin-top: 30px; gap: 12px; }
 
         /* Result screen */
         .result-screen { text-align: center; }
+        .result-screen h2 { color: var(--primary); }
         .score-circle {
-            width: 180px; height: 180px;
-            margin: 20px auto;
+            width: 180px; height: 180px; margin: 20px auto;
             border-radius: 50%;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .score-circle .pct { font-size: 3em; font-weight: bold; }
         .score-circle .frac { opacity: 0.9; }
-        .grade { font-size: 1.6em; font-weight: bold; margin: 15px 0; }
-        .result-detail { color: #555; margin-bottom: 20px; line-height: 1.7; }
+        .grade { font-size: 1.6em; font-weight: bold; margin: 15px 0; color: var(--text); }
+        .result-detail { color: var(--text-muted); margin-bottom: 20px; line-height: 1.7; }
 
         .review-list { text-align: left; margin: 25px 0; }
-        .review-item {
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid;
-        }
+        .review-item { padding: 14px 18px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid; }
         .review-item.ok { background: #d4edda; border-color: #28a745; }
         .review-item.no { background: #f8d7da; border-color: #dc3545; }
         .review-item .rq { font-weight: bold; margin-bottom: 6px; color: #222; }
@@ -194,7 +148,7 @@
                     <div class="info-card"><div class="num">~15</div><div class="lbl">Daqiqa</div></div>
                     <div class="info-card"><div class="num">60%</div><div class="lbl">O'tish balli</div></div>
                 </div>
-                <p style="font-size:0.9em; color:#888;">Har bir savolni belgilang va keyingisiga o'ting.
+                <p style="font-size:0.9em; color:var(--text-muted);">Har bir savolni belgilang va keyingisiga o'ting.
                    Yakunda natijangiz va to'g'ri javoblar ko'rsatiladi.</p>
                 <br>
                 <button class="btn" onclick="startQuiz()">▶️ Testni Boshlash</button>
@@ -214,7 +168,7 @@
 
             <!-- RESULT -->
             <div id="resultScreen" class="result-screen hidden">
-                <h2 style="color:#1e3c72;">Natija</h2>
+                <h2>Natija</h2>
                 <div class="score-circle" id="scoreCircle">
                     <div class="pct" id="scorePct">0%</div>
                     <div class="frac" id="scoreFrac">0/40</div>
@@ -227,6 +181,7 @@
         </div>
     </div>
 
+    <script src="theme.js"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -307,11 +262,9 @@
                 optsEl.appendChild(div);
             });
 
-            // Progress
             const answered = answers.filter(a => a !== null).length;
             document.getElementById('progressBar').style.width = (answered / questions.length * 100) + '%';
 
-            // Tugmalar
             document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
             document.getElementById('nextBtn').disabled = answers[current] === null;
             document.getElementById('nextBtn').textContent = current === questions.length - 1 ? '✓ Yakunlash' : 'Keyingi →';
@@ -348,7 +301,6 @@
             document.getElementById('scorePct').textContent = pct + '%';
             document.getElementById('scoreFrac').textContent = correct + '/' + questions.length;
 
-            // Baho
             let grade, color, msg;
             if (pct >= 90) { grade = '🏆 "5" (A\'lo)'; color = 'linear-gradient(135deg,#28a745,#20c997)'; msg = 'Ajoyib natija! Mavzuni mukammal o\'zlashtirgansiz.'; }
             else if (pct >= 75) { grade = '⭐ "4" (Yaxshi)'; color = 'linear-gradient(135deg,#17a2b8,#4facfe)'; msg = 'Yaxshi natija! Ozgina mashq bilan a\'loga yetasiz.'; }
@@ -359,7 +311,6 @@
             document.getElementById('gradeText').textContent = grade;
             document.getElementById('resultDetail').textContent = msg;
 
-            // Review (faqat xato qilinganlar)
             const letters = ['A', 'B', 'C', 'D'];
             const reviewEl = document.getElementById('reviewList');
             reviewEl.innerHTML = '';
