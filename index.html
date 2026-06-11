@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="10-11 sinflar uchun interaktiv fizika modellari: Rezerford tajribasi, Kepler qonunlari, matematik mayatnik. Onlayn testlar va dars ishlanmalari.">
+    <meta name="keywords" content="fizika, Rezerford, Kepler, mayatnik, interaktiv model, 10-sinf, 11-sinf, test, dars ishlanma">
+    <meta property="og:title" content="Fizik Modellar - Interaktiv O'quv Platformasi">
+    <meta property="og:description" content="Rezerford, Kepler va matematik mayatnik interaktiv modellari, onlayn testlar va dars ishlanmalari.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔬%3C/text%3E%3C/svg%3E">
     <title>Fizika Modellari - Asosiy Sahifa</title>
     <style>
         * {
@@ -214,11 +220,68 @@
             .header h1 {
                 font-size: 2em;
             }
-            
+
             .cards {
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ===== Scroll-reveal animatsiya ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== Boshqaruv tugmalari (theme + scroll-top) ===== */
+        .floating-btn {
+            position: fixed;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .floating-btn:hover { transform: scale(1.1); }
+
+        #themeToggle { bottom: 25px; right: 25px; }
+        #scrollTop {
+            bottom: 90px;
+            right: 25px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #scrollTop.show { opacity: 1; pointer-events: auto; }
+
+        /* ===== DARK MODE ===== */
+        body.dark { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
+        body.dark .container { background: #1a1f2e; }
+        body.dark .content { color: #e0e0e0; }
+        body.dark .section h2 { color: #8ab4ff; border-bottom-color: #4a5f8f; }
+        body.dark .card { background: linear-gradient(135deg, #232838 0%, #2c3447 100%); }
+        body.dark .card h3 { color: #8ab4ff; }
+        body.dark .card p { color: #b8c0d0; }
+        body.dark .feature { background: #232838; }
+        body.dark .feature h4 { color: #8ab4ff; }
+        body.dark .feature p { color: #b8c0d0; }
+        body.dark .stat { background: #232838; }
+        body.dark .stat-label { color: #b8c0d0; }
+        body.dark .info-box { background: #2d2a1a; border-left-color: #ffc107; }
+        body.dark .info-box h3, body.dark .info-box p { color: #ffe08a; }
+        body.dark .footer { background: #14161f; color: #b8c0d0; }
     </style>
 </head>
 <body>
@@ -248,6 +311,13 @@
                         <p>Sayyoralar harakati qonunlari: Ellips, Yuzalar va Davr qonunlarini o'rganing.</p>
                         <a href="kepler_model.html" class="btn">Modelni Ochish</a>
                     </div>
+
+                    <div class="card">
+                        <div class="card-icon">🕰️</div>
+                        <h3>Matematik Mayatnik</h3>
+                        <p>Tebranish davri orqali erkin tushish tezlanishini (g) aniqlang. Turli sayyoralarda sinab ko'ring.</p>
+                        <a href="mayatnik_model.html" class="btn">Modelni Ochish</a>
+                    </div>
                 </div>
             </div>
             
@@ -276,20 +346,20 @@
                         <a href="metodika_qollanma.pdf" class="btn btn-secondary" download>Yuklab Olish</a>
                     </div>
                     <div class="card">
-                        <div class="card-icon">📚</div>
-                        <h3>Metodika Qo'llanma</h3>
+                        <div class="card-icon">⚡</div>
+                        <h3>Energiya - Dars Rejasi</h3>
                         <p>Energiyaning bir turdan boshqasiga aylanishi</p>
                         <a href="dars-ishlanma-energiya.pdf" class="btn btn-secondary" download>Yuklab Olish</a>
                     </div>
                     <div class="card">
-                        <div class="card-icon">📚</div>
-                        <h3>Metodika Qo'llanma</h3>
+                        <div class="card-icon">🕰️</div>
+                        <h3>Matematik Mayatnik - Dars Rejasi</h3>
                         <p>Matematik mayatnik yordamida erkin tushish tezlanishini aniqlash</p>
                         <a href="dars-ishlanma-matematik-mayatnik.pdf" class="btn btn-secondary" download>Yuklab Olish</a>
                     </div>
                     <div class="card">
-                        <div class="card-icon">📚</div>
-                        <h3>Metodika Qo'llanma</h3>
+                        <div class="card-icon">📐</div>
+                        <h3>Qiya Tekislik - Dars Rejasi</h3>
                         <p>Qiya tekislikning foydali ish koeffitsiyentini aniqlash</p>
                         <a href="dars-ishlanma-qiya-tekislik.pdf" class="btn btn-secondary" download>Yuklab Olish</a>
                     </div>
@@ -301,8 +371,14 @@
                 <h2>📝 Test va Baholash</h2>
                 <div class="cards">
                     <div class="card">
+                        <div class="card-icon">🎯</div>
+                        <h3>Onlayn Interaktiv Test</h3>
+                        <p>40 ta savol bevosita saytda. Avtomatik baholash, natija va xatolar tahlili bilan.</p>
+                        <a href="testlar_online.html" class="btn">Testni Boshlash</a>
+                    </div>
+                    <div class="card">
                         <div class="card-icon">✅</div>
-                        <h3>Testlar To'plami</h3>
+                        <h3>Testlar To'plami (PDF)</h3>
                         <p>100+ savol: asosiy bilimlar, chuqur tushunish va hisoblash masalalari.</p>
                         <a href="testlar.pdf" class="btn btn-success" download>Yuklab Olish</a>
                     </div>
@@ -358,7 +434,7 @@
                 <h2>📊 Loyiha Statistikasi</h2>
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-number">2</div>
+                        <div class="stat-number">3</div>
                         <div class="stat-label">Interaktiv Model</div>
                     </div>
                     <div class="stat">
@@ -366,7 +442,7 @@
                         <div class="stat-label">Test Savollari</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-number">3</div>
+                        <div class="stat-number">6</div>
                         <div class="stat-label">Dars Ishlanma</div>
                     </div>
                     <div class="stat">
@@ -398,7 +474,7 @@
                     </div>
                     <div class="feature">
                         <h4>🔄 Yangilanishlar</h4>
-                        <p>Versiya 1.0 (2024-yil)</p>
+                        <p>Versiya 1.1 (2026-yil)</p>
                     </div>
                     <div class="feature">
                         <h4>📜 Litsenziya</h4>
@@ -416,15 +492,57 @@
             <p><strong>Fizik Jarayonlarni Modellashtirishning Dasturiy Ta'minoti</strong></p>
             <p>10-11 sinflar uchun - Rezerford va Kepler Qonunlari</p>
             <p style="margin-top: 15px; font-size: 0.9em;">
-                © 2024 | Barcha huquqlar himoyalangan | Ta'lim maqsadida bepul foydalanish
+                © 2026 | Barcha huquqlar himoyalangan | Ta'lim maqsadida bepul foydalanish
             </p>
             <p style="margin-top: 10px; font-size: 0.85em; font-style: italic;">
                 "Bilim - yorug'lik, bilim olish - eng ulug' maqsad" 🌟
             </p>
         </div>
     </div>
-    
+
+    <button id="themeToggle" class="floating-btn" onclick="toggleTheme()" title="Rejimni almashtirish" aria-label="Rejimni almashtirish">🌙</button>
+    <button id="scrollTop" class="floating-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Tepaga" aria-label="Tepaga qaytish">↑</button>
+
     <script>
+        // ===== Dark mode =====
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            document.body.classList.toggle('dark', isDark);
+            document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
+        }
+        function toggleTheme() {
+            const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+            try { localStorage.setItem('fizika-theme', next); } catch (e) {}
+            applyTheme(next);
+        }
+        (function() {
+            let saved = 'light';
+            try { saved = localStorage.getItem('fizika-theme') || 'light'; } catch (e) {}
+            applyTheme(saved);
+        })();
+
+        // ===== Scroll-to-top tugmasi =====
+        window.addEventListener('scroll', function() {
+            document.getElementById('scrollTop').classList.toggle('show', window.scrollY > 300);
+        });
+
+        // ===== Scroll-reveal animatsiya =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const reveals = document.querySelectorAll('.section, .info-box');
+            const revObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        revObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            reveals.forEach(el => {
+                el.classList.add('reveal');
+                revObserver.observe(el);
+            });
+        });
+
         // Statistika animatsiyasi
         document.addEventListener('DOMContentLoaded', function() {
             const stats = document.querySelectorAll('.stat-number');

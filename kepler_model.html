@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kepler qonunlari interaktiv modeli - sayyoralar harakati: ellips, yuzalar va davr qonunlari. 10-11 sinflar fizika.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪐%3C/text%3E%3C/svg%3E">
     <title>Kepler Qonunlari - Interaktiv Model</title>
     <style>
         * {
@@ -291,7 +293,8 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <div class="header" style="position: relative;">
+            <a href="index.html" style="position:absolute;left:20px;top:20px;color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:8px 16px;border-radius:20px;font-size:0.9em;">← Bosh sahifa</a>
             <h1>🪐 Kepler Qonunlari</h1>
             <p>Sayyoralar harakati qonunlari - Interaktiv Model</p>
         </div>
@@ -312,14 +315,14 @@
                 <h2 style="color: #1a2a6c; margin-bottom: 20px;">⚙️ Sozlamalar</h2>
                 
                 <div class="planet-selector">
-                    <button class="planet-btn active" onclick="selectPlanet('mercury')">Merkuriy</button>
-                    <button class="planet-btn" onclick="selectPlanet('venus')">Venera</button>
-                    <button class="planet-btn" onclick="selectPlanet('earth')">Yer</button>
-                    <button class="planet-btn" onclick="selectPlanet('mars')">Mars</button>
-                    <button class="planet-btn" onclick="selectPlanet('jupiter')">Yupiter</button>
-                    <button class="planet-btn" onclick="selectPlanet('saturn')">Saturn</button>
-                    <button class="planet-btn" onclick="selectPlanet('uranus')">Uran</button>
-                    <button class="planet-btn" onclick="selectPlanet('neptune')">Neptun</button>
+                    <button class="planet-btn active" onclick="selectPlanet('mercury', event)">Merkuriy</button>
+                    <button class="planet-btn" onclick="selectPlanet('venus', event)">Venera</button>
+                    <button class="planet-btn" onclick="selectPlanet('earth', event)">Yer</button>
+                    <button class="planet-btn" onclick="selectPlanet('mars', event)">Mars</button>
+                    <button class="planet-btn" onclick="selectPlanet('jupiter', event)">Yupiter</button>
+                    <button class="planet-btn" onclick="selectPlanet('saturn', event)">Saturn</button>
+                    <button class="planet-btn" onclick="selectPlanet('uranus', event)">Uran</button>
+                    <button class="planet-btn" onclick="selectPlanet('neptune', event)">Neptun</button>
                 </div>
                 
                 <div class="control-group">
@@ -542,18 +545,24 @@
         }
         
         // Sayyora tanlash
-        function selectPlanet(planet) {
+        function selectPlanet(planet, evt) {
             currentPlanet = planet;
             const data = planetsData[planet];
-            
+
             document.querySelectorAll('.planet-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
+            const target = (evt || window.event) ? (evt || window.event).target : null;
+            if (target) target.classList.add('active');
+
+            // Orbita parametrlarini ham yangilaymiz (slider qiymatini o'rnatish
+            // oninput hodisasini ishga tushirmaydi)
+            orbit1.a = data.a;
+            orbit1.e = data.e;
+
             document.getElementById('semiMajorSlider').value = data.a;
             document.getElementById('semiMajorValue').textContent = data.a.toFixed(2);
             document.getElementById('eccentricitySlider').value = data.e;
             document.getElementById('eccentricityValue').textContent = data.e.toFixed(3);
-            
+
             resetAnimation1();
         }
         
@@ -565,7 +574,7 @@
         
         document.getElementById('semiMajorSlider').oninput = function() {
             orbit1.a = parseFloat(this.value);
-            document.getElementById('semiMajorValue').textContent = this.value;
+            document.getElementById('semiMajorValue').textContent = parseFloat(this.value).toFixed(2);
         };
         
         document.getElementById('eccentricitySlider').oninput = function() {
