@@ -52,7 +52,6 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │   └── *.md                       #   Manba fayllar
 │
 ├── README.md                      # Bu fayl
-├── server.py                      # Lokal server (ixtiyoriy)
 ├── railway.json / nixpacks.toml   # Deploy sozlamalari
 ```
 
