@@ -154,7 +154,7 @@
         let animationId;
         let isRunning = false;
         let particles = [];
-        let nucleus = { x: canvas.width / 2, y: canvas.height / 2, radius: 20 };
+        let nucleus = { x: 200 + 50 * 4.5, y: canvas.height / 2, radius: 20 };
 
         let stats = {
             total: 0,
@@ -177,6 +177,9 @@
         document.getElementById('distanceSlider').oninput = function() {
             settings.distance = parseInt(this.value);
             document.getElementById('distanceValue').textContent = this.value;
+            // Masofa yadro pozitsiyasini belgilaydi: uzoq masofa = yadro o'ngroqda
+            nucleus.x = 200 + settings.distance * 4.5;
+            resetExperiment();
         };
 
         document.getElementById('countSlider').oninput = function() {
@@ -188,7 +191,8 @@
             constructor(y) {
                 this.x = 50;
                 this.y = y;
-                this.vx = 5;
+                // Tezlik slayderiga bog'liq: tez zarra kam og'adi (yadro yonida qisqa vaqt)
+                this.vx = (settings.speed / 1e7) * 3.33;
                 this.vy = 0;
                 this.charge = 2;
                 this.mass = 6.64e-27;
