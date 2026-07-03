@@ -23,13 +23,25 @@ O'quvchilarga fizik jarayonlarni visualizatsiya qilish va interaktiv tarzda o'rg
 ## 📁 LOYIHA TUZILMASI
 
 ```
-fizika_modellar/
+Fizika/
 │
-├── rezerford_model.html          # Rezerford tajribasi modeli
+├── index.html                     # Bosh sahifa
+├── rezerford_model.html           # Rezerford tajribasi modeli
 ├── kepler_model.html              # Kepler qonunlari modeli
-├── rezerford_dars_ishlanma.md    # Rezerford darsi
-├── kepler_dars_ishlanma.md       # Kepler darsi
-├── testlar.md                     # Testlar to'plami
+├── mayatnik_model.html            # Matematik mayatnik modeli
+├── qiya_tekislik_model.html       # Qiya tekislik (FIK) modeli
+├── testlar_online.html            # Onlayn interaktiv test
+├── dars_ishlanmalar.html          # Dars ishlanmalar sahifasi
+├── styles.css                     # Umumiy stillar (dark mode bilan)
+├── theme.js                       # Umumiy UI (rejim, animatsiyalar)
+│
+├── dars_ishlanmalar/              # Dars ishlanmalar (PDF + DOCX)
+│   ├── 10-sinf/                   # 7 ta dars ishlanma
+│   └── 11-sinf/                   # 5 ta dars ishlanma
+│
+├── rezerford_dars_ishlanma.md     # Rezerford darsi (manba)
+├── kepler_dars_ishlanma.md        # Kepler darsi (manba)
+├── testlar.md                     # Testlar to'plami (manba)
 └── README.md                      # Bu fayl
 ```
 
