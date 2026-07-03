@@ -109,7 +109,7 @@
                 <div class="stats">
                     <h3>📊 O'lchovlar</h3>
                     <div class="stat-item">
-                        <span class="stat-label">Davr (T):</span>
+                        <span class="stat-label">Davr (nazariy):</span>
                         <span class="stat-value" id="periodValue">-</span>
                     </div>
                     <div class="stat-item">
@@ -171,7 +171,8 @@
             g: 9.81,
             running: false,
             time: 0,
-            oscillations: 0
+            oscillations: 0,
+            crossTimes: []
         };
 
         let animationId = null;
@@ -206,13 +207,16 @@
             // Haqiqiy mayatnik tenglamasi: θ'' = -(g/L) sin θ
             const steps = 8;
             const h = dt / steps;
+            let t = state.time;
             for (let i = 0; i < steps; i++) {
                 const alpha = -(state.g / state.L) * Math.sin(state.theta);
                 state.omega += alpha * h;
                 const prevTheta = state.theta;
                 state.theta += state.omega * h;
+                t += h;
                 if ((prevTheta < 0 && state.theta >= 0) || (prevTheta > 0 && state.theta <= 0)) {
                     state.oscillations += 0.5;
+                    state.crossTimes.push(t);
                 }
             }
             state.time += dt;
@@ -329,9 +333,11 @@
             document.getElementById('frequencyValue').textContent = (1 / T).toFixed(3) + ' Hz';
             document.getElementById('oscValue').textContent = Math.floor(state.oscillations);
 
-            if (state.oscillations >= 1) {
-                const realPeriod = state.time / Math.floor(state.oscillations);
-                const gMeasured = 4 * Math.PI * Math.PI * state.L / (realPeriod * realPeriod);
+            // Davr ikki qo'shni kesishish orasi = T/2 ekanligidan o'lchanadi
+            const ct = state.crossTimes;
+            if (ct.length >= 2) {
+                const measuredT = 2 * (ct[ct.length - 1] - ct[0]) / (ct.length - 1);
+                const gMeasured = 4 * Math.PI * Math.PI * state.L / (measuredT * measuredT);
                 document.getElementById('measuredG').textContent = gMeasured.toFixed(2) + ' m/s²';
             }
         }
@@ -355,6 +361,7 @@
             state.omega = 0;
             state.time = 0;
             state.oscillations = 0;
+            state.crossTimes = [];
             document.getElementById('periodValue').textContent = theoreticalPeriod().toFixed(3) + ' s';
             document.getElementById('frequencyValue').textContent = (1 / theoreticalPeriod()).toFixed(3) + ' Hz';
             document.getElementById('oscValue').textContent = '0';

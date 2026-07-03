@@ -517,7 +517,8 @@
 
             // Harakat
             if (isRunning[0]) {
-                orbit1.angle += 0.02 * orbit1.speed;
+                // Kepler 2-qonuniga mos: perigeliyda tez, afeliyda sekin
+                orbit1.angle += 0.02 * orbit1.speed / (1 + orbit1.e * Math.cos(orbit1.angle));
                 animations[0] = requestAnimationFrame(drawOrbit1);
             }
         }
@@ -677,8 +678,9 @@
 
             // Harakat
             if (isRunning[1]) {
-                const r = a * (1 - orbit2.e * orbit2.e) / (1 + orbit2.e * Math.cos(orbit2.angle));
-                const angularSpeed = 0.01 * orbit2.speed * (a / r);
+                // Teng vaqtda teng yuza: dA/kadr = (b/2)(a + c*cos th)*dth = const
+                // bo'lishi uchun dth = k / (1 + e*cos th)
+                const angularSpeed = 0.012 * orbit2.speed / (1 + orbit2.e * Math.cos(orbit2.angle));
                 orbit2.angle += angularSpeed;
 
                 animations[1] = requestAnimationFrame(drawOrbit2);
