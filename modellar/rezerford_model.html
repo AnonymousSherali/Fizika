@@ -309,11 +309,28 @@
             ctx.fillText('+79', nucleus.x, nucleus.y + 5);
         }
 
+        function drawSource() {
+            // Alfa zarra manbasi (radiy) - chap tomonda
+            ctx.fillStyle = '#37474f';
+            ctx.fillRect(16, 40, 20, canvas.height - 80);
+            ctx.fillStyle = '#607d8b';
+            ctx.fillRect(36, 40, 6, canvas.height - 80);
+            ctx.save();
+            ctx.translate(28, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#ffd54f';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('ALFA MANBA (Ra)', 0, 4);
+            ctx.restore();
+        }
+
         function animate() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             drawNucleus();
+            drawSource();
 
             particles.forEach(particle => {
                 particle.update();
@@ -364,6 +381,7 @@
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             drawNucleus();
+            drawSource();
         }
 
         // Boshlang'ich holat

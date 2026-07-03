@@ -264,6 +264,15 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
+            // Tebranish yo'li yoyi (amplituda chegaralari)
+            ctx.strokeStyle = 'rgba(2,119,189,0.35)';
+            ctx.setLineDash([4, 6]);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(pivotX, pivotY, drawLen, Math.PI / 2 - state.theta0, Math.PI / 2 + state.theta0);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
             // Burchak yoyi
             ctx.strokeStyle = '#d35400';
             ctx.lineWidth = 2;

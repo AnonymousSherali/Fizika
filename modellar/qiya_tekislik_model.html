@@ -266,6 +266,18 @@
             ctx.lineWidth = 3;
             ctx.stroke();
 
+            // Yuza shtrixlari - ishqalanish mavjudligini bildiradi
+            ctx.strokeStyle = '#6d4c41';
+            ctx.lineWidth = 1.5;
+            for (let t = 0.06; t < 0.98; t += 0.06) {
+                const hx = baseX + t * D * Math.cos(state.angle);
+                const hy = baseY - t * D * Math.sin(state.angle);
+                ctx.beginPath();
+                ctx.moveTo(hx, hy);
+                ctx.lineTo(hx + 9 * Math.sin(state.angle), hy + 9 * Math.cos(state.angle));
+                ctx.stroke();
+            }
+
             // Burchak yoyi va belgisi
             ctx.strokeStyle = '#c0392b';
             ctx.lineWidth = 2;
