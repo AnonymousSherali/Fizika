@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fizika dars ishlanmalari - 10 va 11-sinflar uchun tayyor dars rejalari, PDF va DOCX formatlarida.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
+    <title>Dars Ishlanmalar - Fizika</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .container { max-width: 1200px; }
+        .content { padding: 40px; color: var(--text); }
+
+        .grade-nav {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 18px 0 0;
+        }
+        .grade-nav a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 28px;
+            border-radius: 22px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .grade-nav a:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
+
+        .section { margin-bottom: 45px; }
+        .section h2 {
+            color: var(--primary-dark);
+            font-size: 1.9em;
+            margin-bottom: 8px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--accent);
+        }
+        .section .count { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95em; }
+        body.dark .section h2 { color: #8ab4ff; border-bottom-color: #4a5f8f; }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 22px;
+            margin-top: 22px;
+        }
+        .card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 26px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-color: var(--accent);
+        }
+        body.dark .card { background: linear-gradient(135deg, #232838 0%, #2c3447 100%); }
+
+        .card-icon { font-size: 2.6em; margin-bottom: 12px; }
+        .card h3 { color: var(--primary-dark); font-size: 1.25em; margin-bottom: 10px; line-height: 1.35; }
+        body.dark .card h3 { color: #8ab4ff; }
+        .card .meta { color: var(--text-muted); font-size: 0.88em; margin-bottom: 16px; }
+
+        .card-links { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .btn {
+            display: inline-block;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 22px;
+            font-weight: bold;
+            font-size: 0.92em;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .docx-link {
+            color: var(--primary);
+            font-size: 0.88em;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 8px 14px;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        .docx-link:hover { background: var(--primary); color: white; }
+        body.dark .docx-link { color: #8ab4ff; border-color: #8ab4ff; }
+        body.dark .docx-link:hover { background: #8ab4ff; color: #1a1f2e; }
+
+        .model-badge {
+            display: inline-block;
+            background: #d4edda;
+            color: #155724;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 0.78em;
+            font-weight: bold;
+            margin-left: 8px;
+            text-decoration: none;
+        }
+        .model-badge:hover { background: #28a745; color: white; }
+        body.dark .model-badge { background: #1d3524; color: #7bd696; }
+
+        .type-tag {
+            display: inline-block;
+            background: #e7f1ff;
+            color: #2a5298;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 0.78em;
+            font-weight: bold;
+        }
+        body.dark .type-tag { background: #243049; color: #8ab4ff; }
+
+        @media (max-width: 600px) {
+            .content { padding: 20px; }
+            .cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Bosh sahifa</a>
+            <h1>📚 Dars Ishlanmalar</h1>
+            <p>Fizika fanidan tayyor dars rejalari — PDF va DOCX formatlarida</p>
+            <div class="grade-nav">
+                <a href="#sinf10">🔟 10-sinf</a>
+                <a href="#sinf11">1️⃣1️⃣ 11-sinf</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- ============ 10-SINF ============ -->
+            <div class="section" id="sinf10">
+                <h2>🔟 10-sinf</h2>
+                <p class="count">5 ta dars ishlanma</p>
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-icon">🕰️</div>
+                        <h3>Matematik mayatnik yordamida erkin tushish tezlanishini aniqlash</h3>
+                        <p class="meta"><span class="type-tag">Amaliy laboratoriya</span>
+                            <a href="mayatnik_model.html" class="model-badge">🎮 Interaktiv model bor</a></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/10-sinf/matematik_mayatnik.pdf" class="btn" download>📄 PDF</a>
+                            <a href="dars_ishlanmalar/10-sinf/matematik_mayatnik.docx" class="docx-link" download>✏️ DOCX</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">⚡</div>
+                        <h3>Energiyaning bir turdan boshqasiga aylanishi</h3>
+                        <p class="meta"><span class="type-tag">Nazariy + amaliy</span></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/10-sinf/energiya_aylanishi.pdf" class="btn" download>📄 PDF</a>
+                            <a href="dars_ishlanmalar/10-sinf/energiya_aylanishi.docx" class="docx-link" download>✏️ DOCX</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🧲</div>
+                        <h3>Elektromagnit induksiya hodisasini o'rganish</h3>
+                        <p class="meta"><span class="type-tag">Laboratoriya ishi</span></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/10-sinf/elektromagnit_induksiya.pdf" class="btn" download>📄 PDF</a>
+                            <a href="dars_ishlanmalar/10-sinf/elektromagnit_induksiya.docx" class="docx-link" download>✏️ DOCX</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🔋</div>
+                        <h3>Tok manbaining EYK va ichki qarshiligini aniqlash</h3>
+                        <p class="meta"><span class="type-tag">Amaliy mashg'ulot</span></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/10-sinf/ichki_qarshilik.pdf" class="btn" download>📄 PDF</a>
+                            <a href="dars_ishlanmalar/10-sinf/ichki_qarshilik.docx" class="docx-link" download>✏️ DOCX</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">📐</div>
+                        <h3>Qiya tekislikning foydali ish koeffitsiyentini aniqlash</h3>
+                        <p class="meta"><span class="type-tag">Amaliy laboratoriya</span>
+                            <a href="qiya_tekislik_model.html" class="model-badge">🎮 Interaktiv model bor</a></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/10-sinf/qiya_tekislik.pdf" class="btn" download>📄 PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ 11-SINF ============ -->
+            <div class="section" id="sinf11">
+                <h2>1️⃣1️⃣ 11-sinf</h2>
+                <p class="count">3 ta dars ishlanma</p>
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-icon">📳</div>
+                        <h3>O'zgaruvchan tok zanjirida rezonans hodisasi</h3>
+                        <p class="meta"><span class="type-tag">Yangi bilim beruvchi</span></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/11-sinf/rezonans.pdf" class="btn" download>📄 PDF</a>
+                            <a href="dars_ishlanmalar/11-sinf/rezonans.docx" class="docx-link" download>✏️ DOCX</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">⚛️</div>
+                        <h3>Rezerford tajribasi — atom tuzilishi</h3>
+                        <p class="meta"><span class="type-tag">Nazariy + interaktiv</span>
+                            <a href="rezerford_model.html" class="model-badge">🎮 Interaktiv model bor</a></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/11-sinf/rezerford_tajribasi.pdf" class="btn" download>📄 PDF</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🪐</div>
+                        <h3>Kepler qonunlari — sayyoralar harakati</h3>
+                        <p class="meta"><span class="type-tag">Nazariy + interaktiv</span>
+                            <a href="kepler_model.html" class="model-badge">🎮 Interaktiv model bor</a></p>
+                        <div class="card-links">
+                            <a href="dars_ishlanmalar/11-sinf/kepler_qonunlari.pdf" class="btn" download>📄 PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
+</body>
+</html>
