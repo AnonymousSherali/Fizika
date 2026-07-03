@@ -144,14 +144,17 @@
                 <p>Quyidagi test 4 bo'limdan iborat: Rezerford va Kepler mavzulari bo'yicha
                    asosiy va chuqur tushunish savollari.</p>
                 <div class="info-grid">
-                    <div class="info-card"><div class="num" id="totalQ">40</div><div class="lbl">Savol</div></div>
-                    <div class="info-card"><div class="num">~15</div><div class="lbl">Daqiqa</div></div>
+                    <div class="info-card"><div class="num" id="totalQ">40</div><div class="lbl">Test savoli</div></div>
+                    <div class="info-card"><div class="num" id="totalP">9</div><div class="lbl">Hisoblash masalasi</div></div>
+                    <div class="info-card"><div class="num">~25</div><div class="lbl">Daqiqa</div></div>
                     <div class="info-card"><div class="num">60%</div><div class="lbl">O'tish balli</div></div>
                 </div>
-                <p style="font-size:0.9em; color:var(--text-muted);">Har bir savolni belgilang va keyingisiga o'ting.
-                   Yakunda natijangiz va to'g'ri javoblar ko'rsatiladi.</p>
+                <p style="font-size:0.9em; color:var(--text-muted);">Test savollarida javobni belgilaysiz;
+                   hisoblash masalalarida raqamli javobni o'zingiz hisoblab kiritasiz.</p>
                 <br>
-                <button class="btn" onclick="startQuiz()">▶️ Testni Boshlash</button>
+                <button class="btn" onclick="startQuiz()">▶️ Test Savollari</button>
+                &nbsp;
+                <button class="btn" style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);" onclick="startCalc()">🧮 Hisoblash Masalalari</button>
             </div>
 
             <!-- QUESTION -->
@@ -163,6 +166,26 @@
                 <div class="nav-row">
                     <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()">← Oldingi</button>
                     <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Keyingi →</button>
+                </div>
+            </div>
+
+            <!-- CALC -->
+            <div id="calcScreen" class="hidden">
+                <div class="q-meta" id="pCounter">Masala 1 / 9</div>
+                <span class="q-tag" id="pTag">Rezerford · Hisoblash</span>
+                <div class="q-text" id="pText"></div>
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                    <input type="number" step="any" id="pInput" placeholder="Javob"
+                           style="flex:1; min-width:140px; padding:14px 18px; font-size:1.1em; border:2px solid var(--border);
+                                  border-radius:12px; background:var(--panel-bg); color:var(--text);"
+                           aria-label="Raqamli javob">
+                    <span id="pUnit" style="font-weight:bold; font-size:1.1em;"></span>
+                    <button class="btn" id="pCheckBtn" onclick="checkProblem()">Tekshirish</button>
+                </div>
+                <div id="pFeedback" style="margin-top:18px;"></div>
+                <div class="nav-row">
+                    <button class="btn btn-outline" onclick="exitCalc()">← Chiqish</button>
+                    <button class="btn" id="pNextBtn" onclick="nextProblem()" disabled>Keyingi →</button>
                 </div>
             </div>
 
@@ -333,6 +356,125 @@
                     reviewEl.appendChild(div);
                 });
             }
+        }
+
+        // ================== HISOBLASH MASALALARI ==================
+        // Har biri testlar.md dagi 5-ballik masalalarga asoslangan
+        const problems = [
+            { tag: "Rezerford · Hisoblash", unit: "fm", ans: 45, tol: 12,
+              q: "Alfa zarra 5 MeV energiya bilan harakatlanadi. Oltin yadrosiga (Z=79) minimal qancha yaqinlasha oladi? Javobni femtometrda (fm) yozing.",
+              sol: "E\u2096 = E\u209A dan: r = k\u00B7q\u2081\u00B7q\u2082/E = (9\u00D710\u2079 \u00B7 3.2\u00D710\u207B\u00B9\u2079 \u00B7 1.26\u00D710\u207B\u00B9\u2077) / (8\u00D710\u207B\u00B9\u00B3) \u2248 4.5\u00D710\u207B\u00B9\u2074 m = 45 fm" },
+            { tag: "Rezerford · Hisoblash", unit: "N", ans: 36, tol: 10,
+              q: "Alfa zarra oltin yadrosidan 100 fm masofada joylashgan. Unga ta'sir etuvchi Kulon kuchini toping (N).",
+              sol: "F = k\u00B7q\u2081\u00B7q\u2082/r\u00B2 = (9\u00D710\u2079 \u00B7 3.2\u00D710\u207B\u00B9\u2079 \u00B7 1.26\u00D710\u207B\u00B9\u2077) / (10\u207B\u00B9\u00B3)\u00B2 \u2248 36 N" },
+            { tag: "Rezerford · Hisoblash", unit: "%", ans: 15, tol: 2,
+              q: "1000 ta alfa zarra yuborildi: 850 tasi to'g'ri o'tdi, 140 tasi sochildi, 10 tasi qaytdi. Sochilish foizini toping (%).",
+              sol: "Sochilgan jami = 140 + 10 = 150. Foiz = 150/1000 \u00D7 100% = 15%" },
+            { tag: "Kepler · Hisoblash", unit: "yil", ans: 11.86, tol: 5,
+              q: "Yupiter uchun a = 5.2 AU. Kepler 3-qonunidan orbital davrini toping (yilda).",
+              sol: "T\u00B2 = a\u00B3 = 5.2\u00B3 = 140.6 \u2192 T = \u221A140.6 \u2248 11.86 yil" },
+            { tag: "Kepler · Hisoblash", unit: "AU", ans: 4, tol: 3,
+              q: "Sayyora Quyosh atrofida 8 yilda to'liq aylanadi. Orbitasining yarim katta o'qini toping (AU).",
+              sol: "a\u00B3 = T\u00B2 = 64 \u2192 a = \u221B64 = 4 AU" },
+            { tag: "Kepler · Hisoblash", unit: "AU", ans: 1.38, tol: 3,
+              q: "Mars uchun a = 1.52 AU, e = 0.093. Perigeliy masofasini toping (AU).",
+              sol: "r\u209A = a(1 \u2212 e) = 1.52 \u00D7 0.907 \u2248 1.38 AU" },
+            { tag: "Kepler · Hisoblash", unit: "AU", ans: 1.66, tol: 3,
+              q: "Mars uchun a = 1.52 AU, e = 0.093. Afeliy masofasini toping (AU).",
+              sol: "r\u2090 = a(1 + e) = 1.52 \u00D7 1.093 \u2248 1.66 AU" },
+            { tag: "Kepler · Hisoblash", unit: "km/s", ans: 29.3, tol: 3,
+              q: "Yer perigeliyda 30.3 km/s tezlikda harakatlanadi. Afeliydagi tezligini toping (km/s). (r\u209A = 0.983 AU, r\u2090 = 1.017 AU)",
+              sol: "Impuls momenti saqlanadi: v\u209A\u00B7r\u209A = v\u2090\u00B7r\u2090 \u2192 v\u2090 = 30.3 \u00D7 0.983/1.017 \u2248 29.3 km/s" },
+            { tag: "Kepler · Hisoblash", unit: "ming km", ans: 42.3, tol: 4,
+              q: "Geostatsionar yo'ldosh Yer atrofida 24 soatda aylanadi. Orbita radiusini toping (ming km). (M = 5.97\u00D710\u00B2\u2074 kg, G = 6.67\u00D710\u207B\u00B9\u00B9)",
+              sol: "r\u00B3 = T\u00B2GM/4\u03C0\u00B2 = (86400)\u00B2 \u00D7 6.67\u00D710\u207B\u00B9\u00B9 \u00D7 5.97\u00D710\u00B2\u2074 / 39.48 \u2192 r \u2248 4.23\u00D710\u2077 m = 42.3 ming km" }
+        ];
+
+        let pCurrent = 0;
+        let pScore = 0;
+        let pAnswered = false;
+        document.getElementById('totalP').textContent = problems.length;
+
+        function startCalc() {
+            pCurrent = 0;
+            pScore = 0;
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('calcScreen').classList.remove('hidden');
+            renderProblem();
+        }
+
+        function renderProblem() {
+            const p = problems[pCurrent];
+            pAnswered = false;
+            document.getElementById('pCounter').textContent = `Masala ${pCurrent + 1} / ${problems.length}`;
+            document.getElementById('pTag').textContent = p.tag;
+            document.getElementById('pText').textContent = p.q;
+            document.getElementById('pUnit').textContent = p.unit;
+            document.getElementById('pInput').value = '';
+            document.getElementById('pInput').disabled = false;
+            document.getElementById('pFeedback').innerHTML = '';
+            document.getElementById('pCheckBtn').disabled = false;
+            document.getElementById('pNextBtn').disabled = true;
+            document.getElementById('pNextBtn').textContent = pCurrent === problems.length - 1 ? '\u2713 Yakunlash' : 'Keyingi \u2192';
+            document.getElementById('progressBar').style.width = (pCurrent / problems.length * 100) + '%';
+        }
+
+        function checkProblem() {
+            if (pAnswered) return;
+            const p = problems[pCurrent];
+            const val = parseFloat(document.getElementById('pInput').value);
+            if (isNaN(val)) return;
+            pAnswered = true;
+            const ok = Math.abs(val - p.ans) <= p.ans * p.tol / 100;
+            if (ok) pScore++;
+            const fb = document.getElementById('pFeedback');
+            fb.innerHTML =
+                '<div class="review-item ' + (ok ? 'ok' : 'no') + '">' +
+                '<div class="rq">' + (ok ? '\u2705 To\'g\'ri! Javob: ' : '\u274C Noto\'g\'ri. To\'g\'ri javob: ') +
+                p.ans + ' ' + p.unit + '</div>' +
+                '<div class="ra"><strong>Yechim:</strong> ' + p.sol + '</div></div>';
+            document.getElementById('pInput').disabled = true;
+            document.getElementById('pCheckBtn').disabled = true;
+            document.getElementById('pNextBtn').disabled = false;
+        }
+
+        // Enter tugmasi bilan tekshirish
+        document.getElementById('pInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') checkProblem();
+        });
+
+        function nextProblem() {
+            if (pCurrent === problems.length - 1) {
+                showCalcResult();
+            } else {
+                pCurrent++;
+                renderProblem();
+            }
+        }
+
+        function exitCalc() {
+            document.getElementById('calcScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('progressBar').style.width = '0%';
+        }
+
+        function showCalcResult() {
+            const pct = Math.round(pScore / problems.length * 100);
+            document.getElementById('calcScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('scorePct').textContent = pct + '%';
+            document.getElementById('scoreFrac').textContent = pScore + '/' + problems.length;
+            let grade, color, msg;
+            if (pct >= 90) { grade = '\uD83C\uDFC6 "5" (A\'lo)'; color = 'linear-gradient(135deg,#28a745,#20c997)'; msg = 'Hisoblash mahoratingiz ajoyib!'; }
+            else if (pct >= 75) { grade = '\u2B50 "4" (Yaxshi)'; color = 'linear-gradient(135deg,#17a2b8,#4facfe)'; msg = 'Yaxshi! Formulalarni yana bir bor takrorlang.'; }
+            else if (pct >= 60) { grade = '\u2713 "3" (Qoniqarli)'; color = 'linear-gradient(135deg,#ffc107,#ff9800)'; msg = 'Qoniqarli. Yechimlarni diqqat bilan o\'rganib chiqing.'; }
+            else { grade = '\u2717 "2" (Qoniqarsiz)'; color = 'linear-gradient(135deg,#dc3545,#e83e8c)'; msg = 'Interaktiv modellar bilan mashq qilib, qayta urinib ko\'ring.'; }
+            document.getElementById('scoreCircle').style.background = color;
+            document.getElementById('gradeText').textContent = grade;
+            document.getElementById('resultDetail').textContent = msg;
+            document.getElementById('reviewList').innerHTML = '';
         }
 
         function restartQuiz() {

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Om qonuni interaktiv modeli - zanjirning bir qismi uchun I = U/R. 10-sinf fizika.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔌%3C/text%3E%3C/svg%3E">
+    <title>Om Qonuni - Interaktiv Model</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        :root {
+            --primary: #b26a00;
+            --primary-dark: #7a4a00;
+            --accent: #ffb300;
+            --accent-2: #ff8f00;
+            --page-bg: linear-gradient(135deg, #232526 0%, #414345 100%);
+            --header-bg: linear-gradient(135deg, #7a4a00 0%, #ffb300 100%);
+        }
+        canvas { background: #1c1e24; }
+
+        .formula {
+            background: var(--primary-dark);
+            color: #ffe082;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .stat-value.highlight { color: #e65100; font-size: 1.15em; }
+
+        .info-panel { background: #fff8e1; border-left-color: #ffb300; }
+        .info-panel h3 { color: #7a4a00; }
+        .info-panel p { color: #5d4037; line-height: 1.7; }
+        body.dark .info-panel { background: #2b2410; }
+        body.dark .info-panel h3 { color: #ffe082; }
+        body.dark .info-panel p { color: #e8d5a3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="../index.html" class="back-link">← Bosh sahifa</a>
+            <h1>🔌 Om Qonuni</h1>
+            <p>Zanjirning bir qismi uchun: I = U / R</p>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-section">
+                <canvas id="circuitCanvas" width="800" height="520"></canvas>
+            </div>
+
+            <div class="controls">
+                <h2 style="color: var(--primary); margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+
+                <div class="control-group">
+                    <label for="voltageSlider">Kuchlanish (U):
+                        <span class="value-display" id="voltageValue">6.0 V</span>
+                    </label>
+                    <input type="range" id="voltageSlider" min="1" max="12" step="0.5" value="6" aria-label="Kuchlanish voltda">
+                </div>
+
+                <div class="control-group">
+                    <label for="resistanceSlider">Qarshilik (R):
+                        <span class="value-display" id="resistanceValue">10 Ω</span>
+                    </label>
+                    <input type="range" id="resistanceSlider" min="2" max="100" step="1" value="10" aria-label="Qarshilik omda">
+                </div>
+
+                <button class="action btn-primary" onclick="startCircuit()">▶️ Tokni Yoqish</button>
+                <button class="action btn-secondary" onclick="pauseCircuit()">⏸️ To'xtatish</button>
+
+                <div class="stats">
+                    <h3>📊 O'lchovlar</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Kuchlanish (U):</span>
+                        <span class="stat-value" id="uValue">6.0 V</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Qarshilik (R):</span>
+                        <span class="stat-value" id="rValue">10 Ω</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tok kuchi (I):</span>
+                        <span class="stat-value highlight" id="iValue">0.60 A</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Quvvat (P = U·I):</span>
+                        <span class="stat-value" id="pValue">3.60 W</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>📚 Nazariy Ma'lumot</h3>
+                <p>
+                    <strong>Om qonuni</strong> (zanjirning bir qismi uchun): o'tkazgichdagi tok kuchi
+                    kuchlanishga to'g'ri, qarshilikka teskari proporsional.
+                </p>
+                <div class="formula">I = U / R</div>
+                <p>
+                    <strong>Ampermetr</strong> zanjirga <em>ketma-ket</em> (qarshiligi juda kichik),
+                    <strong>voltmetr</strong> esa <em>parallel</em> (qarshiligi juda katta) ulanadi.
+                </p>
+                <p style="margin-top: 10px;">
+                    💡 <strong>Tajriba:</strong> U ni 2 baravar oshiring — I ham 2 baravar oshadi.
+                    R ni 2 baravar oshiring — I 2 baravar kamayadi. Zarrachalar tezligi tok kuchiga
+                    proporsional, rezistorning qizishi esa quvvatga (P = U·I) bog'liq.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../theme.js"></script>
+    <script>
+        const canvas = document.getElementById('circuitCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let state = { U: 6, R: 10, running: false, t: 0 };
+        let animationId = null;
+        let lastTs = null;
+
+        // Zanjir konturi (to'rtburchak yo'l)
+        const L = 150, Rt = 650, T = 140, B = 400;
+        const perim = 2 * (Rt - L) + 2 * (B - T);
+
+        document.getElementById('voltageSlider').oninput = function() {
+            state.U = parseFloat(this.value);
+            document.getElementById('voltageValue').textContent = state.U.toFixed(1) + ' V';
+            updateStats();
+            if (!state.running) draw();
+        };
+        document.getElementById('resistanceSlider').oninput = function() {
+            state.R = parseInt(this.value);
+            document.getElementById('resistanceValue').textContent = state.R + ' Ω';
+            updateStats();
+            if (!state.running) draw();
+        };
+
+        function current() { return state.U / state.R; }
+
+        function updateStats() {
+            const I = current();
+            document.getElementById('uValue').textContent = state.U.toFixed(1) + ' V';
+            document.getElementById('rValue').textContent = state.R + ' Ω';
+            document.getElementById('iValue').textContent = I.toFixed(2) + ' A';
+            document.getElementById('pValue').textContent = (state.U * I).toFixed(2) + ' W';
+        }
+
+        // Perimetr bo'ylab t (0..1) -> nuqta koordinatasi
+        function pointOnLoop(t) {
+            let d = ((t % 1) + 1) % 1 * perim;
+            const w = Rt - L, h = B - T;
+            if (d < w) return { x: L + d, y: T };          // yuqori: chapdan o'ngga
+            d -= w;
+            if (d < h) return { x: Rt, y: T + d };          // o'ng: pastga
+            d -= h;
+            if (d < w) return { x: Rt - d, y: B };          // past: o'ngdan chapga
+            d -= w;
+            return { x: L, y: B - d };                      // chap: yuqoriga
+        }
+
+        function drawWireLoop() {
+            ctx.strokeStyle = '#90a4ae';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.rect(L, T, Rt - L, B - T);
+            ctx.stroke();
+        }
+
+        function drawBattery() {
+            // Chap tomonda manba (uzun/qisqa plastinka)
+            const cy = (T + B) / 2;
+            ctx.fillStyle = '#1c1e24';
+            ctx.fillRect(L - 12, cy - 32, 24, 64);
+            ctx.strokeStyle = '#ffd54f';
+            ctx.lineWidth = 4;
+            ctx.beginPath(); // uzun plastinka (+)
+            ctx.moveTo(L - 14, cy - 26);
+            ctx.lineTo(L + 14, cy - 26);
+            ctx.stroke();
+            ctx.lineWidth = 8;
+            ctx.beginPath(); // qisqa plastinka (-)
+            ctx.moveTo(L - 7, cy + 22);
+            ctx.lineTo(L + 7, cy + 22);
+            ctx.stroke();
+            ctx.fillStyle = '#ffd54f';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('+', L - 22, cy - 20);
+            ctx.fillText('−', L - 22, cy + 30);
+            ctx.textAlign = 'left';
+            ctx.fillText('U = ' + state.U.toFixed(1) + ' V', L - 130, cy + 5);
+        }
+
+        function drawResistor() {
+            // Yuqorida zigzag rezistor, qizishi P ga bog'liq
+            const x0 = 340, x1 = 460, y = T;
+            const P = state.U * current();
+            const heat = Math.min(1, P / 15);
+            ctx.fillStyle = '#1c1e24';
+            ctx.fillRect(x0 - 4, y - 16, x1 - x0 + 8, 32);
+            ctx.strokeStyle = 'rgb(255,' + Math.round(160 - 100 * heat) + ',' + Math.round(60 - 50 * heat) + ')';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(x0 - 4, y);
+            let px = x0;
+            let up = true;
+            while (px < x1) {
+                ctx.lineTo(px + 7.5, up ? y - 13 : y + 13);
+                px += 15;
+                up = !up;
+            }
+            ctx.lineTo(x1 + 4, y);
+            ctx.stroke();
+            // Qizish shu'lasi
+            if (heat > 0.15) {
+                ctx.fillStyle = 'rgba(255,120,40,' + (0.25 * heat).toFixed(2) + ')';
+                ctx.beginPath();
+                ctx.arc((x0 + x1) / 2, y, 45, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#ffcc80';
+            ctx.font = 'bold 15px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('R = ' + state.R + ' Ω', (x0 + x1) / 2, y + 36);
+        }
+
+        function drawMeter(x, y, letter, value, unit) {
+            ctx.fillStyle = '#263238';
+            ctx.beginPath();
+            ctx.arc(x, y, 26, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#eceff1';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            ctx.fillStyle = '#eceff1';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(letter, x, y + 7);
+            ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = '#80deea';
+            ctx.fillText(value + ' ' + unit, x, y + 48);
+        }
+
+        function drawVoltmeter() {
+            // Rezistorga parallel voltmetr
+            ctx.strokeStyle = '#90a4ae';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(340, T);
+            ctx.lineTo(340, 68);
+            ctx.lineTo(374, 68);
+            ctx.moveTo(460, T);
+            ctx.lineTo(460, 68);
+            ctx.lineTo(426, 68);
+            ctx.stroke();
+            drawMeter(400, 68, 'V', state.U.toFixed(1), 'V');
+        }
+
+        function draw() {
+            ctx.fillStyle = '#1c1e24';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawWireLoop();
+            drawResistor();
+            drawVoltmeter();
+            drawBattery();
+            drawMeter(400, B, 'A', current().toFixed(2), 'A');
+
+            // Tok zarralari (shartli musbat zaryad yo'nalishi: + dan -)
+            const I = current();
+            const n = 26;
+            ctx.fillStyle = '#ffee58';
+            for (let i = 0; i < n; i++) {
+                const p = pointOnLoop(state.t + i / n);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Yo'nalish strelkasi (yuqori simda)
+            ctx.strokeStyle = '#ffee58';
+            ctx.fillStyle = '#ffee58';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(230, T - 18);
+            ctx.lineTo(270, T - 18);
+            ctx.lineTo(262, T - 24);
+            ctx.moveTo(270, T - 18);
+            ctx.lineTo(262, T - 12);
+            ctx.stroke();
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('I = ' + I.toFixed(2) + ' A', 278, T - 13);
+        }
+
+        function loop(ts) {
+            if (!lastTs) lastTs = ts;
+            let dt = (ts - lastTs) / 1000;
+            lastTs = ts;
+            if (dt > 0.05) dt = 0.05;
+            // Zarralar tezligi tok kuchiga proporsional
+            state.t += dt * current() * 0.12;
+            draw();
+            if (state.running) animationId = requestAnimationFrame(loop);
+        }
+
+        function startCircuit() {
+            if (!state.running) {
+                state.running = true;
+                lastTs = null;
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+        function pauseCircuit() {
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+
+        updateStats();
+        draw();
+    </script>
+</body>
+</html>

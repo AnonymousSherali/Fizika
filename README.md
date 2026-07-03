@@ -33,7 +33,9 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │   ├── rezerford_model.html       #   Rezerford tajribasi
 │   ├── kepler_model.html          #   Kepler qonunlari
 │   ├── mayatnik_model.html        #   Matematik mayatnik
-│   └── qiya_tekislik_model.html   #   Qiya tekislik (FIK)
+│   ├── qiya_tekislik_model.html   #   Qiya tekislik (FIK)
+│   ├── om_qonuni_model.html       #   Om qonuni (I = U/R)
+│   └── induksiya_model.html       #   Elektromagnit induksiya
 │
 ├── dars_ishlanmalar/              # 📚 Dars ishlanmalar
 │   ├── index.html                 #   Sahifa (/dars_ishlanmalar/)
