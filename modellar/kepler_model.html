@@ -240,6 +240,14 @@
                         <span class="stat-label">Nisbat:</span>
                         <span class="stat-value" id="areaRatio">1.00</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Masofa (r):</span>
+                        <span class="stat-value" id="rValue2">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tezlik (v):</span>
+                        <span class="stat-value" id="vValue2">-</span>
+                    </div>
                 </div>
             </div>
 
@@ -255,7 +263,9 @@
                         • Sayyora Quyoshga yaqinroq bo'lganda tezroq harakat qiladi<br>
                         • Sayyora Quyoshdan uzoqroq bo'lganda sekinroq harakat qiladi<br>
                         • Impuls momenti saqlanish qonunidan kelib chiqadi<br>
-                        • L = mvr = const (angular momentum)
+                        • L = mvr = const (impuls momenti)<br>
+                        • Tezlik (vis-viva): v = &radic;(GM(2/r &minus; 1/a)) &mdash;
+                        perigeliyda maksimal, afeliyda minimal
                     </p>
                 </div>
             </div>
@@ -794,6 +804,12 @@
             // Sayyora (Yer ko'rinishida)
             drawPlanet(ctx2, x, y, 12, 'earth');
 
+            // Vis-viva: v = v0 * sqrt(2/r - 1/a), v0 = 29.78 km/s (a = 1 AU uchun)
+            const rAU = Math.hypot(x - focusX, y - centerY) / scale;
+            const vKms = 29.78 * Math.sqrt(Math.max(0, 2 / rAU - 1 / orbit2.a));
+            document.getElementById('rValue2').textContent = rAU.toFixed(3) + ' AU';
+            document.getElementById('vValue2').textContent = vKms.toFixed(1) + ' km/s';
+
             // Izlar
             ctx2.strokeStyle = '#ffffff60';
             ctx2.lineWidth = 2;
@@ -832,6 +848,8 @@
             document.getElementById('area1').textContent = '0';
             document.getElementById('area2').textContent = '0';
             document.getElementById('areaRatio').textContent = '1.00';
+            document.getElementById('rValue2').textContent = '-';
+            document.getElementById('vValue2').textContent = '-';
             drawOrbit2();
         }
 

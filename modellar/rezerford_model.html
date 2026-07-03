@@ -130,6 +130,14 @@
                         <span class="stat-label">Sochilish %:</span>
                         <span class="stat-value" id="scatteringRate">0%</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Energiya (E):</span>
+                        <span class="stat-value" id="energyValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Nazariy r_min:</span>
+                        <span class="stat-value" id="rMinValue">-</span>
+                    </div>
                 </div>
             </div>
 
@@ -145,6 +153,12 @@
                     • Atomning ko'p qismi bo'sh joy<br>
                     • Elektronlar yadro atrofida aylanadi<br>
                     • ~1/8000 alfa zarra orqaga qaytadi
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>Minimal yaqinlashuv masofasi</strong> (to'g'ri to'qnashuvda, E<sub>k</sub> = E<sub>p</sub> dan):
+                    r<sub>min</sub> = k·q<sub>&alpha;</sub>·q<sub>Au</sub> / E = k·2e·79e / (m·v²/2).
+                    Tezlikni o'zgartirib, r<sub>min</sub> qanday kamayishini kuzating — bu testlardagi
+                    hisoblash masalasi bilan bir xil formula!
                 </p>
             </div>
         </div>
@@ -173,9 +187,21 @@
             count: 20
         };
 
+        // Nazariy hisob: E = mv^2/2, r_min = k*q1*q2/E (to'g'ri to'qnashuvda)
+        function updateTheory() {
+            const mAlpha = 6.64e-27;   // alfa zarra massasi, kg
+            const e = 1.602e-19;       // elementar zaryad, C
+            const kC = 8.99e9;         // Kulon doimiysi
+            const E = 0.5 * mAlpha * settings.speed * settings.speed;
+            const rMin = kC * 2 * 79 * e * e / E;
+            document.getElementById('energyValue').textContent = (E / 1.602e-13).toFixed(1) + ' MeV';
+            document.getElementById('rMinValue').textContent = (rMin * 1e15).toFixed(1) + ' fm';
+        }
+
         document.getElementById('speedSlider').oninput = function() {
             settings.speed = parseFloat(this.value) * 1e7;
             document.getElementById('speedValue').textContent = settings.speed.toExponential(1);
+            updateTheory();
         };
 
         document.getElementById('distanceSlider').oninput = function() {
@@ -386,6 +412,7 @@
 
         // Boshlang'ich holat
         resetExperiment();
+        updateTheory();
     </script>
 </body>
 </html>

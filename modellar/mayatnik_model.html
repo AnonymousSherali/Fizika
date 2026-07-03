@@ -124,6 +124,10 @@
                         <span class="stat-label">O'lchangan g:</span>
                         <span class="stat-value highlight" id="measuredG">-</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Nisbiy xatolik:</span>
+                        <span class="stat-value" id="gError">-</span>
+                    </div>
                 </div>
             </div>
 
@@ -348,6 +352,9 @@
                 const measuredT = 2 * (ct[ct.length - 1] - ct[0]) / (ct.length - 1);
                 const gMeasured = 4 * Math.PI * Math.PI * state.L / (measuredT * measuredT);
                 document.getElementById('measuredG').textContent = gMeasured.toFixed(2) + ' m/s²';
+                // Laboratoriya uslubi: nisbiy xatolikni baholash
+                const errPct = (gMeasured - state.g) / state.g * 100;
+                document.getElementById('gError').textContent = (errPct >= 0 ? '+' : '') + errPct.toFixed(1) + '%';
             }
         }
 
@@ -375,6 +382,7 @@
             document.getElementById('frequencyValue').textContent = (1 / theoreticalPeriod()).toFixed(3) + ' Hz';
             document.getElementById('oscValue').textContent = '0';
             document.getElementById('measuredG').textContent = '-';
+            document.getElementById('gError').textContent = '-';
             draw();
         }
 

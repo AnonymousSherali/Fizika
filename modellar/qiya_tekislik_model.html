@@ -126,8 +126,16 @@
                         <span class="stat-value" id="totalWork">-</span>
                     </div>
                     <div class="stat-item">
+                        <span class="stat-label">Ishqalanish isrofi:</span>
+                        <span class="stat-value" id="frictionWork">-</span>
+                    </div>
+                    <div class="stat-item">
                         <span class="stat-label">FIK (η):</span>
                         <span class="stat-value highlight" id="efficiencyValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Energiya balansi:</span>
+                        <span class="stat-value" id="energyBalance">-</span>
                     </div>
                 </div>
             </div>
@@ -143,7 +151,9 @@
                 <div class="formula">η = A_foydali / A_umumiy = sin α / (sin α + μ·cos α)</div>
                 <p style="margin-top: 10px;">
                     Bu yerda: <strong>A_foydali = mgh</strong> (yukni h balandlikka ko'tarish ishi),
-                    <strong>A_umumiy = F·s</strong> (tortish kuchining qiyalik bo'ylab bajargan ishi).
+                    <strong>A_umumiy = F·s</strong> (tortish kuchining qiyalik bo'ylab bajargan ishi),
+                    <strong>A_ishqalanish = μ·mg·cosα·s</strong> (issiqlikka aylanadi).
+                    Energiya saqlanish qonuni: <strong>A_umumiy = A_foydali + A_ishqalanish</strong>.
                 </p>
                 <p style="margin-top: 10px;">
                     💡 <strong>Tajriba:</strong> Burchak va ishqalanishni o'zgartirib FIK qanday
@@ -194,10 +204,11 @@
             const cosA = Math.cos(state.angle);
             const F = state.mass * G * (sinA + state.mu * cosA);
             const h = S * sinA;
-            const Af = state.mass * G * h;
-            const Au = F * S;
+            const Af = state.mass * G * h;                    // foydali ish
+            const Aisq = state.mu * state.mass * G * cosA * S; // ishqalanishga isrof
+            const Au = F * S;                                  // umumiy ish
             const eta = Af / Au;
-            return { F, h, Af, Au, eta };
+            return { F, h, Af, Aisq, Au, eta };
         }
 
         function updateStats() {
@@ -206,7 +217,12 @@
             document.getElementById('heightValue').textContent = p.h.toFixed(2) + ' m';
             document.getElementById('usefulWork').textContent = p.Af.toFixed(2) + ' J';
             document.getElementById('totalWork').textContent = p.Au.toFixed(2) + ' J';
+            document.getElementById('frictionWork').textContent = p.Aisq.toFixed(2) + ' J';
             document.getElementById('efficiencyValue').textContent = (p.eta * 100).toFixed(1) + '%';
+            // Energiya saqlanish qonuni tekshiruvi: A_u = A_f + A_ishq
+            const balanced = Math.abs(p.Au - (p.Af + p.Aisq)) < 0.01;
+            document.getElementById('energyBalance').textContent =
+                (p.Af + p.Aisq).toFixed(2) + ' J = ' + p.Au.toFixed(2) + ' J ' + (balanced ? '\u2713' : '\u2717');
         }
 
         function drawArrow(x1, y1, x2, y2, color, label) {
