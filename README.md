@@ -1,5 +1,5 @@
 # FIZIK JARAYONLARNI MODELLASHTIRISHNING DASTURIY TA'MINOTI
-## 10-11 SINFLAR UCHUN - REZERFORD VA KEPLER QONUNLARI
+## 10-11 SINFLAR UCHUN - 6 TA INTERAKTIV MODEL VA 13 TA DARS ISHLANMA
 
 ---
 
@@ -11,6 +11,10 @@ O'quvchilarga fizik jarayonlarni visualizatsiya qilish va interaktiv tarzda o'rg
 ### Asosiy yo'nalishlar:
 1. **Rezerford tajribasi** - Atom tuzilishi
 2. **Kepler qonunlari** - Sayyoralar harakati
+3. **Matematik mayatnik** - Erkin tushish tezlanishini aniqlash
+4. **Qiya tekislik** - Foydali ish koeffitsiyenti
+5. **Om qonuni** - Zanjirning bir qismi uchun I = U/R
+6. **Elektromagnit induksiya** - Faradey qonuni va Lens qoidasi
 
 ### Texnologiyalar:
 - HTML5
@@ -40,7 +44,7 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 ├── dars_ishlanmalar/              # 📚 Dars ishlanmalar
 │   ├── index.html                 #   Sahifa (/dars_ishlanmalar/)
 │   ├── 10-sinf/                   #   7 ta dars (PDF + DOCX)
-│   └── 11-sinf/                   #   5 ta dars (PDF + DOCX)
+│   └── 11-sinf/                   #   6 ta dars (PDF + DOCX)
 │
 ├── testlar/                       # 📝 Test va baholash
 │   ├── testlar_online.html        #   Onlayn interaktiv test
