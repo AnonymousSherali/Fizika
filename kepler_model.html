@@ -645,8 +645,9 @@
             // Yuzalarni hisoblash (shoelace) — chizilgan sektorlar bilan bir xil
             // Ikkala sektor teng vaqt oralig'ini (15 kadr) qamrab olganda taqqoslanadi
             if (orbit2.positions.length >= 30) {
+                // Ikkala sektor teng vaqtni qamraydi: 14 tadan kadr oralig'i
                 const focus = { x: focusX, y: centerY };
-                const sectorA = [focus, ...orbit2.positions.slice(0, 16)];
+                const sectorA = [focus, ...orbit2.positions.slice(0, 15)];
                 const sectorB = [focus, ...orbit2.positions.slice(15, 30)];
                 const areaA = polygonArea(sectorA) / (scale * scale);
                 const areaB = polygonArea(sectorB) / (scale * scale);
