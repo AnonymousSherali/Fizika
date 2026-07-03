@@ -64,11 +64,15 @@
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #00ff00;"></div>
-                        <span>O'tgan zarralar</span>
+                        <span>O'tgan zarralar (&lt;10°)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffa500;"></div>
+                        <span>Sochilgan zarralar (10-90°)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #ff6b6b;"></div>
-                        <span>Qaytgan zarralar</span>
+                        <span>Qaytgan zarralar (&gt;90°)</span>
                     </div>
                 </div>
             </div>
@@ -204,25 +208,19 @@
             update() {
                 if (this.status !== 'flying') return;
 
-                // Kulonning kuchi
+                // Kulonning itaruvchi kuchi
                 const dx = this.x - nucleus.x;
                 const dy = this.y - nucleus.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
-                if (distance < nucleus.radius) {
-                    this.status = 'reflected';
-                    this.color = '#ff6b6b';
-                    stats.reflected++;
+                if (distance < nucleus.radius + 5) {
+                    // Deyarli to'g'ridan-to'g'ri to'qnashuv - orqaga qaytadi
+                    this.vx = -Math.abs(this.vx);
                 } else if (distance < 150) {
                     const force = 5000 / (distance * distance);
                     const angle = Math.atan2(dy, dx);
                     this.vx += Math.cos(angle) * force * 0.1;
                     this.vy += Math.sin(angle) * force * 0.1;
-
-                    if (this.status === 'flying') {
-                        this.status = 'scattered';
-                        stats.scattered++;
-                    }
                 }
 
                 this.x += this.vx;
@@ -231,8 +229,18 @@
                 this.trail.push({ x: this.x, y: this.y });
                 if (this.trail.length > 30) this.trail.shift();
 
-                if (this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
-                    if (this.status === 'flying') {
+                // Ekrandan chiqqanda og'ish burchagiga qarab tasniflanadi
+                if (this.x > canvas.width || this.x < -10 || this.y < -10 || this.y > canvas.height + 10) {
+                    const deflection = Math.abs(Math.atan2(this.vy, this.vx)) * 180 / Math.PI;
+                    if (this.x < 0 || deflection > 90) {
+                        this.status = 'reflected';
+                        this.color = '#ff6b6b';
+                        stats.reflected++;
+                    } else if (deflection > 10) {
+                        this.status = 'scattered';
+                        this.color = '#ffa500';
+                        stats.scattered++;
+                    } else {
                         this.status = 'passed';
                         this.color = '#00ff00';
                         stats.passed++;
@@ -260,15 +268,17 @@
             }
         }
 
+        let spawnTimers = [];
+
         function createParticles() {
             particles = [];
             const spacing = (canvas.height - 100) / settings.count;
             for (let i = 0; i < settings.count; i++) {
-                setTimeout(() => {
+                spawnTimers.push(setTimeout(() => {
                     particles.push(new AlphaParticle(50 + i * spacing));
                     stats.total++;
                     updateStats();
-                }, i * 200);
+                }, i * 200));
             }
         }
 
@@ -346,6 +356,8 @@
 
         function resetExperiment() {
             pauseExperiment();
+            spawnTimers.forEach(clearTimeout);
+            spawnTimers = [];
             particles = [];
             stats = { total: 0, passed: 0, scattered: 0, reflected: 0 };
             updateStats();
