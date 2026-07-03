@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Elektromagnit induksiya interaktiv modeli - Faradey qonuni va Lens qoidasi. 10-sinf fizika.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧲%3C/text%3E%3C/svg%3E">
+    <title>Elektromagnit Induksiya - Interaktiv Model</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        :root {
+            --primary: #00695c;
+            --primary-dark: #004d40;
+            --accent: #26a69a;
+            --accent-2: #4db6ac;
+            --page-bg: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+            --header-bg: linear-gradient(135deg, #004d40 0%, #26a69a 100%);
+        }
+        canvas { background: #f5f7fa; }
+
+        .formula {
+            background: var(--primary-dark);
+            color: #80cbc4;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .stat-value.highlight { color: #d84315; font-size: 1.1em; }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .mode-btn {
+            padding: 10px 6px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 0.88em;
+        }
+        .mode-btn:hover, .mode-btn.active { background: var(--primary); color: white; }
+
+        .info-panel { background: #e0f2f1; border-left-color: #26a69a; }
+        .info-panel h3 { color: #004d40; }
+        .info-panel p { color: #1b3a35; line-height: 1.7; }
+        body.dark .info-panel { background: #142823; }
+        body.dark .info-panel h3 { color: #80cbc4; }
+        body.dark .info-panel p { color: #c5e5e0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="../index.html" class="back-link">← Bosh sahifa</a>
+            <h1>🧲 Elektromagnit Induksiya</h1>
+            <p>Faradey qonuni: EYK = −N·ΔΦ/Δt</p>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-section">
+                <canvas id="inductionCanvas" width="800" height="520"></canvas>
+            </div>
+
+            <div class="controls">
+                <h2 style="color: var(--primary); margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+
+                <div class="control-group">
+                    <label>Rejim:</label>
+                    <div class="mode-selector">
+                        <button class="mode-btn active" id="modeAuto" onclick="setMode('auto', event)">Avtomatik tebranish</button>
+                        <button class="mode-btn" id="modeManual" onclick="setMode('manual', event)">Qo'lda boshqarish</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="posSlider">Magnit pozitsiyasi:
+                        <span class="value-display" id="posValue">-</span>
+                    </label>
+                    <input type="range" id="posSlider" min="0" max="100" step="1" value="10" aria-label="Magnit pozitsiyasi">
+                </div>
+
+                <div class="control-group">
+                    <label for="speedSlider">Harakat tezligi:
+                        <span class="value-display" id="speedValue">1.0x</span>
+                    </label>
+                    <input type="range" id="speedSlider" min="0.2" max="3" step="0.1" value="1" aria-label="Magnit tezligi">
+                </div>
+
+                <div class="control-group">
+                    <label for="turnsSlider">G'altak o'ramlari (N):
+                        <span class="value-display" id="turnsValue">10</span>
+                    </label>
+                    <input type="range" id="turnsSlider" min="2" max="30" step="1" value="10" aria-label="O'ramlar soni">
+                </div>
+
+                <button class="action btn-primary" onclick="startInduction()">▶️ Boshlash</button>
+                <button class="action btn-secondary" onclick="pauseInduction()">⏸️ Pauza</button>
+                <button class="action btn-secondary" onclick="resetInduction()">🔄 Qayta</button>
+
+                <div class="stats">
+                    <h3>📊 O'lchovlar</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Magnit oqimi (Φ):</span>
+                        <span class="stat-value" id="fluxValue">0 mVb</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Induksiya EYK:</span>
+                        <span class="stat-value highlight" id="emfValue">0 mV</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tok yo'nalishi:</span>
+                        <span class="stat-value" id="dirValue">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>📚 Nazariy Ma'lumot</h3>
+                <p>
+                    <strong>Elektromagnit induksiya</strong> — g'altak orqali o'tuvchi magnit oqimi
+                    o'zgarganda unda elektr yurituvchi kuch (EYK) hosil bo'lish hodisasi
+                    (M. Faradey, 1831-yil).
+                </p>
+                <div class="formula">EYK = −N · ΔΦ / Δt</div>
+                <p>
+                    <strong>Lens qoidasi:</strong> induksion tok o'z magnit maydoni bilan uni hosil
+                    qilgan oqim o'zgarishiga <em>qarshilik ko'rsatadigan</em> yo'nalishda oqadi
+                    (formuladagi minus ishorasi).
+                </p>
+                <p style="margin-top: 10px;">
+                    💡 <strong>Tajriba:</strong> Magnit tezroq harakatlansa — EYK katta. Magnit
+                    to'xtasa — EYK nolga teng (oqim bor, lekin o'zgarmayapti!). O'ramlar soni N
+                    oshsa — EYK proporsional oshadi. Galvanometr strelkasi magnit yaqinlashganda
+                    bir tomonga, uzoqlashganda ikkinchi tomonga og'adi — bu Lens qoidasi.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../theme.js"></script>
+    <script>
+        const canvas = document.getElementById('inductionCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const coilX = 560, coilY = 230; // g'altak markazi
+        const magY = 230;
+
+        let state = {
+            mode: 'auto',
+            running: false,
+            phase: 0,          // avto tebranish fazasi
+            magX: 120,         // magnit markazi
+            prevFlux: 0,
+            emf: 0,
+            emfSmooth: 0,
+            speed: 1,
+            N: 10
+        };
+        let animationId = null;
+        let lastTs = null;
+
+        function setMode(m, evt) {
+            state.mode = m;
+            document.getElementById('modeAuto').classList.toggle('active', m === 'auto');
+            document.getElementById('modeManual').classList.toggle('active', m === 'manual');
+            document.getElementById('posSlider').disabled = (m === 'auto');
+            if (m === 'manual') startInduction();
+        }
+
+        document.getElementById('posSlider').oninput = function() {
+            if (state.mode === 'manual') {
+                state.magX = 60 + (parseFloat(this.value) / 100) * 420;
+            }
+        };
+        document.getElementById('speedSlider').oninput = function() {
+            state.speed = parseFloat(this.value);
+            document.getElementById('speedValue').textContent = state.speed.toFixed(1) + 'x';
+        };
+        document.getElementById('turnsSlider').oninput = function() {
+            state.N = parseInt(this.value);
+            document.getElementById('turnsValue').textContent = state.N;
+            if (!state.running) draw();
+        };
+
+        // Bitta o'ram orqali oqim: masofaga bog'liq silliq funksiya
+        function fluxSingle(magX) {
+            const d = (coilX - 40) - (magX + 55); // magnit uchi bilan g'altak orasidagi masofa
+            return 1 / (1 + Math.pow(Math.max(0, d) / 60, 2));
+        }
+
+        function physicsStep(dt) {
+            if (state.mode === 'auto') {
+                state.phase += dt * state.speed * 1.4;
+                state.magX = 250 + 190 * Math.sin(state.phase) - 60;
+                document.getElementById('posSlider').value = ((state.magX - 60) / 420 * 100).toFixed(0);
+            }
+            const flux = fluxSingle(state.magX);
+            // EYK = -N * dPhi/dt (shartli birliklarda -> mV masshtabi)
+            state.emf = -state.N * (flux - state.prevFlux) / Math.max(dt, 1e-4) * 12;
+            state.prevFlux = flux;
+            // Strelka silliq harakatlanishi uchun
+            state.emfSmooth += (state.emf - state.emfSmooth) * Math.min(1, dt * 10);
+
+            document.getElementById('fluxValue').textContent = (flux * state.N * 10).toFixed(1) + ' mVb';
+            document.getElementById('emfValue').textContent = state.emfSmooth.toFixed(1) + ' mV';
+            const dir = Math.abs(state.emfSmooth) < 1 ? '— (tok yo\'q)' :
+                (state.emfSmooth > 0 ? '↻ (magnitga qarshi)' : '↺ (magnitni tortadi)');
+            document.getElementById('dirValue').textContent = dir;
+        }
+
+        function drawMagnet() {
+            const x = state.magX, y = magY;
+            // N qutb (qizil) va S qutb (ko'k)
+            ctx.fillStyle = '#c62828';
+            ctx.fillRect(x, y - 22, 55, 44);
+            ctx.fillStyle = '#1565c0';
+            ctx.fillRect(x - 55, y - 22, 55, 44);
+            ctx.strokeStyle = '#37474f';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - 55, y - 22, 110, 44);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('N', x + 27, y + 7);
+            ctx.fillText('S', x - 27, y + 7);
+
+            // Maydon chiziqlari (N qutbdan chiqadi)
+            ctx.strokeStyle = 'rgba(198,40,40,0.4)';
+            ctx.lineWidth = 1.5;
+            for (const dy of [-30, -15, 0, 15, 30]) {
+                ctx.beginPath();
+                ctx.moveTo(x + 57, y + dy * 0.4);
+                ctx.quadraticCurveTo(x + 110, y + dy, x + 165, y + dy * 1.3);
+                ctx.stroke();
+            }
+        }
+
+        function drawCoil() {
+            const n = state.N;
+            const w = Math.min(180, 30 + n * 9);
+            const x0 = coilX - w / 2;
+            // O'ramlar orasidagi sim (orqa)
+            ctx.strokeStyle = '#8d6e63';
+            ctx.lineWidth = 2;
+            // Har bir o'ram - ellips
+            for (let i = 0; i < n; i++) {
+                const ex = x0 + (i + 0.5) * (w / n);
+                ctx.strokeStyle = '#a1580e';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.ellipse(ex, coilY, 9, 62, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            // Karkas chiziqlari
+            ctx.strokeStyle = '#78909c';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 4]);
+            ctx.beginPath();
+            ctx.moveTo(x0 - 12, coilY - 62);
+            ctx.lineTo(x0 + w + 12, coilY - 62);
+            ctx.moveTo(x0 - 12, coilY + 62);
+            ctx.lineTo(x0 + w + 12, coilY + 62);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Galvanometrga simlar
+            ctx.strokeStyle = '#5d4037';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(x0, coilY + 62);
+            ctx.lineTo(x0, 440);
+            ctx.lineTo(560, 440);
+            ctx.moveTo(x0 + w, coilY + 62);
+            ctx.lineTo(x0 + w, 415);
+            ctx.lineTo(640, 415);
+            ctx.lineTo(640, 440);
+            ctx.stroke();
+
+            ctx.fillStyle = '#37474f';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('N = ' + n + ' o\'ram', coilX, coilY - 78);
+        }
+
+        function drawGalvanometer() {
+            const gx = 600, gy = 440;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(gx, gy, 46, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#37474f';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            // Shkala
+            ctx.strokeStyle = '#90a4ae';
+            ctx.lineWidth = 1.5;
+            for (let a = -60; a <= 60; a += 15) {
+                const rad = (a - 90) * Math.PI / 180;
+                ctx.beginPath();
+                ctx.moveTo(gx + 34 * Math.cos(rad), gy + 34 * Math.sin(rad));
+                ctx.lineTo(gx + 40 * Math.cos(rad), gy + 40 * Math.sin(rad));
+                ctx.stroke();
+            }
+            // Strelka: EYK ga proporsional og'adi (chegaralangan)
+            const angle = Math.max(-60, Math.min(60, state.emfSmooth * 3));
+            const rad = (angle - 90) * Math.PI / 180;
+            ctx.strokeStyle = '#d84315';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(gx, gy);
+            ctx.lineTo(gx + 36 * Math.cos(rad), gy + 36 * Math.sin(rad));
+            ctx.stroke();
+            ctx.fillStyle = '#37474f';
+            ctx.beginPath();
+            ctx.arc(gx, gy, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('G', gx, gy + 28);
+            ctx.fillText('0', gx, gy - 48);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#f5f7fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Harakat yo'li
+            ctx.strokeStyle = '#cfd8dc';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(40, magY + 32);
+            ctx.lineTo(500, magY + 32);
+            ctx.stroke();
+
+            drawCoil();
+            drawMagnet();
+            drawGalvanometer();
+
+            // Sarlavha
+            ctx.fillStyle = '#37474f';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('EYK = −N·ΔΦ/Δt = ' + state.emfSmooth.toFixed(1) + ' mV', 20, 36);
+        }
+
+        function loop(ts) {
+            if (!lastTs) lastTs = ts;
+            let dt = (ts - lastTs) / 1000;
+            lastTs = ts;
+            if (dt > 0.05) dt = 0.05;
+            physicsStep(dt);
+            draw();
+            if (state.running) animationId = requestAnimationFrame(loop);
+        }
+
+        function startInduction() {
+            if (!state.running) {
+                state.running = true;
+                lastTs = null;
+                state.prevFlux = fluxSingle(state.magX);
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+        function pauseInduction() {
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+        function resetInduction() {
+            pauseInduction();
+            state.phase = 0;
+            state.magX = 120;
+            state.emf = 0;
+            state.emfSmooth = 0;
+            state.prevFlux = fluxSingle(state.magX);
+            document.getElementById('fluxValue').textContent = (state.prevFlux * state.N * 10).toFixed(1) + ' mVb';
+            document.getElementById('emfValue').textContent = '0.0 mV';
+            document.getElementById('dirValue').textContent = '-';
+            draw();
+        }
+
+        document.getElementById('posSlider').disabled = true;
+        resetInduction();
+    </script>
+</body>
+</html>
