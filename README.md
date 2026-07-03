@@ -23,26 +23,36 @@ O'quvchilarga fizik jarayonlarni visualizatsiya qilish va interaktiv tarzda o'rg
 ## 📁 LOYIHA TUZILMASI
 
 ```
-Fizika/
+Fizika/                            # Tuzilma sayt bo'limlariga mos
 │
-├── index.html                     # Bosh sahifa
-├── rezerford_model.html           # Rezerford tajribasi modeli
-├── kepler_model.html              # Kepler qonunlari modeli
-├── mayatnik_model.html            # Matematik mayatnik modeli
-├── qiya_tekislik_model.html       # Qiya tekislik (FIK) modeli
-├── testlar_online.html            # Onlayn interaktiv test
-├── dars_ishlanmalar.html          # Dars ishlanmalar sahifasi
+├── index.html                     # 🏠 Bosh sahifa
 ├── styles.css                     # Umumiy stillar (dark mode bilan)
 ├── theme.js                       # Umumiy UI (rejim, animatsiyalar)
 │
-├── dars_ishlanmalar/              # Dars ishlanmalar (PDF + DOCX)
-│   ├── 10-sinf/                   # 7 ta dars ishlanma
-│   └── 11-sinf/                   # 5 ta dars ishlanma
+├── modellar/                      # 🎮 Interaktiv modellar
+│   ├── rezerford_model.html       #   Rezerford tajribasi
+│   ├── kepler_model.html          #   Kepler qonunlari
+│   ├── mayatnik_model.html        #   Matematik mayatnik
+│   └── qiya_tekislik_model.html   #   Qiya tekislik (FIK)
 │
-├── rezerford_dars_ishlanma.md     # Rezerford darsi (manba)
-├── kepler_dars_ishlanma.md        # Kepler darsi (manba)
-├── testlar.md                     # Testlar to'plami (manba)
-└── README.md                      # Bu fayl
+├── dars_ishlanmalar/              # 📚 Dars ishlanmalar
+│   ├── index.html                 #   Sahifa (/dars_ishlanmalar/)
+│   ├── 10-sinf/                   #   7 ta dars (PDF + DOCX)
+│   └── 11-sinf/                   #   5 ta dars (PDF + DOCX)
+│
+├── testlar/                       # 📝 Test va baholash
+│   ├── testlar_online.html        #   Onlayn interaktiv test
+│   ├── testlar.pdf                #   Testlar to'plami (PDF)
+│   └── testlar.md                 #   Manba
+│
+├── hujjatlar/                     # 📋 Loyiha hujjatlari
+│   ├── README.pdf                 #   Yo'riqnoma (PDF)
+│   ├── metodika_qollanma.pdf      #   Metodika qo'llanma
+│   ├── loyiha_algoritmi.html      #   Loyiha strukturasi diagrammasi
+│   └── *.md                       #   Manba fayllar
+│
+├── README.md                      # Bu fayl
+├── railway.json / nixpacks.toml   # Deploy sozlamalari
 ```
 
 ---
