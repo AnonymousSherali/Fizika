@@ -14,7 +14,19 @@
     <style>
         /* Bosh sahifa mavzusi shared standart ranglariga mos (qo'shimcha :root shart emas) */
         .container { max-width: 1200px; }
-        .header { padding: 50px 30px; }
+        .header { padding: 50px 30px; position: relative; overflow: hidden; }
+        #headerFx {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+        }
+        .header > *:not(#headerFx) { position: relative; z-index: 1; }
         .header h1 { font-size: 3em; margin-bottom: 15px; }
         .header p { font-size: 1.3em; margin-bottom: 10px; }
         .header .btn { margin-top: 15px; }
@@ -140,6 +152,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <canvas id="headerFx" aria-hidden="true"></canvas>
             <h1>🔬 Fizik Modellar</h1>
             <p>Rezerford Tajribasi va Kepler Qonunlari</p>
             <p class="subtitle">10-11 sinflar uchun interaktiv o'quv dasturi</p>
@@ -170,6 +183,13 @@
                         <h3>Matematik Mayatnik</h3>
                         <p>Tebranish davri orqali erkin tushish tezlanishini (g) aniqlang. Turli sayyoralarda sinab ko'ring.</p>
                         <a href="mayatnik_model.html" class="btn">Modelni Ochish</a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">📐</div>
+                        <h3>Qiya Tekislik (FIK)</h3>
+                        <p>Kuch vektorlari bilan foydali ish koeffitsiyentini aniqlang. Burchak va ishqalanish ta'sirini kuzating.</p>
+                        <a href="qiya_tekislik_model.html" class="btn">Modelni Ochish</a>
                     </div>
                 </div>
             </div>
@@ -287,7 +307,7 @@
                 <h2>📊 Loyiha Statistikasi</h2>
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-number">3</div>
+                        <div class="stat-number">4</div>
                         <div class="stat-label">Interaktiv Model</div>
                     </div>
                     <div class="stat">
@@ -309,7 +329,7 @@
             <div class="info-box">
                 <h3>💡 Foydalanish uchun ko'rsatma:</h3>
                 <p>
-                    <strong>1.</strong> Kerakli modelni oching (Rezerford, Kepler yoki Mayatnik)<br>
+                    <strong>1.</strong> Kerakli modelni oching (Rezerford, Kepler, Mayatnik yoki Qiya tekislik)<br>
                     <strong>2.</strong> Sozlamalarni o'zgartiring va tajriba o'tkazing<br>
                     <strong>3.</strong> Natijalarni tahlil qiling va xulosalar chiqaring<br>
                     <strong>4.</strong> Dars ishlanmalardan to'liq qo'llanma oling<br>
@@ -343,7 +363,7 @@
 
         <div class="footer">
             <p><strong>Fizik Jarayonlarni Modellashtirishning Dasturiy Ta'minoti</strong></p>
-            <p>10-11 sinflar uchun - Rezerford, Kepler va Mayatnik</p>
+            <p>10-11 sinflar uchun - 4 ta interaktiv fizika modeli</p>
             <p style="margin-top: 15px; font-size: 0.9em;">
                 © 2026 | Barcha huquqlar himoyalangan | Ta'lim maqsadida bepul foydalanish
             </p>
@@ -355,6 +375,75 @@
 
     <script src="theme.js"></script>
     <script>
+        // Header'da suzuvchi zarralar foni
+        (function() {
+            const fx = document.getElementById('headerFx');
+            const header = fx.parentElement;
+            const c = fx.getContext('2d');
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            let particles = [];
+            function resize() {
+                fx.width = header.clientWidth;
+                fx.height = header.clientHeight;
+            }
+            function init() {
+                resize();
+                particles = [];
+                const count = Math.min(50, Math.floor(fx.width / 25));
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: Math.random() * fx.width,
+                        y: Math.random() * fx.height,
+                        r: 1 + Math.random() * 2.2,
+                        vx: (Math.random() - 0.5) * 0.4,
+                        vy: (Math.random() - 0.5) * 0.4
+                    });
+                }
+            }
+            function render() {
+                c.clearRect(0, 0, fx.width, fx.height);
+                // Yaqin zarralar orasidagi chiziqlar
+                c.lineWidth = 1;
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const d = Math.hypot(dx, dy);
+                        if (d < 100) {
+                            c.strokeStyle = 'rgba(255,255,255,' + (0.14 * (1 - d / 100)).toFixed(3) + ')';
+                            c.beginPath();
+                            c.moveTo(particles[i].x, particles[i].y);
+                            c.lineTo(particles[j].x, particles[j].y);
+                            c.stroke();
+                        }
+                    }
+                }
+                c.fillStyle = 'rgba(255,255,255,0.55)';
+                particles.forEach(p => {
+                    c.beginPath();
+                    c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    c.fill();
+                });
+            }
+            function step() {
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0 || p.x > fx.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > fx.height) p.vy *= -1;
+                });
+                render();
+                requestAnimationFrame(step);
+            }
+            window.addEventListener('resize', init);
+            init();
+            if (reduced) {
+                render(); // harakatsiz, bir marta chiziladi
+            } else {
+                requestAnimationFrame(step);
+            }
+        })();
+
         // Statistika animatsiyasi
         document.addEventListener('DOMContentLoaded', function() {
             const stats = document.querySelectorAll('.stat-number');

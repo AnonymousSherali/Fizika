@@ -272,7 +272,7 @@
 
                 <div class="control-group">
                     <label>
-                        <input type="checkbox" id="showAllPlanets" checked> Barcha sayyoralarni ko'rsatish
+                        <input type="checkbox" id="showAllPlanets" checked> Barcha sayyoralarni ko'rsatish (aks holda faqat ichki 4 ta)
                     </label>
                 </div>
 
@@ -565,6 +565,16 @@
             document.getElementById('timeIntervalValue').textContent = this.value;
         };
 
+        // Ko'pburchak yuzasi (shoelace formulasi)
+        function polygonArea(pts) {
+            let s = 0;
+            for (let i = 0; i < pts.length; i++) {
+                const p = pts[i], q = pts[(i + 1) % pts.length];
+                s += p.x * q.y - q.x * p.y;
+            }
+            return Math.abs(s) / 2;
+        }
+
         document.getElementById('speedSlider2').oninput = function() {
             orbit2.speed = parseFloat(this.value);
             document.getElementById('speedValue2').textContent = this.value + 'x';
@@ -609,7 +619,7 @@
 
             // Yuzalarni chizish
             if (orbit2.positions.length > 1) {
-                // Yuza 1 (perigeliy)
+                // Yuza A (oxirgi 15 kadrdan oldingi oraliq)
                 ctx2.fillStyle = '#ff000040';
                 ctx2.beginPath();
                 ctx2.moveTo(focusX, centerY);
@@ -619,7 +629,7 @@
                 ctx2.closePath();
                 ctx2.fill();
 
-                // Yuza 2 (afeliy)
+                // Yuza B (so'nggi 15 kadr)
                 if (orbit2.positions.length > 15) {
                     ctx2.fillStyle = '#0000ff40';
                     ctx2.beginPath();
@@ -630,6 +640,19 @@
                     ctx2.closePath();
                     ctx2.fill();
                 }
+            }
+
+            // Yuzalarni hisoblash (shoelace) — chizilgan sektorlar bilan bir xil
+            // Ikkala sektor teng vaqt oralig'ini (15 kadr) qamrab olganda taqqoslanadi
+            if (orbit2.positions.length >= 30) {
+                const focus = { x: focusX, y: centerY };
+                const sectorA = [focus, ...orbit2.positions.slice(0, 16)];
+                const sectorB = [focus, ...orbit2.positions.slice(15, 30)];
+                const areaA = polygonArea(sectorA) / (scale * scale);
+                const areaB = polygonArea(sectorB) / (scale * scale);
+                document.getElementById('area1').textContent = areaA.toFixed(4) + ' AU²';
+                document.getElementById('area2').textContent = areaB.toFixed(4) + ' AU²';
+                document.getElementById('areaRatio').textContent = areaB > 0 ? (areaA / areaB).toFixed(2) : '-';
             }
 
             // Sayyora
@@ -675,6 +698,9 @@
             pauseAnimation2();
             orbit2.angle = 0;
             orbit2.positions = [];
+            document.getElementById('area1').textContent = '0';
+            document.getElementById('area2').textContent = '0';
+            document.getElementById('areaRatio').textContent = '1.00';
             drawOrbit2();
         }
 
@@ -705,6 +731,10 @@
 
         document.getElementById('speedSlider3').oninput = function() {
             document.getElementById('speedValue3').textContent = this.value + 'x';
+        };
+
+        document.getElementById('showAllPlanets').onchange = function() {
+            if (!isRunning[2]) drawOrbit3();
         };
 
         function drawOrbit3() {
@@ -756,8 +786,10 @@
             ctx3.stroke();
 
             // Sayyoralar orbitlari va pozitsiyalari
+            // Belgi olib tashlansa faqat ichki 4 ta sayyora ko'rsatiladi
             const showAll = document.getElementById('showAllPlanets').checked;
             planets3.forEach(planet => {
+                if (!showAll && planet.a > 2) return;
                 const a = planet.a * scale;
 
                 // Orbit doirasi
