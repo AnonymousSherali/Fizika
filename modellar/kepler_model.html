@@ -78,22 +78,20 @@
             gap: 10px;
             margin: 15px 0;
         }
-        .planet-btn {
-            padding: 10px 5px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            background: var(--card-bg);
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        .planet-btn:hover { background: var(--primary); color: white; transform: scale(1.05); }
-        .planet-btn.active { background: var(--primary); color: white; }
+        .planet-btn:hover { transform: scale(1.05); }
 
         @media (max-width: 1024px) {
             .tab-content.active { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 700px) {
+            .header h1 { font-size: 1.8em; }
+            .header p { font-size: 1em; }
+            .tab-content { padding: 16px; }
+            .tabs { flex-wrap: wrap; }
+            .tab { flex: 1 1 100%; padding: 12px; font-size: 0.95em; }
+            .planet-selector { grid-template-columns: repeat(2, 1fr); }
+            .controls { padding: 16px; }
+            .canvas-section { padding: 10px; }
         }
     </style>
 </head>
@@ -105,10 +103,10 @@
             <p>Sayyoralar harakati qonunlari - Interaktiv Model</p>
         </div>
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab(0)">1-Qonun: Ellips</button>
-            <button class="tab" onclick="switchTab(1)">2-Qonun: Yuzalar</button>
-            <button class="tab" onclick="switchTab(2)">3-Qonun: Davr</button>
+        <div class="tabs" role="tablist">
+            <button class="tab active" role="tab" aria-selected="true" onclick="switchTab(0)">1-Qonun: Ellips</button>
+            <button class="tab" role="tab" aria-selected="false" onclick="switchTab(1)">2-Qonun: Yuzalar</button>
+            <button class="tab" role="tab" aria-selected="false" onclick="switchTab(2)">3-Qonun: Davr</button>
         </div>
 
         <!-- 1-QONUN -->
@@ -120,15 +118,15 @@
             <div class="controls">
                 <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
 
-                <div class="planet-selector">
-                    <button class="planet-btn active" onclick="selectPlanet('mercury', event)">Merkuriy</button>
-                    <button class="planet-btn" onclick="selectPlanet('venus', event)">Venera</button>
-                    <button class="planet-btn" onclick="selectPlanet('earth', event)">Yer</button>
-                    <button class="planet-btn" onclick="selectPlanet('mars', event)">Mars</button>
-                    <button class="planet-btn" onclick="selectPlanet('jupiter', event)">Yupiter</button>
-                    <button class="planet-btn" onclick="selectPlanet('saturn', event)">Saturn</button>
-                    <button class="planet-btn" onclick="selectPlanet('uranus', event)">Uran</button>
-                    <button class="planet-btn" onclick="selectPlanet('neptune', event)">Neptun</button>
+                <div class="planet-selector" role="radiogroup" aria-label="Sayyorani tanlash">
+                    <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('mercury', event)">Merkuriy</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('venus', event)">Venera</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('earth', event)">Yer</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('mars', event)">Mars</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('jupiter', event)">Yupiter</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('saturn', event)">Saturn</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('uranus', event)">Uran</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('neptune', event)">Neptun</button>
                 </div>
 
                 <div class="control-group">
@@ -136,7 +134,7 @@
                         Yarim katta o'q (AU):
                         <span class="value-display" id="semiMajorValue">1.00</span>
                     </label>
-                    <input type="range" id="semiMajorSlider" min="0.39" max="30" step="0.1" value="1.00" aria-label="Yarim katta o'q">
+                    <input type="range" id="semiMajorSlider" min="0.39" max="31" step="0.01" value="1.00" aria-label="Yarim katta o'q">
                 </div>
 
                 <div class="control-group">
@@ -333,14 +331,15 @@
 
         // BARCHA 8 TA SAYYORA
         const planetsData = {
-            mercury: { name: 'Merkuriy', a: 0.39, e: 0.206, T: 0.24, color: '#8c7853', size: 4 },
-            venus: { name: 'Venera', a: 0.72, e: 0.007, T: 0.62, color: '#ffc649', size: 9 },
-            earth: { name: 'Yer', a: 1.00, e: 0.017, T: 1.00, color: '#4a90e2', size: 10 },
-            mars: { name: 'Mars', a: 1.52, e: 0.093, T: 1.88, color: '#e27b58', size: 5 },
-            jupiter: { name: 'Yupiter', a: 5.20, e: 0.048, T: 11.86, color: '#d8a664', size: 25 },
-            saturn: { name: 'Saturn', a: 9.54, e: 0.054, T: 29.46, color: '#f4e4c1', size: 22 },
-            uranus: { name: 'Uran', a: 19.19, e: 0.047, T: 84.01, color: '#4fd0e7', size: 16 },
-            neptune: { name: 'Neptun', a: 30.07, e: 0.009, T: 164.79, color: '#4166f5', size: 15 }
+            // Aniq astronomik qiymatlar: T^2/a^3 barchasida 1.000 chiqadi
+            mercury: { name: 'Merkuriy', a: 0.387, e: 0.206, T: 0.2408, color: '#8c7853', size: 4 },
+            venus: { name: 'Venera', a: 0.723, e: 0.007, T: 0.6152, color: '#ffc649', size: 9 },
+            earth: { name: 'Yer', a: 1.000, e: 0.017, T: 1.0000, color: '#4a90e2', size: 10 },
+            mars: { name: 'Mars', a: 1.524, e: 0.093, T: 1.8808, color: '#e27b58', size: 5 },
+            jupiter: { name: 'Yupiter', a: 5.203, e: 0.048, T: 11.862, color: '#d8a664', size: 25 },
+            saturn: { name: 'Saturn', a: 9.537, e: 0.054, T: 29.457, color: '#f4e4c1', size: 22 },
+            uranus: { name: 'Uran', a: 19.191, e: 0.047, T: 84.017, color: '#4fd0e7', size: 16 },
+            neptune: { name: 'Neptun', a: 30.069, e: 0.009, T: 164.791, color: '#4166f5', size: 15 }
         };
 
         let currentPlanet = 'earth';
@@ -349,6 +348,7 @@
         function switchTab(index) {
             document.querySelectorAll('.tab').forEach((tab, i) => {
                 tab.classList.toggle('active', i === index);
+                tab.setAttribute('aria-selected', i === index ? 'true' : 'false');
             });
             document.querySelectorAll('.tab-content').forEach((content, i) => {
                 content.classList.toggle('active', i === index);
@@ -366,9 +366,12 @@
             currentPlanet = planet;
             const data = planetsData[planet];
 
-            document.querySelectorAll('.planet-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.planet-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-checked', 'false');
+            });
             const target = (evt || window.event) ? (evt || window.event).target : null;
-            if (target) target.classList.add('active');
+            if (target) { target.classList.add('active'); target.setAttribute('aria-checked', 'true'); }
 
             // Orbita parametrlarini ham yangilaymiz (slider qiymatini o'rnatish
             // oninput hodisasini ishga tushirmaydi)
@@ -410,7 +413,8 @@
 
             const centerX = canvas1.width / 2;
             const centerY = canvas1.height / 2;
-            const scale = Math.min(150, 300 / orbit1.a);
+            // 260: sayyora radiusi bilan birga kanvas ichida qoladi (600/2 - 40 zaxira)
+            const scale = Math.min(150, 260 / orbit1.a);
 
             const a = orbit1.a * scale;
             const b = a * Math.sqrt(1 - orbit1.e * orbit1.e);
@@ -495,8 +499,11 @@
 
             // Harakat
             if (isRunning[0]) {
-                // Kepler 2-qonuniga mos: perigeliyda tez, afeliyda sekin
-                orbit1.angle += 0.02 * orbit1.speed / (1 + orbit1.e * Math.cos(orbit1.angle));
+                // Kepler 2-qonuniga mos: perigeliyda tez, afeliyda sekin.
+                // Katta e va tezlikda bir kadrdagi burchak cheklanadi, aks holda
+                // sayyora perigeliy atrofida orbitadan "sakrab" o'tardi.
+                const step = 0.02 * orbit1.speed / (1 + orbit1.e * Math.cos(orbit1.angle));
+                orbit1.angle += Math.min(step, 0.12);
                 animations[0] = requestAnimationFrame(drawOrbit1);
             }
         }
@@ -683,6 +690,7 @@
         }
 
         function startAnimation1() {
+            if (isRunning[0]) return;   // ikki marta bosilganda ikkinchi rAF sikli ochilmasin
             isRunning[0] = true;
             drawOrbit1();
         }
@@ -825,13 +833,14 @@
                 // Teng vaqtda teng yuza: dA/kadr = (b/2)(a + c*cos th)*dth = const
                 // bo'lishi uchun dth = k / (1 + e*cos th)
                 const angularSpeed = 0.012 * orbit2.speed / (1 + orbit2.e * Math.cos(orbit2.angle));
-                orbit2.angle += angularSpeed;
+                orbit2.angle += Math.min(angularSpeed, 0.12);
 
                 animations[1] = requestAnimationFrame(drawOrbit2);
             }
         }
 
         function startAnimation2() {
+            if (isRunning[1]) return;   // ikki marta bosilganda ikkinchi rAF sikli ochilmasin
             isRunning[1] = true;
             drawOrbit2();
         }
@@ -961,6 +970,7 @@
         }
 
         function startAnimation3() {
+            if (isRunning[2]) return;   // ikki marta bosilganda ikkinchi rAF sikli ochilmasin
             isRunning[2] = true;
             drawOrbit3();
         }

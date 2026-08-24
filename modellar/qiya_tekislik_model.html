@@ -17,17 +17,8 @@
             --header-bg: linear-gradient(135deg, #5c2c06 0%, #e8890c 100%);
         }
         canvas { background: linear-gradient(180deg, #e3f2fd 0%, #fff8e1 100%); }
+        body.dark canvas { filter: brightness(0.85) saturate(0.9); }
 
-        .formula {
-            background: var(--primary-dark);
-            color: var(--accent-2);
-            padding: 12px 18px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.15em;
-            text-align: center;
-            margin: 12px 0;
-        }
 
         .stat-value.highlight { color: #c0392b; font-size: 1.1em; }
 
@@ -57,6 +48,16 @@
         body.dark .info-panel { background: #2b2017; }
         body.dark .info-panel h3 { color: #f2c94c; }
         body.dark .info-panel p { color: #e8d5b5; }
+        @media (max-width: 700px) {
+            .header h1 { font-size: 1.8em; }
+            .header p { font-size: 1em; }
+            .main-content { padding: 16px; gap: 14px; }
+            .controls { padding: 16px; }
+            .canvas-section { padding: 10px; }
+            .control-group { padding: 12px; }
+            .info-panel { padding: 16px; }
+            .force-legend { grid-template-columns: 1fr 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -183,20 +184,31 @@
         let animationId = null;
         let lastTimestamp = null;
 
+        // Sozlama o'zgarganda yuk boshiga qaytadi (yangi shart bilan tajriba),
+        // lekin faqat harakat tugagan yoki to'xtagan bo'lsa
+        function applySetting() {
+            if (!state.running) {
+                state.t = 0;
+                updateStats();
+                draw();
+            } else {
+                updateStats();
+            }
+        }
         document.getElementById('angleSlider').oninput = function() {
             state.angle = parseInt(this.value) * Math.PI / 180;
             document.getElementById('angleValue').textContent = this.value + '°';
-            resetIncline();
+            applySetting();
         };
         document.getElementById('muSlider').oninput = function() {
             state.mu = parseFloat(this.value);
             document.getElementById('muValue').textContent = state.mu.toFixed(2);
-            resetIncline();
+            applySetting();
         };
         document.getElementById('massSlider').oninput = function() {
             state.mass = parseFloat(this.value);
             document.getElementById('massValue').textContent = state.mass.toFixed(1) + ' kg';
-            resetIncline();
+            applySetting();
         };
 
         function physics() {

@@ -39,6 +39,16 @@
             margin-right: 10px;
             border: 2px solid #333;
         }
+        @media (max-width: 700px) {
+            .header h1 { font-size: 1.8em; }
+            .header p { font-size: 1em; }
+            .main-content { padding: 16px; gap: 14px; }
+            .controls { padding: 16px; }
+            .canvas-section { padding: 10px; }
+            .control-group { padding: 12px; }
+            .info-panel { padding: 16px; }
+            .legend { grid-template-columns: 1fr 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -83,7 +93,7 @@
                 <div class="control-group">
                     <label for="speedSlider">
                         Alfa zarralar tezligi (m/s):
-                        <span class="value-display" id="speedValue">1.5e7</span>
+                        <span class="value-display" id="speedValue">1.5e+7</span>
                     </label>
                     <input type="range" id="speedSlider" min="1" max="3" step="0.1" value="1.5" aria-label="Alfa zarralar tezligi">
                 </div>
@@ -146,6 +156,13 @@
                 <p>
                     <strong>Rezerford tajribasi (1909-yil)</strong> - Atom tuzilishini o'rganishda muhim rol o'ynagan tajriba.
                     Ernest Rezerford musbat zaryadlangan alfa zarralarni yupqa oltin folgaga yo'naltirdi.
+                </p>
+                <p style="margin-top: 10px; background: rgba(255,255,255,0.5); padding: 10px; border-radius: 6px;">
+                    ⚠️ <strong>Model haqida muhim eslatma:</strong> bu modelda barcha alfa zarralar
+                    <em>bitta</em> yadroga qaratilgan, shuning uchun sochilish foizi 50% atrofida chiqadi.
+                    Haqiqiy tajribada folgada son-sanoqsiz atom bor, lekin yadro atom hajmining atigi
+                    ~10⁻¹⁵ qismini egallaydi — shu sababli zarralarning faqat <strong>1/8000 qismi</strong>
+                    orqaga qaytadi. Model yadro yaqinidagi jarayonni "kattalashtirib" ko'rsatadi.
                 </p>
                 <p style="margin-top: 10px;">
                     <strong>Asosiy xulosalar:</strong><br>
@@ -295,14 +312,18 @@
         }
 
         let spawnTimers = [];
+        let pendingCount = 0;
 
-        function createParticles() {
-            particles = [];
+        function createParticles(count) {
+            const n = count || settings.count;
             const spacing = (canvas.height - 100) / settings.count;
-            for (let i = 0; i < settings.count; i++) {
+            const offset = settings.count - n;
+            pendingCount = n;
+            for (let i = 0; i < n; i++) {
                 spawnTimers.push(setTimeout(() => {
-                    particles.push(new AlphaParticle(50 + i * spacing));
+                    particles.push(new AlphaParticle(50 + (offset + i) * spacing));
                     stats.total++;
+                    pendingCount--;
                     updateStats();
                 }, i * 200));
             }
@@ -381,13 +402,20 @@
         }
 
         function startExperiment() {
-            if (!isRunning) {
-                isRunning = true;
-                if (particles.length === 0) {
-                    createParticles();
-                }
-                animate();
+            if (isRunning) return;
+            isRunning = true;
+            const allDone = particles.length > 0 && particles.every(p => p.status !== 'flying');
+            if (particles.length === 0 || allDone) {
+                // Yangi seriya: oldingi natijalar tozalanadi
+                particles = [];
+                stats = { total: 0, passed: 0, scattered: 0, reflected: 0 };
+                updateStats();
+                createParticles();
+            } else if (pendingCount > 0) {
+                // Pauzadan keyin qolgan zarralarni uchirishni davom ettiramiz
+                createParticles(pendingCount);
             }
+            animate();
         }
 
         function pauseExperiment() {
@@ -395,12 +423,18 @@
             if (animationId) {
                 cancelAnimationFrame(animationId);
             }
+            // Kutayotgan zarra generatorlari ham to'xtaydi, aks holda pauzada
+            // statistika o'sib, kanvas qotib qolardi
+            spawnTimers.forEach(clearTimeout);
+            spawnTimers = [];
+            pendingCount = settings.count - particles.length;
         }
 
         function resetExperiment() {
             pauseExperiment();
             spawnTimers.forEach(clearTimeout);
             spawnTimers = [];
+            pendingCount = 0;
             particles = [];
             stats = { total: 0, passed: 0, scattered: 0, reflected: 0 };
             updateStats();

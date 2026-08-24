@@ -6,9 +6,17 @@
 (function () {
     'use strict';
 
+    // Miltillashning oldini olish: rejim <body> tayyor bo'lishidan oldin
+    // <html> elementiga qo'llanadi (styles.css uni ham hisobga oladi)
+    try {
+        var early = localStorage.getItem('fizika-theme');
+        if (early === 'dark') document.documentElement.classList.add('dark');
+    } catch (e) {}
+
     // ----- Rejimni qo'llash -----
     function applyTheme(theme) {
         var isDark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
         document.body.classList.toggle('dark', isDark);
         var btn = document.getElementById('themeToggle');
         if (btn) {

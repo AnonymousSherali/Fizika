@@ -79,6 +79,7 @@
             color: var(--text);
         }
         .option:hover { border-color: var(--accent); }
+        .option:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
         .option .letter {
             display: inline-flex; align-items: center; justify-content: center;
             width: 32px; height: 32px;
@@ -121,8 +122,14 @@
         .hidden { display: none; }
 
         @media (max-width: 600px) {
-            .content { padding: 20px; }
+            .content { padding: 20px 16px; }
             .q-text { font-size: 1.1em; }
+            .header h1 { font-size: 1.7em; }
+            .header { padding: 24px 16px; }
+            .option { padding: 13px 14px; font-size: 0.98em; }
+            .btn { padding: 12px 26px; font-size: 1em; }
+            .nav-row { flex-direction: column-reverse; }
+            .nav-row .btn { width: 100%; }
         }
     </style>
 </head>
@@ -150,7 +157,9 @@
                     <div class="info-card"><div class="num">60%</div><div class="lbl">O'tish balli</div></div>
                 </div>
                 <p style="font-size:0.9em; color:var(--text-muted);">Test savollarida javobni belgilaysiz;
-                   hisoblash masalalarida raqamli javobni o'zingiz hisoblab kiritasiz.</p>
+                   hisoblash masalalarida raqamli javobni o'zingiz hisoblab kiritasiz.<br>
+                   Savollar va variantlar har safar aralashtiriladi.
+                   ⌨️ Klaviatura: <strong>A–D</strong> javob tanlash, <strong>← →</strong> navigatsiya.</p>
                 <br>
                 <button class="btn" onclick="startQuiz()">▶️ Test Savollari</button>
                 &nbsp;
@@ -162,7 +171,7 @@
                 <div class="q-meta" id="qCounter">Savol 1 / 40</div>
                 <span class="q-tag" id="qTag">Rezerford · Asosiy</span>
                 <div class="q-text" id="qText"></div>
-                <div class="options" id="options"></div>
+                <div class="options" id="options" role="radiogroup" aria-label="Javob variantlari"></div>
                 <div class="nav-row">
                     <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()">← Oldingi</button>
                     <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Keyingi →</button>
@@ -256,11 +265,33 @@
 
         let current = 0;
         let answers = new Array(questions.length).fill(null);
+        // Har bir sessiyada savollar va variantlar aralashtiriladi
+        let quiz = [];
 
         document.getElementById('totalQ').textContent = questions.length;
 
+        // Fisher-Yates aralashtirish
+        function shuffled(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // Savol variantlarini aralashtirib, to'g'ri javob indeksini yangilaydi
+        function prepareQuiz() {
+            quiz = shuffled(questions).map(q => {
+                const correctText = q.o[q.correct];
+                const opts = shuffled(q.o);
+                return { tag: q.tag, q: q.q, o: opts, correct: opts.indexOf(correctText) };
+            });
+        }
+
         function startQuiz() {
             current = 0;
+            prepareQuiz();
             answers = new Array(questions.length).fill(null);
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.add('hidden');
@@ -269,8 +300,8 @@
         }
 
         function renderQuestion() {
-            const q = questions[current];
-            document.getElementById('qCounter').textContent = `Savol ${current + 1} / ${questions.length}`;
+            const q = quiz[current];
+            document.getElementById('qCounter').textContent = `Savol ${current + 1} / ${quiz.length}`;
             document.getElementById('qTag').textContent = q.tag;
             document.getElementById('qText').textContent = q.q;
 
@@ -279,18 +310,26 @@
             optsEl.innerHTML = '';
             q.o.forEach((opt, i) => {
                 const div = document.createElement('div');
-                div.className = 'option' + (answers[current] === i ? ' selected' : '');
+                const isSel = answers[current] === i;
+                div.className = 'option' + (isSel ? ' selected' : '');
                 div.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+                // Klaviatura bilan ham tanlash mumkin (Tab bilan o'tib, Enter/Probel bilan belgilash)
+                div.tabIndex = 0;
+                div.setAttribute('role', 'radio');
+                div.setAttribute('aria-checked', isSel ? 'true' : 'false');
                 div.onclick = () => selectOption(i);
+                div.onkeydown = (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOption(i); }
+                };
                 optsEl.appendChild(div);
             });
 
             const answered = answers.filter(a => a !== null).length;
-            document.getElementById('progressBar').style.width = (answered / questions.length * 100) + '%';
+            document.getElementById('progressBar').style.width = (answered / quiz.length * 100) + '%';
 
             document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
             document.getElementById('nextBtn').disabled = answers[current] === null;
-            document.getElementById('nextBtn').textContent = current === questions.length - 1 ? '✓ Yakunlash' : 'Keyingi →';
+            document.getElementById('nextBtn').textContent = current === quiz.length - 1 ? '✓ Yakunlash' : 'Keyingi →';
         }
 
         function selectOption(i) {
@@ -298,9 +337,20 @@
             renderQuestion();
         }
 
+        // Butun sahifada: A-D bilan javob tanlash, o'q tugmalari bilan navigatsiya
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('quizScreen').classList.contains('hidden')) return;
+            if (e.target.tagName === 'INPUT') return;
+            const k = e.key.toUpperCase();
+            const idx = ['A', 'B', 'C', 'D'].indexOf(k);
+            if (idx > -1 && idx < quiz[current].o.length) { selectOption(idx); return; }
+            if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled) nextQuestion();
+            if (e.key === 'ArrowLeft') prevQuestion();
+        });
+
         function nextQuestion() {
             if (answers[current] === null) return;
-            if (current === questions.length - 1) {
+            if (current === quiz.length - 1) {
                 showResult();
             } else {
                 current++;
@@ -314,15 +364,15 @@
 
         function showResult() {
             let correct = 0;
-            questions.forEach((q, i) => { if (answers[i] === q.correct) correct++; });
-            const pct = Math.round(correct / questions.length * 100);
+            quiz.forEach((q, i) => { if (answers[i] === q.correct) correct++; });
+            const pct = Math.round(correct / quiz.length * 100);
 
             document.getElementById('quizScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.remove('hidden');
             document.getElementById('progressBar').style.width = '100%';
 
             document.getElementById('scorePct').textContent = pct + '%';
-            document.getElementById('scoreFrac').textContent = correct + '/' + questions.length;
+            document.getElementById('scoreFrac').textContent = correct + '/' + quiz.length;
 
             let grade, color, msg;
             if (pct >= 90) { grade = '🏆 "5" (A\'lo)'; color = 'linear-gradient(135deg,#28a745,#20c997)'; msg = 'Ajoyib natija! Mavzuni mukammal o\'zlashtirgansiz.'; }
@@ -337,7 +387,7 @@
             const letters = ['A', 'B', 'C', 'D'];
             const reviewEl = document.getElementById('reviewList');
             reviewEl.innerHTML = '';
-            const wrong = questions.filter((q, i) => answers[i] !== q.correct);
+            const wrong = quiz.filter((q, i) => answers[i] !== q.correct);
             if (wrong.length === 0) {
                 reviewEl.innerHTML = '<div class="review-item ok"><div class="rq">🎉 Barcha savollarga to\'g\'ri javob berdingiz!</div></div>';
             } else {
@@ -345,7 +395,7 @@
                 heading.style.cssText = 'font-weight:bold;color:#dc3545;margin-bottom:12px;';
                 heading.textContent = `Xato javoblar (${wrong.length} ta):`;
                 reviewEl.appendChild(heading);
-                questions.forEach((q, i) => {
+                quiz.forEach((q, i) => {
                     if (answers[i] === q.correct) return;
                     const div = document.createElement('div');
                     div.className = 'review-item no';
@@ -395,9 +445,12 @@
         let pAnswered = false;
         document.getElementById('totalP').textContent = problems.length;
 
+        let calcSet = [];
+
         function startCalc() {
             pCurrent = 0;
             pScore = 0;
+            calcSet = shuffled(problems);
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.add('hidden');
             document.getElementById('calcScreen').classList.remove('hidden');
@@ -405,7 +458,7 @@
         }
 
         function renderProblem() {
-            const p = problems[pCurrent];
+            const p = calcSet[pCurrent];
             pAnswered = false;
             document.getElementById('pCounter').textContent = `Masala ${pCurrent + 1} / ${problems.length}`;
             document.getElementById('pTag').textContent = p.tag;
@@ -422,7 +475,7 @@
 
         function checkProblem() {
             if (pAnswered) return;
-            const p = problems[pCurrent];
+            const p = calcSet[pCurrent];
             const val = parseFloat(document.getElementById('pInput').value);
             if (isNaN(val)) return;
             pAnswered = true;

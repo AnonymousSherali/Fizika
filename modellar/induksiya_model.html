@@ -17,17 +17,8 @@
             --header-bg: linear-gradient(135deg, #004d40 0%, #26a69a 100%);
         }
         canvas { background: #f5f7fa; }
+        body.dark canvas { background: #101820; filter: brightness(0.92); }
 
-        .formula {
-            background: var(--primary-dark);
-            color: #80cbc4;
-            padding: 12px 18px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2em;
-            text-align: center;
-            margin: 12px 0;
-        }
 
         .stat-value.highlight { color: #d84315; font-size: 1.1em; }
 
@@ -37,18 +28,6 @@
             gap: 8px;
             margin: 10px 0;
         }
-        .mode-btn {
-            padding: 10px 6px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            background: var(--card-bg);
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-            font-size: 0.88em;
-        }
-        .mode-btn:hover, .mode-btn.active { background: var(--primary); color: white; }
 
         .info-panel { background: #e0f2f1; border-left-color: #26a69a; }
         .info-panel h3 { color: #004d40; }
@@ -56,6 +35,16 @@
         body.dark .info-panel { background: #142823; }
         body.dark .info-panel h3 { color: #80cbc4; }
         body.dark .info-panel p { color: #c5e5e0; }
+        @media (max-width: 700px) {
+            .header h1 { font-size: 1.8em; }
+            .header p { font-size: 1em; }
+            .main-content { padding: 16px; gap: 14px; }
+            .controls { padding: 16px; }
+            .canvas-section { padding: 10px; }
+            .control-group { padding: 12px; }
+            .info-panel { padding: 16px; }
+            .mode-selector { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -76,9 +65,9 @@
 
                 <div class="control-group">
                     <label>Rejim:</label>
-                    <div class="mode-selector">
-                        <button class="mode-btn active" id="modeAuto" onclick="setMode('auto', event)">Avtomatik tebranish</button>
-                        <button class="mode-btn" id="modeManual" onclick="setMode('manual', event)">Qo'lda boshqarish</button>
+                    <div class="mode-selector" role="radiogroup" aria-label="Boshqaruv rejimi">
+                        <button class="mode-btn active" id="modeAuto" role="radio" aria-checked="true" onclick="setMode('auto', event)">Avtomatik tebranish</button>
+                        <button class="mode-btn" id="modeManual" role="radio" aria-checked="false" onclick="setMode('manual', event)">Qo'lda boshqarish</button>
                     </div>
                 </div>
 
@@ -110,8 +99,12 @@
                 <div class="stats">
                     <h3>📊 O'lchovlar</h3>
                     <div class="stat-item">
-                        <span class="stat-label">Magnit oqimi (Φ):</span>
+                        <span class="stat-label">Oqim, 1 o'ram (Φ):</span>
                         <span class="stat-value" id="fluxValue">0 mVb</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Oqim ilashishi (Ψ=N·Φ):</span>
+                        <span class="stat-value" id="linkageValue">0 mVb</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Induksiya EYK:</span>
@@ -135,7 +128,13 @@
                 <p>
                     <strong>Lens qoidasi:</strong> induksion tok o'z magnit maydoni bilan uni hosil
                     qilgan oqim o'zgarishiga <em>qarshilik ko'rsatadigan</em> yo'nalishda oqadi
-                    (formuladagi minus ishorasi).
+                    (formuladagi minus ishorasi). Shuning uchun <strong>yaqinlashayotgan magnit
+                    itariladi</strong>, <strong>uzoqlashayotgani esa tortiladi</strong>.
+                </p>
+                <p style="margin-top: 10px;">
+                    ⚠️ <strong>Diqqat:</strong> Φ — bitta o'ram orqali o'tuvchi oqim, u o'ramlar soniga
+                    <em>bog'liq emas</em>. Ψ = N·Φ esa oqim ilashishi. EYK aynan Ψ ning o'zgarish
+                    tezligiga teng: EYK = −ΔΨ/Δt = −N·ΔΦ/Δt.
                 </p>
                 <p style="margin-top: 10px;">
                     💡 <strong>Tajriba:</strong> Magnit tezroq harakatlansa — EYK katta. Magnit
@@ -171,15 +170,18 @@
 
         function setMode(m, evt) {
             state.mode = m;
-            document.getElementById('modeAuto').classList.toggle('active', m === 'auto');
-            document.getElementById('modeManual').classList.toggle('active', m === 'manual');
+            const bA = document.getElementById('modeAuto'), bM = document.getElementById('modeManual');
+            bA.classList.toggle('active', m === 'auto');
+            bM.classList.toggle('active', m === 'manual');
+            bA.setAttribute('aria-checked', m === 'auto' ? 'true' : 'false');
+            bM.setAttribute('aria-checked', m === 'manual' ? 'true' : 'false');
             document.getElementById('posSlider').disabled = (m === 'auto');
             if (m === 'manual') startInduction();
         }
 
         document.getElementById('posSlider').oninput = function() {
             if (state.mode === 'manual') {
-                state.magX = 60 + (parseFloat(this.value) / 100) * 420;
+                state.magX = 55 + (parseFloat(this.value) / 100) * 390; // 55..445
             }
         };
         document.getElementById('speedSlider').oninput = function() {
@@ -192,18 +194,23 @@
             if (!state.running) draw();
         };
 
-        // Bitta o'ram orqali oqim: masofaga bog'liq silliq funksiya
+        // Bitta o'ram orqali o'tuvchi magnit oqimi (shartli birlikda, 0..1).
+        // Magnit uchi g'altak chetiga yetganda maksimal bo'ladi.
+        const COIL_EDGE = 500; // g'altakning chap cheti (piksel)
         function fluxSingle(magX) {
-            const d = (coilX - 40) - (magX + 55); // magnit uchi bilan g'altak orasidagi masofa
-            return 1 / (1 + Math.pow(Math.max(0, d) / 60, 2));
+            const d = COIL_EDGE - (magX + 55); // magnit uchi bilan g'altak chetigacha masofa
+            return 1 / (1 + Math.pow(d / 70, 2));
         }
 
         function physicsStep(dt) {
             if (state.mode === 'auto') {
                 state.phase += dt * state.speed * 1.4;
-                state.magX = 250 + 190 * Math.sin(state.phase) - 60;
-                document.getElementById('posSlider').value = ((state.magX - 60) / 420 * 100).toFixed(0);
+                // Diapazon qo'lda rejim bilan bir xil (60..480) - rejim almashganda sakramaydi
+                state.magX = 250 + 195 * Math.sin(state.phase); // 55..445: g'altak chetiga yetadi
+                document.getElementById('posSlider').value = ((state.magX - 55) / 390 * 100).toFixed(0);
             }
+            const posPct = Math.round((state.magX - 55) / 390 * 100);
+            document.getElementById('posValue').textContent = posPct + '%';
             const flux = fluxSingle(state.magX);
             // EYK = -N * dPhi/dt (shartli birliklarda -> mV masshtabi)
             state.emf = -state.N * (flux - state.prevFlux) / Math.max(dt, 1e-4) * 12;
@@ -211,10 +218,14 @@
             // Strelka silliq harakatlanishi uchun
             state.emfSmooth += (state.emf - state.emfSmooth) * Math.min(1, dt * 10);
 
-            document.getElementById('fluxValue').textContent = (flux * state.N * 10).toFixed(1) + ' mVb';
+            // Φ - BITTA o'ram orqali oqim (N ga bog'liq emas!), Ψ = N·Φ - oqim ilashishi
+            document.getElementById('fluxValue').textContent = (flux * 10).toFixed(2) + ' mVb';
+            document.getElementById('linkageValue').textContent = (flux * state.N * 10).toFixed(1) + ' mVb';
             document.getElementById('emfValue').textContent = state.emfSmooth.toFixed(1) + ' mV';
+            // Lens qoidasi: oqim ORTSA (magnit yaqinlashmoqda) g'altak magnitni ITARADI.
+            // Oqim ortganda EYK = -N*dPhi/dt < 0 bo'ladi.
             const dir = Math.abs(state.emfSmooth) < 1 ? '— (tok yo\'q)' :
-                (state.emfSmooth > 0 ? '↻ (magnitga qarshi)' : '↺ (magnitni tortadi)');
+                (state.emfSmooth < 0 ? '↻ itaradi (yaqinlashmoqda)' : '↺ tortadi (uzoqlashmoqda)');
             document.getElementById('dirValue').textContent = dir;
         }
 
@@ -249,9 +260,6 @@
             const n = state.N;
             const w = Math.min(180, 30 + n * 9);
             const x0 = coilX - w / 2;
-            // O'ramlar orasidagi sim (orqa)
-            ctx.strokeStyle = '#8d6e63';
-            ctx.lineWidth = 2;
             // Har bir o'ram - ellips
             for (let i = 0; i < n; i++) {
                 const ex = x0 + (i + 0.5) * (w / n);
@@ -378,11 +386,12 @@
         function resetInduction() {
             pauseInduction();
             state.phase = 0;
-            state.magX = 120;
+            state.magX = 55;
             state.emf = 0;
             state.emfSmooth = 0;
             state.prevFlux = fluxSingle(state.magX);
-            document.getElementById('fluxValue').textContent = (state.prevFlux * state.N * 10).toFixed(1) + ' mVb';
+            document.getElementById('fluxValue').textContent = (state.prevFlux * 10).toFixed(2) + ' mVb';
+            document.getElementById('linkageValue').textContent = (state.prevFlux * state.N * 10).toFixed(1) + ' mVb';
             document.getElementById('emfValue').textContent = '0.0 mV';
             document.getElementById('dirValue').textContent = '-';
             draw();

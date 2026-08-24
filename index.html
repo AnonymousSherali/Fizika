@@ -146,6 +146,19 @@
 
         @media (max-width: 768px) {
             .cards { grid-template-columns: 1fr; }
+            /* styles.css dagi mobil qoidalar bu blokdan keyin kelgani uchun
+               bekor bo'ladi - shu sababli bu yerda takrorlanadi */
+            .header { padding: 32px 18px; }
+            .header h1 { font-size: 1.9em; }
+            .header p { font-size: 1.05em; }
+            .header .subtitle { font-size: 0.9em; }
+            .content { padding: 22px 16px; }
+            .section h2 { font-size: 1.5em; }
+            .card { padding: 22px; }
+            .card h3 { font-size: 1.25em; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .stat-number { font-size: 2em; }
+            .footer { padding: 22px 16px; }
         }
     </style>
 </head>
@@ -431,7 +444,10 @@
                 render();
                 requestAnimationFrame(step);
             }
-            window.addEventListener('resize', init);
+            window.addEventListener('resize', function() {
+                init();
+                if (reduced) render(); // harakatsiz rejimda qayta chizish kerak
+            });
             init();
             if (reduced) {
                 render(); // harakatsiz, bir marta chiziladi
