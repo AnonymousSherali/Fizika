@@ -27,7 +27,8 @@
 }
 
 /* ===== Dark mode: faqat o'zgaruvchilarni qayta yozamiz ===== */
-body.dark {
+/* html.dark - sahifa yuklanishida miltillamasligi uchun (theme.js erta qo'yadi) */
+html.dark body, body.dark {
     --page-bg: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
     --container-bg: #1a1f2e;
     --panel-bg: #232838;
@@ -39,6 +40,9 @@ body.dark {
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Sahifa yuklanayotganda oq chaqnash bo'lmasligi uchun */
+html.dark { background: #0f2027; }
 
 body {
     font-family: var(--font);
@@ -197,6 +201,38 @@ button.action.btn-secondary:hover { background: #5a6268; }
 button.action.btn-success { background: #28a745; }
 button.action.btn-success:hover { background: #218838; }
 button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ===== Formula qutisi (barcha modellarda bir xil) ===== */
+.formula {
+    background: var(--primary-dark);
+    color: var(--accent);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2em;
+    text-align: center;
+    margin: 12px 0;
+}
+
+/* ===== Tanlov tugmalari guruhi (sayyora / rejim tanlash) ===== */
+.choice-grid {
+    display: grid;
+    gap: 8px;
+    margin: 10px 0;
+}
+.planet-btn, .mode-btn {
+    padding: 9px 5px;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+    font-size: 0.88em;
+}
+.planet-btn:hover, .mode-btn:hover,
+.planet-btn.active, .mode-btn.active { background: var(--primary); color: white; }
 
 /* ===== Statistika paneli ===== */
 .stats {
