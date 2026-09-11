@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔌%3C/text%3E%3C/svg%3E">
     <title>Om Qonuni - Interaktiv Model</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../model-tools.css">
     <style>
         :root {
             --primary: #b45309;
@@ -47,6 +48,17 @@
             </div>
 
             <div class="controls">
+                <div class="task-card">
+                    <h3>🎯 Topshiriq</h3>
+                    <ol>
+                        <li>U = <strong>6 V</strong>, R = <strong>10 Ω</strong> qilib tokni yoqing</li>
+                        <li>I va P qiymatlarini jurnalga yozing</li>
+                        <li>U ni <strong>2 barobar</strong> oshiring (12 V) — I qanday o'zgardi?</li>
+                        <li>U ni 6 V ga qaytarib, R ni 2 barobar oshiring (20 Ω) — I qanday o'zgardi?</li>
+                        <li><strong>Xulosa:</strong> I ning U va R ga bog'liqligini o'z so'zingiz bilan yozing</li>
+                    </ol>
+                </div>
+
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
@@ -84,8 +96,15 @@
                         <span class="stat-label">Quvvat (P = U·I):</span>
                         <span class="stat-value" id="pValue">3.60 W</span>
                     </div>
+                    <p class="warn-note" id="powerWarn" hidden>⚠️ Bunday quvvatda oddiy rezistor
+                        qizib ketardi — maktab laboratoriyasidagi rezistorlar odatda
+                        <strong>0.25–2 W</strong> ga mo'ljallangan.</p>
                 </div>
             </div>
+
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
 
             <div class="info-panel">
                 <h3>📚 Nazariy Ma'lumot</h3>
@@ -108,6 +127,7 @@
     </div>
 
     <script src="../theme.js"></script>
+    <script src="../model-tools.js"></script>
     <script>
         const canvas = document.getElementById('circuitCanvas');
         const ctx = canvas.getContext('2d');
@@ -140,7 +160,11 @@
             document.getElementById('uValue').textContent = state.U.toFixed(1) + ' V';
             document.getElementById('rValue').textContent = state.R + ' Ω';
             document.getElementById('iValue').textContent = I.toFixed(2) + ' A';
-            document.getElementById('pValue').textContent = (state.U * I).toFixed(2) + ' W';
+            const P = state.U * I;
+            document.getElementById('pValue').textContent = P.toFixed(2) + ' W';
+            // Amaliy chegaradan oshganda ogohlantiramiz (real fizikaviy tushuncha)
+            const warn = document.getElementById('powerWarn');
+            if (warn) warn.hidden = P <= 10;
         }
 
         // Perimetr bo'ylab t (0..1) -> nuqta koordinatasi
@@ -316,6 +340,16 @@
 
         updateStats();
         draw();
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startCircuit, pause: pauseCircuit };
+        window.modelIsRunning = function () { return state.running; };
+        window.labFields = [
+            { label: "U (V)", get: function () { return state.U.toFixed(1); } },
+            { label: "R (Ω)", get: function () { return state.R; } },
+            { label: "I (A)", get: function () { return current().toFixed(3); } },
+            { label: "P (W)", get: function () { return (state.U*current()).toFixed(2); } }
+        ];
     </script>
 </body>
 </html>

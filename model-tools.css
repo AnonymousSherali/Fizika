@@ -1,0 +1,217 @@
+/* ============================================================
+   model-tools.css — interaktiv modellar uchun qo'shimcha uslublar
+   (navigatsiya, topshiriq kartasi, laboratoriya jurnali)
+   styles.css dan keyin ulanadi.
+   ============================================================ */
+
+/* ===== Modellar orasida navigatsiya ===== */
+.model-nav {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+}
+.model-nav__label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-right: var(--sp-1);
+}
+.model-nav__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px var(--sp-3);
+    border-radius: var(--r-pill);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s var(--ease);
+}
+.model-nav__item:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 8%, var(--card-bg));
+    transform: translateY(-1px);
+}
+
+/* ===== Topshiriq kartasi ===== */
+.task-card {
+    background: color-mix(in srgb, var(--accent) 7%, var(--card-bg));
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+    margin-bottom: var(--sp-4);
+}
+.task-card h3 {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: var(--sp-3);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+.task-card ol {
+    list-style: none;
+    counter-reset: step;
+    display: grid;
+    gap: var(--sp-2);
+}
+.task-card li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 30px;
+    font-size: 0.87rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+}
+/* Raqam absolyut joylashadi — aks holda flex matn oqimini buzadi */
+.task-card li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 21px; height: 21px;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent);
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+html.dark .task-card li::before, body.dark .task-card li::before {
+    color: color-mix(in srgb, var(--accent) 60%, white);
+}
+.task-card strong { color: var(--text); }
+
+/* ===== Laboratoriya jurnali ===== */
+.lab-log {
+    grid-column: 1 / -1;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+}
+.lab-log__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-3);
+}
+.lab-log__head h3 { font-size: 1rem; color: var(--text); }
+.lab-log__hint { font-size: 0.82rem; color: var(--text-muted); }
+
+.lab-log__actions {
+    display: flex;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-3);
+}
+.lab-btn {
+    padding: var(--sp-2) var(--sp-4);
+    border-radius: var(--r-xs);
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+}
+.lab-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+.lab-btn--main {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+.lab-btn--main:hover {
+    color: white;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.lab-log__wrap { max-height: 210px; overflow: auto; border-radius: var(--r-xs); }
+.lab-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+    font-variant-numeric: tabular-nums;
+}
+.lab-table th, .lab-table td {
+    padding: var(--sp-2) var(--sp-3);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+.lab-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    color: var(--text);
+    font-weight: 650;
+    font-size: 0.8rem;
+    z-index: 1;
+}
+.lab-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--primary) 4%, transparent); }
+.lab-table tbody td { color: var(--text-muted); }
+.lab-table tbody td:first-child { color: var(--text-muted); font-weight: 600; }
+
+.lab-log__empty {
+    color: var(--text-muted);
+    font-size: 0.84rem;
+    padding: var(--sp-3) 0 0;
+    line-height: 1.6;
+}
+.lab-log__empty strong { color: var(--text); }
+
+kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+    line-height: 1.5;
+}
+
+/* ===== Klaviatura yordami ===== */
+.kbd-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+    margin-top: var(--sp-3);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+@media (max-width: 700px) {
+    .model-nav { padding: var(--sp-3); }
+    .model-nav__label { flex: 1 1 100%; margin-bottom: var(--sp-1); }
+    .lab-log__actions .lab-btn { flex: 1 1 auto; }
+}
+
+/* ===== Ogohlantirish eslatmasi (sozlama chegaradan chiqqanda) ===== */
+.warn-note {
+    margin-top: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    background: color-mix(in srgb, #f59e0b 14%, var(--card-bg));
+    border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+    border-radius: var(--r-xs);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+.warn-note strong { color: var(--text); }

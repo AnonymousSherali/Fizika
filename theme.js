@@ -65,10 +65,13 @@
 
     // ----- Scroll-to-top ko'rinishi -----
     function initScrollTop() {
-        window.addEventListener('scroll', function () {
+        function sync() {
             var s = document.getElementById('scrollTop');
             if (s) s.classList.toggle('show', window.scrollY > 300);
-        });
+        }
+        window.addEventListener('scroll', sync);
+        // Anchor havola bilan kirilganda sahifa allaqachon pastda bo'lishi mumkin
+        sync();
     }
 
     // ----- Scroll-reveal animatsiya -----

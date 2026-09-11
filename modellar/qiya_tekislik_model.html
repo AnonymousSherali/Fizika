@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📐%3C/text%3E%3C/svg%3E">
     <title>Qiya Tekislik - Interaktiv Model</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../model-tools.css">
     <style>
         :root {
             --primary: #c2410c;
@@ -16,6 +17,7 @@
             --header-bg: linear-gradient(135deg, #7c2d12 0%, #c2410c 55%, #f59e0b 100%);
         }
         canvas { background: #e3f2fd; }
+        html.dark canvas, body.dark canvas { background: #0d1520; }
 
 
         .stat-value.highlight {
@@ -75,6 +77,17 @@
             </div>
 
             <div class="controls">
+                <div class="task-card">
+                    <h3>🎯 Topshiriq</h3>
+                    <ol>
+                        <li>Burchakni <strong>15°</strong>, μ = <strong>0.20</strong> qilib qo'ying</li>
+                        <li>«Yukni tortish» ni bosing va FIK qiymatini jurnalga yozing</li>
+                        <li>Burchakni 25°, 35°, 45° ga oshirib takrorlang</li>
+                        <li><strong>Savol:</strong> burchak ortganda FIK ortadimi yoki kamayadimi? Nega?</li>
+                        <li>Massani o'zgartiring — FIK o'zgardimi? Bu nimani anglatadi?</li>
+                    </ol>
+                </div>
+
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
@@ -135,6 +148,10 @@
                 </div>
             </div>
 
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
+
             <div class="info-panel">
                 <h3>📚 Nazariy Ma'lumot</h3>
                 <p>
@@ -160,6 +177,7 @@
     </div>
 
     <script src="../theme.js"></script>
+    <script src="../model-tools.js"></script>
     <script>
         const canvas = document.getElementById('inclineCanvas');
         const ctx = canvas.getContext('2d');
@@ -167,10 +185,12 @@
         // Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
         const LIGHT = { sky1: '#e3f2fd', sky2: '#fff8e1', ground: '#8d6e63', groundEdge: '#5d4037',
                         ramp: '#a1887f', rampEdge: '#4e342e', hatch: '#6d4c41', ink: '#4e342e',
-                        done: '#1b7f4a' };
+                        done: '#1b7f4a', angle: '#c0392b', height: '#2980b9',
+                        box1: '#ffb74d', box2: '#e65100', boxEdge: '#bf360c' };
         const DARK  = { sky1: '#0d1520', sky2: '#1a1712', ground: '#3e2f29', groundEdge: '#241a16',
                         ramp: '#4a3a34', rampEdge: '#8d7168', hatch: '#8d7168', ink: '#e8d5b5',
-                        done: '#4ade80' };
+                        done: '#4ade80', angle: '#ff8a70', height: '#7dd3fc',
+                        box1: '#fbbf24', box2: '#c2410c', boxEdge: '#fed7aa' };
         function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
 
         const G = 9.81;
@@ -311,17 +331,17 @@
             }
 
             // Burchak yoyi va belgisi
-            ctx.strokeStyle = '#c0392b';
+            ctx.strokeStyle = pal.angle;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(baseX, baseY, 55, -state.angle, 0);
             ctx.stroke();
-            ctx.fillStyle = '#c0392b';
+            ctx.fillStyle = pal.angle;
             ctx.font = 'bold 16px Arial';
             ctx.fillText('α = ' + (state.angle * 180 / Math.PI).toFixed(0) + '°', baseX + 62, baseY - 12);
 
             // Balandlik chizig'i (h)
-            ctx.strokeStyle = '#2980b9';
+            ctx.strokeStyle = pal.height;
             ctx.setLineDash([6, 4]);
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -329,7 +349,7 @@
             ctx.lineTo(topX + 25, topY);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.fillStyle = '#2980b9';
+            ctx.fillStyle = pal.height;
             ctx.font = 'bold 15px Arial';
             ctx.fillText('h = ' + (S * Math.sin(state.angle)).toFixed(2) + ' m', topX + 32, (baseY + topY) / 2);
 
@@ -343,11 +363,11 @@
             ctx.translate(bx, by);
             ctx.rotate(-state.angle);
             const boxGrad = ctx.createLinearGradient(0, -bh, 0, 0);
-            boxGrad.addColorStop(0, '#ffb74d');
-            boxGrad.addColorStop(1, '#e65100');
+            boxGrad.addColorStop(0, pal.box1);
+            boxGrad.addColorStop(1, pal.box2);
             ctx.fillStyle = boxGrad;
             ctx.fillRect(0, -bh, bw, bh);
-            ctx.strokeStyle = '#bf360c';
+            ctx.strokeStyle = pal.boxEdge;
             ctx.lineWidth = 2;
             ctx.strokeRect(0, -bh, bw, bh);
             ctx.fillStyle = '#fff';
@@ -434,6 +454,19 @@
 
         // Rejim almashganda kanvasni qayta chizamiz
         window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startIncline, pause: pauseIncline, reset: resetIncline };
+        window.modelIsRunning = function () { return state.running; };
+        window.labFields = [
+            { label: "α (°)", get: function () { return Math.round(state.angle*180/Math.PI); } },
+            { label: "μ", get: function () { return state.mu.toFixed(2); } },
+            { label: "m (kg)", get: function () { return state.mass.toFixed(1); } },
+            { label: "F (N)", get: function () { return physics().F.toFixed(2); } },
+            { label: "A_f (J)", get: function () { return physics().Af.toFixed(2); } },
+            { label: "A_ishq (J)", get: function () { return physics().Aisq.toFixed(2); } },
+            { label: "FIK (%)", get: function () { return (physics().eta*100).toFixed(1); } }
+        ];
     </script>
 </body>
 </html>

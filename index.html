@@ -11,6 +11,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔬%3C/text%3E%3C/svg%3E">
     <title>Fizik Modellar — Interaktiv O'quv Platformasi</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="model-tools.css">
     <style>
         .container { max-width: 1240px; }
 
@@ -327,7 +328,8 @@
                 <div class="section-head">
                     <span class="section-eyebrow">Simulyatsiyalar</span>
                     <h2>Interaktiv modellar</h2>
-                    <p class="section-sub">Parametrlarni o'zgartiring, natijani jonli kuzating — har bir model haqiqiy fizika tenglamalari asosida ishlaydi.</p>
+                    <p class="section-sub">Har bir modelda tayyor topshiriq, jonli o'lchovlar va
+                       laboratoriya jurnali bor — natijalarni jadvalga yozib, hisobotga nusxalang.</p>
                 </div>
                 <div class="cards">
                     <article class="card">
@@ -482,8 +484,12 @@
                         <p>To'liq o'zbekcha interfeys, formulalar va tushuntirishlar</p>
                     </div>
                     <div class="feature">
-                        <h4>📊 Jonli o'lchovlar</h4>
-                        <p>Har bir model natijani raqamlarda ham ko'rsatadi</p>
+                        <h4>📋 Laboratoriya jurnali</h4>
+                        <p>O'lchovlarni jadvalga yozib boring va Excel'ga nusxalang</p>
+                    </div>
+                    <div class="feature">
+                        <h4>🎯 Tayyor topshiriqlar</h4>
+                        <p>Har bir modelda qadam-baqadam tajriba rejasi</p>
                     </div>
                     <div class="feature">
                         <h4>💻 Oflayn ishlaydi</h4>
@@ -506,11 +512,15 @@
                     <h3>💡 Qanday foydalanish kerak</h3>
                     <ol class="steps">
                         <li><span class="num">1</span> Mavzuga mos interaktiv modelni oching</li>
-                        <li><span class="num">2</span> Sozlamalarni o'zgartirib tajriba o'tkazing va o'lchovlarni yozib boring</li>
-                        <li><span class="num">3</span> Natijalarni nazariy formula bilan solishtirib, xulosa chiqaring</li>
-                        <li><span class="num">4</span> Dars ishlanmadan to'liq metodik qo'llanmani oling</li>
-                        <li><span class="num">5</span> Onlayn test bilan bilimingizni tekshiring</li>
+                        <li><span class="num">2</span> Panel tepasidagi <strong>🎯 Topshiriq</strong> qadamlarini bajaring</li>
+                        <li><span class="num">3</span> Har o'lchovdan keyin <strong>«O'lchovni yozish»</strong> ni bosing (yoki <kbd>S</kbd>)</li>
+                        <li><span class="num">4</span> Jurnalni <strong>«Nusxalash»</strong> bilan hisobotingizga ko'chiring</li>
+                        <li><span class="num">5</span> Natijalarni nazariy formula bilan solishtirib xulosa chiqaring</li>
+                        <li><span class="num">6</span> Onlayn test bilan bilimingizni tekshiring</li>
                     </ol>
+                    <p style="margin-top: var(--sp-4); font-size: 0.85rem; color: var(--text-muted);">
+                        ⌨️ Modellarda: <kbd>Space</kbd> boshlash/pauza · <kbd>R</kbd> qayta · <kbd>S</kbd> o'lchovni yozish
+                    </p>
                 </div>
             </section>
         </main>

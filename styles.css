@@ -175,6 +175,7 @@ h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.02em; font-weight: 700; }
     border-radius: var(--r-lg);
     padding: var(--sp-4);
     box-shadow: var(--shadow-sm);
+    align-self: start;   /* boshqaruv paneli uzun bo'lsa cho'zilib ketmasin */
 }
 
 canvas {
