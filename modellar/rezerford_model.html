@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚛️%3C/text%3E%3C/svg%3E">
     <title>Rezerford Tajribasi - Interaktiv Model</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../model-tools.css">
     <style>
         :root {
             --primary: #4f46e5;
@@ -93,6 +94,17 @@
             </div>
 
             <div class="controls">
+                <div class="task-card">
+                    <h3>🎯 Topshiriq</h3>
+                    <ol>
+                        <li>Tezlikni <strong>1.0·10⁷</strong> ga qo'ying va tajribani boshlang</li>
+                        <li>Statistikada <strong>sochilish %</strong> va <strong>r_min</strong> ni yozib oling</li>
+                        <li>Tezlikni <strong>3.0·10⁷</strong> ga oshiring va takrorlang</li>
+                        <li><strong>Savol:</strong> tezlik 3 barobar oshsa, r_min necha marta kamaydi? Nega?</li>
+                        <li>Sochilish foizi qanday o'zgardi — tez zarra kamroq og'adimi?</li>
+                    </ol>
+                </div>
+
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
@@ -156,6 +168,10 @@
                 </div>
             </div>
 
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
+
             <div class="info-panel">
                 <h3>📚 Nazariy Ma'lumot</h3>
                 <p>
@@ -187,6 +203,7 @@
     </div>
 
     <script src="../theme.js"></script>
+    <script src="../model-tools.js"></script>
     <script>
         const canvas = document.getElementById('experimentCanvas');
         const ctx = canvas.getContext('2d');
@@ -237,6 +254,10 @@
         document.getElementById('countSlider').oninput = function() {
             settings.count = parseInt(this.value);
             document.getElementById('countValue').textContent = this.value;
+            // Yangi son eski seriya bilan aralashmasligi uchun kutayotganlar bekor qilinadi
+            spawnTimers.forEach(clearTimeout);
+            spawnTimers = [];
+            pendingCount = 0;
         };
 
         class AlphaParticle {
@@ -429,10 +450,12 @@
                 cancelAnimationFrame(animationId);
             }
             // Kutayotgan zarra generatorlari ham to'xtaydi, aks holda pauzada
-            // statistika o'sib, kanvas qotib qolardi
+            // statistika o'sib, kanvas qotib qolardi.
+            // pendingCount createParticles ichida hisoblanadi — bu yerda
+            // qayta hisoblash slayder o'zgarganda noto'g'ri natija berardi
             spawnTimers.forEach(clearTimeout);
             spawnTimers = [];
-            pendingCount = settings.count - particles.length;
+            pendingCount = Math.max(0, pendingCount);
         }
 
         function resetExperiment() {
@@ -452,6 +475,20 @@
         // Boshlang'ich holat
         resetExperiment();
         updateTheory();
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startExperiment, pause: pauseExperiment, reset: resetExperiment };
+        window.modelIsRunning = function () { return isRunning; };
+        window.labFields = [
+            { label: "v (×10⁷ m/s)", get: function () { return (settings.speed/1e7).toFixed(1); } },
+            { label: "E (MeV)", get: function () { return document.getElementById('energyValue').textContent; } },
+            { label: "r_min (fm)", get: function () { return document.getElementById('rMinValue').textContent; } },
+            { label: "Umumiy", get: function () { return stats.total; } },
+            { label: "O'tgan", get: function () { return stats.passed; } },
+            { label: "Sochilgan", get: function () { return stats.scattered; } },
+            { label: "Qaytgan", get: function () { return stats.reflected; } },
+            { label: "Sochilish %", get: function () { return document.getElementById('scatteringRate').textContent; } }
+        ];
     </script>
 </body>
 </html>

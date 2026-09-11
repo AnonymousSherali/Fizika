@@ -85,21 +85,7 @@
             margin-right: 14px; flex-shrink: 0;
         }
         .option.selected { border-color: var(--accent); background: #e7f1ff; color: #1e3c72; }
-        body.dark .option.selected { background: #243049; color: #e0e0e0; }
-        .option.correct { border-color: #28a745; background: #d4edda; color: #155724; }
-        .option.correct .letter { background: #28a745; }
-        .option.wrong { border-color: #dc3545; background: #f8d7da; color: #721c24; }
-        .option.wrong .letter { background: #dc3545; }
-        .option.disabled { pointer-events: none; }
-        /* Javob natijalari — qorong'i rejimda ham ko'zni qamashtirmaydi */
-        html.dark .option.correct, body.dark .option.correct {
-            background: color-mix(in srgb, #10b981 18%, var(--panel-bg));
-            color: #6ee7b7;
-        }
-        html.dark .option.wrong, body.dark .option.wrong {
-            background: color-mix(in srgb, #ef4444 18%, var(--panel-bg));
-            color: #fca5a5;
-        }
+        html.dark .option.selected, body.dark .option.selected { background: color-mix(in srgb, var(--accent) 18%, var(--panel-bg)); color: var(--text); }
         html.dark .review-item.ok, body.dark .review-item.ok {
             background: color-mix(in srgb, #10b981 14%, var(--panel-bg));
         }
@@ -162,8 +148,9 @@
             <div id="startScreen" class="start-screen">
                 <div class="quiz-icon">🎯</div>
                 <h2>Bilimingizni sinab ko'ring!</h2>
-                <p>Quyidagi test 4 bo'limdan iborat: Rezerford va Kepler mavzulari bo'yicha
-                   asosiy va chuqur tushunish savollari.</p>
+                <p>Quyidagi test <strong>Rezerford tajribasi</strong> va <strong>Kepler qonunlari</strong>
+                   mavzularini qamrab oladi (11-sinf). Asosiy bilim, chuqur tushunish va
+                   hisoblash masalalari bo'limlaridan iborat.</p>
                 <div class="info-grid">
                     <div class="info-card"><div class="num" id="totalQ">40</div><div class="lbl">Test savoli</div></div>
                     <div class="info-card"><div class="num" id="totalP">9</div><div class="lbl">Hisoblash masalasi</div></div>
@@ -365,6 +352,9 @@
         function nextQuestion() {
             if (answers[current] === null) return;
             if (current === quiz.length - 1) {
+                var unanswered = answers.filter(function (a) { return a === null; }).length;
+                if (unanswered > 0 &&
+                    !confirm(unanswered + ' ta savol belgilanmagan. Baribir yakunlaysizmi?')) return;
                 showResult();
             } else {
                 current++;
@@ -428,9 +418,9 @@
             { tag: "Rezerford · Hisoblash", unit: "fm", ans: 45, tol: 12,
               q: "Alfa zarra 5 MeV energiya bilan harakatlanadi. Oltin yadrosiga (Z=79) minimal qancha yaqinlasha oladi? Javobni femtometrda (fm) yozing.",
               sol: "E\u2096 = E\u209A dan: r = k\u00B7q\u2081\u00B7q\u2082/E = (9\u00D710\u2079 \u00B7 3.2\u00D710\u207B\u00B9\u2079 \u00B7 1.26\u00D710\u207B\u00B9\u2077) / (8\u00D710\u207B\u00B9\u00B3) \u2248 4.5\u00D710\u207B\u00B9\u2074 m = 45 fm" },
-            { tag: "Rezerford · Hisoblash", unit: "N", ans: 36, tol: 10,
+            { tag: "Rezerford · Hisoblash", unit: "N", ans: 3.6, tol: 10,
               q: "Alfa zarra oltin yadrosidan 100 fm masofada joylashgan. Unga ta'sir etuvchi Kulon kuchini toping (N).",
-              sol: "F = k\u00B7q\u2081\u00B7q\u2082/r\u00B2 = (9\u00D710\u2079 \u00B7 3.2\u00D710\u207B\u00B9\u2079 \u00B7 1.26\u00D710\u207B\u00B9\u2077) / (10\u207B\u00B9\u00B3)\u00B2 \u2248 36 N" },
+              sol: "F = k\u00B7q\u2081\u00B7q\u2082/r\u00B2 = (9\u00D710\u2079 \u00B7 3.2\u00D710\u207B\u00B9\u2079 \u00B7 1.26\u00D710\u207B\u00B9\u2077) / (10\u207B\u00B9\u00B3)\u00B2 = 3.6\u00D710\u207B\u00B2\u2076 / 10\u207B\u00B2\u2076 \u2248 3.6 N" },
             { tag: "Rezerford · Hisoblash", unit: "%", ans: 15, tol: 2,
               q: "1000 ta alfa zarra yuborildi: 850 tasi to'g'ri o'tdi, 140 tasi sochildi, 10 tasi qaytdi. Sochilish foizini toping (%).",
               sol: "Sochilgan jami = 140 + 10 = 150. Foiz = 150/1000 \u00D7 100% = 15%" },
@@ -465,6 +455,7 @@
             pCurrent = 0;
             pScore = 0;
             calcSet = shuffled(problems);
+            calcSet.forEach(function (p) { p._ok = false; });
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.add('hidden');
             document.getElementById('calcScreen').classList.remove('hidden');
@@ -490,10 +481,20 @@
         function checkProblem() {
             if (pAnswered) return;
             const p = calcSet[pCurrent];
-            const val = parseFloat(document.getElementById('pInput').value);
-            if (isNaN(val)) return;
+            const inp = document.getElementById('pInput');
+            const val = parseFloat(inp.value);
+            if (isNaN(val)) {
+                // Jim qaytish o'rniga aniq ko'rsatma beramiz
+                document.getElementById('pFeedback').innerHTML =
+                    '<div class="review-item no"><div class="rq">⚠️ Avval raqamli javobni kiriting</div></div>';
+                inp.style.borderColor = '#ef4444';
+                inp.focus();
+                setTimeout(function () { inp.style.borderColor = ''; }, 1800);
+                return;
+            }
             pAnswered = true;
             const ok = Math.abs(val - p.ans) <= p.ans * p.tol / 100;
+            p._ok = ok;
             if (ok) pScore++;
             const fb = document.getElementById('pFeedback');
             fb.innerHTML =
@@ -541,7 +542,23 @@
             document.getElementById('scoreCircle').style.background = color;
             document.getElementById('gradeText').textContent = grade;
             document.getElementById('resultDetail').textContent = msg;
-            document.getElementById('reviewList').innerHTML = '';
+
+            // Xato qilingan masalalar yechimi bilan ko'rsatiladi
+            const rev = document.getElementById('reviewList');
+            const wrongP = calcSet.filter(function (p) { return !p._ok; });
+            if (!wrongP.length) {
+                rev.innerHTML = '<div class="review-item ok"><div class="rq">🎉 Barcha masalalarni to\'g\'ri yechdingiz!</div></div>';
+            } else {
+                let html = '<p style="font-weight:bold;color:#dc3545;margin-bottom:12px;">Xato yechilgan masalalar (' +
+                           wrongP.length + ' ta):</p>';
+                calcSet.forEach(function (p, i) {
+                    if (p._ok) return;
+                    html += '<div class="review-item no"><div class="rq">' + (i + 1) + '. ' + p.q + '</div>' +
+                            '<div class="ra">✅ To\'g\'ri javob: <strong>' + p.ans + ' ' + p.unit + '</strong><br>' +
+                            '<strong>Yechim:</strong> ' + p.sol + '</div></div>';
+                });
+                rev.innerHTML = html;
+            }
         }
 
         function restartQuiz() {

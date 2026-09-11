@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪐%3C/text%3E%3C/svg%3E">
     <title>Kepler Qonunlari - Interaktiv Model</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../model-tools.css">
     <style>
         :root {
             --primary: #7c3aed;
@@ -113,6 +114,17 @@
             </div>
 
             <div class="controls">
+                <div class="task-card">
+                    <h3>🎯 Topshiriq</h3>
+                    <ol>
+                        <li>1-qonun: turli sayyoralarni tanlang va <strong>perigeliy/afeliy</strong> ni yozing</li>
+                        <li>Ekssentrisitetni oshiring — orbita shakli qanday o'zgardi?</li>
+                        <li>2-qonun bo'limida yuzalar <strong>nisbatini</strong> kuzating (≈1.00 bo'lishi kerak)</li>
+                        <li>3-qonun bo'limida <strong>T²/a³</strong> qiymatlarini solishtiring</li>
+                        <li><strong>Savol:</strong> nega barcha sayyoralarda T²/a³ bir xil?</li>
+                    </ol>
+                </div>
+
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="planet-selector" role="radiogroup" aria-label="Sayyorani tanlash">
@@ -131,7 +143,7 @@
                         Yarim katta o'q (AU):
                         <span class="value-display" id="semiMajorValue">1.00</span>
                     </label>
-                    <input type="range" id="semiMajorSlider" min="0.39" max="31" step="0.01" value="1.00" aria-label="Yarim katta o'q">
+                    <input type="range" id="semiMajorSlider" min="0.38" max="31" step="0.01" value="1.00" aria-label="Yarim katta o'q">
                 </div>
 
                 <div class="control-group">
@@ -170,6 +182,10 @@
                     </div>
                 </div>
             </div>
+
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
 
             <div class="info-panel">
                 <h3>📚 Birinchi Qonun: Ellips Qonuni</h3>
@@ -321,6 +337,7 @@
     </div>
 
     <script src="../theme.js"></script>
+    <script src="../model-tools.js"></script>
     <script>
         // Umumiy o'zgaruvchilar
         let animations = [null, null, null];
@@ -389,14 +406,27 @@
 
         let orbit1 = { a: 1.0, e: 0.017, angle: 0, speed: 1 };
 
+        // Slayder qo'lda surilsa, tanlangan sayyora belgisi olib tashlanadi —
+        // aks holda "Yer" yonib turgani holda a = 25 AU ko'rinib qolardi
+        function clearPlanetChoice() {
+            document.querySelectorAll('.planet-btn').forEach(function (b) {
+                b.classList.remove('active');
+                b.setAttribute('aria-checked', 'false');
+            });
+        }
+
         document.getElementById('semiMajorSlider').oninput = function() {
             orbit1.a = parseFloat(this.value);
             document.getElementById('semiMajorValue').textContent = parseFloat(this.value).toFixed(2);
+            clearPlanetChoice();
+            if (!isRunning[0]) drawOrbit1();
         };
 
         document.getElementById('eccentricitySlider').oninput = function() {
             orbit1.e = parseFloat(this.value);
             document.getElementById('eccentricityValue').textContent = parseFloat(this.value).toFixed(3);
+            clearPlanetChoice();
+            if (!isRunning[0]) drawOrbit1();
         };
 
         document.getElementById('speedSlider1').oninput = function() {
@@ -716,8 +746,17 @@
             areas: [0, 0]
         };
 
+        // Vaqt oralig'i slayderi sektor uzunligini (kadrlar sonini) boshqaradi
+        function sectorFrames() {
+            return Math.round(parseInt(document.getElementById('timeIntervalSlider').value, 10) / 2);
+        }
+
         document.getElementById('timeIntervalSlider').oninput = function() {
             document.getElementById('timeIntervalValue').textContent = this.value;
+            // Oraliq o'zgarsa, yig'ilgan izlar yangi uzunlikka moslashadi
+            const cap = sectorFrames() * 2;
+            while (orbit2.positions.length > cap) orbit2.positions.shift();
+            if (!isRunning[1]) drawOrbit2();
         };
 
         // Ko'pburchak yuzasi (shoelace formulasi)
@@ -764,27 +803,28 @@
             const x = centerX + a * Math.cos(orbit2.angle);
             const y = centerY + b * Math.sin(orbit2.angle);
 
+            const FR = sectorFrames();          // bitta sektordagi kadrlar soni
             orbit2.positions.push({ x, y });
-            if (orbit2.positions.length > 30) orbit2.positions.shift();
+            if (orbit2.positions.length > FR * 2) orbit2.positions.shift();
 
             // Yuzalarni chizish
             if (orbit2.positions.length > 1) {
-                // Yuza A (oxirgi 15 kadrdan oldingi oraliq)
+                // Yuza A — birinchi sektor
                 ctx2.fillStyle = '#ff000040';
                 ctx2.beginPath();
                 ctx2.moveTo(focusX, centerY);
-                for (let i = 0; i < Math.min(15, orbit2.positions.length); i++) {
+                for (let i = 0; i < Math.min(FR, orbit2.positions.length); i++) {
                     ctx2.lineTo(orbit2.positions[i].x, orbit2.positions[i].y);
                 }
                 ctx2.closePath();
                 ctx2.fill();
 
-                // Yuza B (so'nggi 15 kadr)
-                if (orbit2.positions.length > 15) {
+                // Yuza B — ikkinchi sektor
+                if (orbit2.positions.length > FR) {
                     ctx2.fillStyle = '#0000ff40';
                     ctx2.beginPath();
                     ctx2.moveTo(focusX, centerY);
-                    for (let i = 15; i < orbit2.positions.length; i++) {
+                    for (let i = FR; i < orbit2.positions.length; i++) {
                         ctx2.lineTo(orbit2.positions[i].x, orbit2.positions[i].y);
                     }
                     ctx2.closePath();
@@ -794,11 +834,11 @@
 
             // Yuzalarni hisoblash (shoelace) — chizilgan sektorlar bilan bir xil
             // Ikkala sektor teng vaqt oralig'ini (15 kadr) qamrab olganda taqqoslanadi
-            if (orbit2.positions.length >= 30) {
-                // Ikkala sektor teng vaqtni qamraydi: 14 tadan kadr oralig'i
+            if (orbit2.positions.length >= FR * 2) {
+                // Ikkala sektor teng vaqt oralig'ini qamraydi
                 const focus = { x: focusX, y: centerY };
-                const sectorA = [focus, ...orbit2.positions.slice(0, 15)];
-                const sectorB = [focus, ...orbit2.positions.slice(15, 30)];
+                const sectorA = [focus, ...orbit2.positions.slice(0, FR)];
+                const sectorB = [focus, ...orbit2.positions.slice(FR, FR * 2)];
                 const areaA = polygonArea(sectorA) / (scale * scale);
                 const areaB = polygonArea(sectorB) / (scale * scale);
                 document.getElementById('area1').textContent = areaA.toFixed(4) + ' AU²';
@@ -913,7 +953,15 @@
             // Belgi olib tashlansa faqat ichki 4 ta sayyora ko'rsatiladi
             const showAll = document.getElementById('showAllPlanets').checked;
             planets3.forEach(planet => {
-                if (!showAll && planet.a > 2) return;
+                // Yashirilgan sayyora ham vaqt bo'yicha harakatda qoladi,
+                // aks holda belgi qayta qo'yilganda fazadan chiqib ketardi
+                if (!showAll && planet.a > 2) {
+                    if (isRunning[2]) {
+                        const sp = parseFloat(document.getElementById('speedSlider3').value);
+                        planet.angle += (0.02 / planet.T) * sp;
+                    }
+                    return;
+                }
                 const a = orbitRadius3(planet.a);
 
                 // Orbit doirasi
@@ -988,6 +1036,18 @@
         resetAnimation2();
         initPlanets3();
         resetAnimation3();
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startAnimation1, pause: pauseAnimation1, reset: resetAnimation1 };
+        window.modelIsRunning = function () { return isRunning[0]; };
+        window.labFields = [
+            { label: "Sayyora", get: function () { return planetsData[currentPlanet].name; } },
+            { label: "a (AU)", get: function () { return orbit1.a.toFixed(3); } },
+            { label: "e", get: function () { return orbit1.e.toFixed(3); } },
+            { label: "Perigeliy", get: function () { return document.getElementById('perihelion').textContent; } },
+            { label: "Afeliy", get: function () { return document.getElementById('aphelion').textContent; } },
+            { label: "T²/a³", get: function () { return (Math.pow(planetsData[currentPlanet].T,2)/Math.pow(planetsData[currentPlanet].a,3)).toFixed(3); } }
+        ];
     </script>
 </body>
 </html>

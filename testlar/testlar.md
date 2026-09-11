@@ -167,10 +167,10 @@ r = 4.5×10⁻¹⁴ m = 45 fm
 ```
 F = k×q₁×q₂/r²
 F = (9×10⁹ × 3.2×10⁻¹⁹ × 1.26×10⁻¹⁷) / (10⁻¹³)²
-F = 36.3 N
+F = 3.6 N
 ```
 
-**Javob:** F ≈ 36 N ✓
+**Javob:** F ≈ 3.6 N ✓
 
 **3. 1000 ta alfa zarra yuborildi. 850 tasi to'g'ri o'tdi, 140 tasi sochildi, 10 tasi qaytdi. Sochilish foizini toping.**
 

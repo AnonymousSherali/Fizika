@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧲%3C/text%3E%3C/svg%3E">
     <title>Elektromagnit Induksiya - Interaktiv Model</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../model-tools.css">
     <style>
         :root {
             --primary: #0891b2;
@@ -16,6 +17,7 @@
             --header-bg: linear-gradient(135deg, #155e75 0%, #0891b2 55%, #22d3ee 100%);
         }
         canvas { background: #f5f7fa; }
+        html.dark canvas, body.dark canvas { background: #0e1620; }
 
 
         .stat-value.highlight {
@@ -55,6 +57,17 @@
             </div>
 
             <div class="controls">
+                <div class="task-card">
+                    <h3>🎯 Topshiriq</h3>
+                    <ol>
+                        <li>Avtomatik rejimda tezlikni <strong>0.5x</strong> qilib boshlang</li>
+                        <li>Maksimal EYK qiymatini jurnalga yozing</li>
+                        <li>Tezlikni <strong>2x</strong> ga oshiring — EYK qanday o'zgardi?</li>
+                        <li>O'ramlar sonini <strong>10 → 25</strong> ga oshiring va takrorlang</li>
+                        <li><strong>Savol:</strong> EYK nimaga proporsional? Magnit to'xtaganda EYK qancha?</li>
+                    </ol>
+                </div>
+
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
@@ -94,15 +107,15 @@
                     <h3>📊 O'lchovlar</h3>
                     <div class="stat-item">
                         <span class="stat-label">Oqim, 1 o'ram (Φ):</span>
-                        <span class="stat-value" id="fluxValue">0 mVb</span>
+                        <span class="stat-value" id="fluxValue">0 sh.b.</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Oqim ilashishi (Ψ=N·Φ):</span>
-                        <span class="stat-value" id="linkageValue">0 mVb</span>
+                        <span class="stat-value" id="linkageValue">0 sh.b.</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Induksiya EYK:</span>
-                        <span class="stat-value highlight" id="emfValue">0 mV</span>
+                        <span class="stat-value highlight" id="emfValue">0 sh.b.</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Tok yo'nalishi:</span>
@@ -110,6 +123,10 @@
                     </div>
                 </div>
             </div>
+
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
 
             <div class="info-panel">
                 <h3>📚 Nazariy Ma'lumot</h3>
@@ -124,6 +141,12 @@
                     qilgan oqim o'zgarishiga <em>qarshilik ko'rsatadigan</em> yo'nalishda oqadi
                     (formuladagi minus ishorasi). Shuning uchun <strong>yaqinlashayotgan magnit
                     itariladi</strong>, <strong>uzoqlashayotgani esa tortiladi</strong>.
+                </p>
+                <p style="margin-top: 10px;">
+                    📏 <strong>Birliklar haqida:</strong> modelda qiymatlar <em>shartli birlikda</em>
+                    (sh.b.) berilgan — bu yerda muhimi <strong>nisbat</strong>: tezlik 2 barobar
+                    oshsa EYK ham 2 barobar oshadi, N 2 barobar oshsa EYK ham shuncha oshadi.
+                    Haqiqiy Φ = B·S·cos α (Veberda) o'lchanadi.
                 </p>
                 <p style="margin-top: 10px;">
                     ⚠️ <strong>Diqqat:</strong> Φ — bitta o'ram orqali o'tuvchi oqim, u o'ramlar soniga
@@ -141,6 +164,7 @@
     </div>
 
     <script src="../theme.js"></script>
+    <script src="../model-tools.js"></script>
     <script>
         const canvas = document.getElementById('inductionCanvas');
         const ctx = canvas.getContext('2d');
@@ -185,6 +209,12 @@
         document.getElementById('posSlider').oninput = function() {
             if (state.mode === 'manual') {
                 state.magX = 55 + (parseFloat(this.value) / 100) * 390; // 55..445
+                // Pauzada ham magnit siljishi ko'rinishi uchun qayta chizamiz
+                if (!state.running) {
+                    const flux = fluxSingle(state.magX);
+                    state.prevFlux = flux;
+                    draw();
+                }
             }
         };
         document.getElementById('speedSlider').oninput = function() {
@@ -194,14 +224,21 @@
         document.getElementById('turnsSlider').oninput = function() {
             state.N = parseInt(this.value);
             document.getElementById('turnsValue').textContent = state.N;
+            // O'ramlar soni g'altak enini o'zgartiradi -> oqim bazasi ham yangilanadi
+            state.prevFlux = fluxSingle(state.magX);
             if (!state.running) draw();
         };
 
         // Bitta o'ram orqali o'tuvchi magnit oqimi (shartli birlikda, 0..1).
         // Magnit uchi g'altak chetiga yetganda maksimal bo'ladi.
-        const COIL_EDGE = 500; // g'altakning chap cheti (piksel)
+        // G'altakning chap cheti o'ramlar soniga qarab siljiydi — shuning uchun
+        // doimiy qiymat emas, drawCoil bilan bir xil formuladan hisoblanadi
+        function coilEdge() {
+            const w = Math.min(180, 30 + state.N * 9);
+            return coilX - w / 2;
+        }
         function fluxSingle(magX) {
-            const d = COIL_EDGE - (magX + 55); // magnit uchi bilan g'altak chetigacha masofa
+            const d = coilEdge() - (magX + 55); // magnit uchi bilan g'altak chetigacha masofa
             return 1 / (1 + Math.pow(d / 70, 2));
         }
 
@@ -222,9 +259,9 @@
             state.emfSmooth += (state.emf - state.emfSmooth) * Math.min(1, dt * 10);
 
             // Φ - BITTA o'ram orqali oqim (N ga bog'liq emas!), Ψ = N·Φ - oqim ilashishi
-            document.getElementById('fluxValue').textContent = (flux * 10).toFixed(2) + ' mVb';
-            document.getElementById('linkageValue').textContent = (flux * state.N * 10).toFixed(1) + ' mVb';
-            document.getElementById('emfValue').textContent = state.emfSmooth.toFixed(1) + ' mV';
+            document.getElementById('fluxValue').textContent = (flux * 10).toFixed(2) + ' sh.b.';
+            document.getElementById('linkageValue').textContent = (flux * state.N * 10).toFixed(1) + ' sh.b.';
+            document.getElementById('emfValue').textContent = state.emfSmooth.toFixed(1) + ' sh.b.';
             // Lens qoidasi: oqim ORTSA (magnit yaqinlashmoqda) g'altak magnitni ITARADI.
             // Oqim ortganda EYK = -N*dPhi/dt < 0 bo'ladi.
             const dir = Math.abs(state.emfSmooth) < 1 ? '— (tok yo\'q)' :
@@ -239,7 +276,7 @@
             ctx.fillRect(x, y - 22, 55, 44);
             ctx.fillStyle = '#1565c0';
             ctx.fillRect(x - 55, y - 22, 55, 44);
-            ctx.strokeStyle = '#37474f';
+            ctx.strokeStyle = P().ink;
             ctx.lineWidth = 2;
             ctx.strokeRect(x - 55, y - 22, 110, 44);
             ctx.fillStyle = '#fff';
@@ -364,7 +401,7 @@
             ctx.fillStyle = pal.ink;
             ctx.font = 'bold 16px Arial';
             ctx.textAlign = 'left';
-            ctx.fillText('EYK = −N·ΔΦ/Δt = ' + state.emfSmooth.toFixed(1) + ' mV', 20, 36);
+            ctx.fillText('EYK = −N·ΔΦ/Δt = ' + state.emfSmooth.toFixed(1) + ' sh.b.', 20, 36);
         }
 
         function loop(ts) {
@@ -396,9 +433,9 @@
             state.emf = 0;
             state.emfSmooth = 0;
             state.prevFlux = fluxSingle(state.magX);
-            document.getElementById('fluxValue').textContent = (state.prevFlux * 10).toFixed(2) + ' mVb';
-            document.getElementById('linkageValue').textContent = (state.prevFlux * state.N * 10).toFixed(1) + ' mVb';
-            document.getElementById('emfValue').textContent = '0.0 mV';
+            document.getElementById('fluxValue').textContent = (state.prevFlux * 10).toFixed(2) + ' sh.b.';
+            document.getElementById('linkageValue').textContent = (state.prevFlux * state.N * 10).toFixed(1) + ' sh.b.';
+            document.getElementById('emfValue').textContent = '0.0 sh.b.';
             document.getElementById('dirValue').textContent = '-';
             draw();
         }
@@ -408,6 +445,17 @@
 
         // Rejim almashganda kanvasni qayta chizamiz
         window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startInduction, pause: pauseInduction, reset: resetInduction };
+        window.modelIsRunning = function () { return state.running; };
+        window.labFields = [
+            { label: "Tezlik", get: function () { return state.speed.toFixed(1)+'x'; } },
+            { label: "N", get: function () { return state.N; } },
+            { label: "Φ (sh.b.)", get: function () { return document.getElementById('fluxValue').textContent; } },
+            { label: "EYK (sh.b.)", get: function () { return document.getElementById('emfValue').textContent; } },
+            { label: "Yo'nalish", get: function () { return document.getElementById('dirValue').textContent; } }
+        ];
     </script>
 </body>
 </html>

@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕰️%3C/text%3E%3C/svg%3E">
     <title>Matematik Mayatnik - Interaktiv Model</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../model-tools.css">
     <style>
         :root {
             --primary: #0d9488;
@@ -17,6 +18,7 @@
         }
         /* Mayatnik kanvasi yorug' fon bilan ko'rsatiladi */
         canvas { background: #e0f7fa; }
+        html.dark canvas, body.dark canvas { background: #0e1b24; }
 
         .planet-selector {
             display: grid;
@@ -57,6 +59,18 @@
             </div>
 
             <div class="controls">
+                <div class="task-card">
+                    <h3>🎯 Topshiriq</h3>
+                    <ol>
+                        <li>Ip uzunligini <strong>1.00 m</strong> qilib, burchakni <strong>10°</strong> ga qo'ying</li>
+                        <li>«Boshlash» tugmasini bosing va kamida <strong>5 ta tebranish</strong> kuting</li>
+                        <li>«O'lchovni yozish» bilan natijani jurnalga qo'shing</li>
+                        <li>Uzunlikni o'zgartirib (0.5 m, 1.5 m, 2 m) tajribani takrorlang</li>
+                        <li>Jurnaldagi <strong>o'lchangan g</strong> qiymatlarini solishtiring: ular 9.81 ga yaqinmi?</li>
+                        <li>Burchakni <strong>60°</strong> ga oshiring — xatolik qanday o'zgardi?</li>
+                    </ol>
+                </div>
+
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
@@ -71,6 +85,8 @@
                         <span class="value-display" id="angleValue">20°</span>
                     </label>
                     <input type="range" id="angleSlider" min="5" max="80" step="1" value="20" aria-label="Boshlang'ich burchak gradusda">
+                    <p class="warn-note" id="angleWarn" hidden>⚠️ Burchak katta — T = 2π√(L/g) formulasi
+                        endi taxminiy. Laboratoriya ishida <strong>θ ≤ 15°</strong> oling.</p>
                 </div>
 
                 <div class="control-group">
@@ -88,6 +104,7 @@
                 <button class="action btn-primary" onclick="startPendulum()">▶️ Boshlash</button>
                 <button class="action btn-secondary" onclick="pausePendulum()">⏸️ Pauza</button>
                 <button class="action btn-secondary" onclick="resetPendulum()">🔄 Qayta</button>
+                <p class="kbd-hint"><kbd>Space</kbd> boshlash/pauza · <kbd>R</kbd> qayta · <kbd>S</kbd> o'lchovni yozish</p>
 
                 <div class="stats">
                     <h3>📊 O'lchovlar</h3>
@@ -114,6 +131,10 @@
                 </div>
             </div>
 
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
+
             <div class="info-panel">
                 <h3>📚 Nazariy Ma'lumot</h3>
                 <p>
@@ -130,7 +151,7 @@
                     💡 <strong>Tajriba:</strong> Ip uzunligini va davrni o'lchab, erkin tushish
                     tezlanishini aniqlang. Diqqat: T = 2π√(L/g) formulasi faqat <em>kichik</em>
                     tebranishlar uchun o'rinli. Modelda haqiqiy tenglama yechilgani uchun katta
-                    burchakda farq sezilarli bo'ladi: θ = 20° da xatolik ~1%, θ = 45° da ~5%,
+                    burchakda farq sezilarli bo'ladi: θ = 20° da xatolik ~1.5%, θ = 45° da ~7.5%,
                     θ = 80° da esa <strong>20% dan oshadi</strong>. Buni "Nisbiy xatolik" qatorida
                     o'zingiz kuzating — laboratoriya ishida burchakni kichik olish shart ekanini
                     shundan bilib olasiz.
@@ -140,15 +161,20 @@
     </div>
 
     <script src="../theme.js"></script>
+    <script src="../model-tools.js"></script>
     <script>
         const canvas = document.getElementById('pendulumCanvas');
         const ctx = canvas.getContext('2d');
 
         // Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
         const LIGHT = { sky1: '#e0f7fa', sky2: '#b2ebf2', ink: '#0f3443', guide: '#90a4ae',
-                        beam: '#5d4037', beamEdge: '#3e2723', rod: '#37474f', pivot: '#263238' };
+                        beam: '#5d4037', beamEdge: '#3e2723', rod: '#37474f', pivot: '#263238',
+                        arc: 'rgba(2,119,189,0.35)', angle: '#d35400',
+                        bob1: '#80d8ff', bob2: '#0277bd', bobEdge: '#01579b' };
         const DARK  = { sky1: '#0e1b24', sky2: '#12232e', ink: '#9fe6d8', guide: '#4a6572',
-                        beam: '#3e2b24', beamEdge: '#241713', rod: '#8fa6b2', pivot: '#b0bec5' };
+                        beam: '#3e2b24', beamEdge: '#241713', rod: '#8fa6b2', pivot: '#b0bec5',
+                        arc: 'rgba(125,211,252,0.45)', angle: '#ffa552',
+                        bob1: '#7dd3fc', bob2: '#0369a1', bobEdge: '#bae6fd' };
         function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
 
         const bodies = {
@@ -186,8 +212,13 @@
             const deg = parseInt(this.value);
             state.theta0 = deg * Math.PI / 180;
             document.getElementById('angleValue').textContent = deg + '°';
-            // Amplituda o'zgarishi mayatnikni boshidan qo'yib yuborishni talab qiladi
+            // Kichik burchak sharti buzilganda darhol ogohlantiramiz
+            document.getElementById('angleWarn').hidden = deg <= 15;
+            // Amplituda o'zgarishi mayatnikni boshidan qo'yib yuborishni talab qiladi,
+            // lekin ishlab turgan bo'lsa - avtomatik davom ettiramiz
+            const wasRunning = state.running;
             resetPendulum();
+            if (wasRunning) startPendulum();
         };
 
         function selectBody(key, evt) {
@@ -289,7 +320,7 @@
             ctx.setLineDash([]);
 
             // Tebranish yo'li yoyi (amplituda chegaralari)
-            ctx.strokeStyle = 'rgba(2,119,189,0.35)';
+            ctx.strokeStyle = p.arc;
             ctx.setLineDash([4, 6]);
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -298,14 +329,14 @@
             ctx.setLineDash([]);
 
             // Burchak yoyi
-            ctx.strokeStyle = '#d35400';
+            ctx.strokeStyle = p.angle;
             ctx.lineWidth = 2;
             ctx.beginPath();
             const arcR = 50;
             const a0 = Math.PI / 2;
             ctx.arc(pivotX, pivotY, arcR, a0, a0 + state.theta, state.theta < 0);
             ctx.stroke();
-            ctx.fillStyle = '#d35400';
+            ctx.fillStyle = p.angle;
             ctx.font = 'bold 16px Arial';
             ctx.fillText((state.theta * 180 / Math.PI).toFixed(1) + '°', pivotX + 16, pivotY + 40);
 
@@ -319,13 +350,13 @@
 
             // Sharcha (bob)
             const grad = ctx.createRadialGradient(bobX - 6, bobY - 6, 2, bobX, bobY, 22);
-            grad.addColorStop(0, '#80d8ff');
-            grad.addColorStop(1, '#0277bd');
+            grad.addColorStop(0, p.bob1);
+            grad.addColorStop(1, p.bob2);
             ctx.fillStyle = grad;
             ctx.beginPath();
             ctx.arc(bobX, bobY, 22, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#01579b';
+            ctx.strokeStyle = p.bobEdge;
             ctx.lineWidth = 2;
             ctx.stroke();
 
@@ -407,9 +438,23 @@
         }
 
         resetPendulum();
+        document.getElementById('angleWarn').hidden = (state.theta0 * 180 / Math.PI) <= 15;
 
         // Rejim almashganda kanvasni qayta chizamiz
         window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startPendulum, pause: pausePendulum, reset: resetPendulum };
+        window.modelIsRunning = function () { return state.running; };
+        window.labFields = [
+            { label: 'L (m)',        get: function () { return state.L.toFixed(2); } },
+            { label: 'θ₀ (°)',       get: function () { return Math.round(state.theta0 * 180 / Math.PI); } },
+            { label: 'g (m/s²)',     get: function () { return state.g.toFixed(2); } },
+            { label: 'T nazariy (s)',get: function () { return theoreticalPeriod().toFixed(3); } },
+            { label: 'Tebranish',    get: function () { return Math.floor(state.oscillations); } },
+            { label: 'g o\'lchangan',get: function () { return document.getElementById('measuredG').textContent; } },
+            { label: 'Xatolik',      get: function () { return document.getElementById('gError').textContent; } }
+        ];
     </script>
 </body>
 </html>
