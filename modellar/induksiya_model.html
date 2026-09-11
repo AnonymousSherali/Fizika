@@ -9,18 +9,22 @@
     <link rel="stylesheet" href="../styles.css">
     <style>
         :root {
-            --primary: #00695c;
-            --primary-dark: #004d40;
-            --accent: #26a69a;
-            --accent-2: #4db6ac;
-            --page-bg: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
-            --header-bg: linear-gradient(135deg, #004d40 0%, #26a69a 100%);
+            --primary: #0891b2;
+            --primary-dark: #155e75;
+            --accent: #06b6d4;
+            --accent-2: #22d3ee;
+            --header-bg: linear-gradient(135deg, #155e75 0%, #0891b2 55%, #22d3ee 100%);
         }
         canvas { background: #f5f7fa; }
-        body.dark canvas { background: #101820; filter: brightness(0.92); }
 
 
-        .stat-value.highlight { color: #d84315; font-size: 1.1em; }
+        .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 75%, #b45309);
+            font-size: 1.05rem;
+        }
+        html.dark .stat-value.highlight, body.dark .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 45%, white);
+        }
 
         .mode-selector {
             display: grid;
@@ -29,17 +33,7 @@
             margin: 10px 0;
         }
 
-        .info-panel { background: #e0f2f1; border-left-color: #26a69a; }
-        .info-panel h3 { color: #004d40; }
-        .info-panel p { color: #1b3a35; line-height: 1.7; }
-        body.dark .info-panel { background: #142823; }
-        body.dark .info-panel h3 { color: #80cbc4; }
-        body.dark .info-panel p { color: #c5e5e0; }
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
-            .main-content { padding: 16px; gap: 14px; }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
             .control-group { padding: 12px; }
             .info-panel { padding: 16px; }
@@ -61,7 +55,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label>Rejim:</label>
@@ -150,6 +144,15 @@
     <script>
         const canvas = document.getElementById('inductionCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
+        const LIGHT = { bg: '#f5f7fa', ink: '#37474f', rail: '#cfd8dc', coil: '#a1580e',
+                        frame: '#78909c', wire: '#5d4037', dial: '#ffffff', dialEdge: '#37474f',
+                        tick: '#90a4ae' };
+        const DARK  = { bg: '#0e1620', ink: '#cfe3ef', rail: '#31485a', coil: '#d98324',
+                        frame: '#5d7a8c', wire: '#8d6e63', dial: '#182634', dialEdge: '#7fa3b8',
+                        tick: '#4a6572' };
+        function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
 
         const coilX = 560, coilY = 230; // g'altak markazi
         const magY = 230;
@@ -263,14 +266,14 @@
             // Har bir o'ram - ellips
             for (let i = 0; i < n; i++) {
                 const ex = x0 + (i + 0.5) * (w / n);
-                ctx.strokeStyle = '#a1580e';
+                ctx.strokeStyle = P().coil;
                 ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.ellipse(ex, coilY, 9, 62, 0, 0, Math.PI * 2);
                 ctx.stroke();
             }
             // Karkas chiziqlari
-            ctx.strokeStyle = '#78909c';
+            ctx.strokeStyle = P().frame;
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 4]);
             ctx.beginPath();
@@ -282,7 +285,7 @@
             ctx.setLineDash([]);
 
             // Galvanometrga simlar
-            ctx.strokeStyle = '#5d4037';
+            ctx.strokeStyle = P().wire;
             ctx.lineWidth = 2.5;
             ctx.beginPath();
             ctx.moveTo(x0, coilY + 62);
@@ -294,7 +297,7 @@
             ctx.lineTo(640, 440);
             ctx.stroke();
 
-            ctx.fillStyle = '#37474f';
+            ctx.fillStyle = P().ink;
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
             ctx.fillText('N = ' + n + ' o\'ram', coilX, coilY - 78);
@@ -302,15 +305,16 @@
 
         function drawGalvanometer() {
             const gx = 600, gy = 440;
-            ctx.fillStyle = '#fff';
+            const gp = P();
+            ctx.fillStyle = gp.dial;
             ctx.beginPath();
             ctx.arc(gx, gy, 46, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#37474f';
+            ctx.strokeStyle = gp.dialEdge;
             ctx.lineWidth = 3;
             ctx.stroke();
             // Shkala
-            ctx.strokeStyle = '#90a4ae';
+            ctx.strokeStyle = gp.tick;
             ctx.lineWidth = 1.5;
             for (let a = -60; a <= 60; a += 15) {
                 const rad = (a - 90) * Math.PI / 180;
@@ -328,10 +332,11 @@
             ctx.moveTo(gx, gy);
             ctx.lineTo(gx + 36 * Math.cos(rad), gy + 36 * Math.sin(rad));
             ctx.stroke();
-            ctx.fillStyle = '#37474f';
+            ctx.fillStyle = gp.dialEdge;
             ctx.beginPath();
             ctx.arc(gx, gy, 5, 0, Math.PI * 2);
             ctx.fill();
+            ctx.fillStyle = gp.ink;
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
             ctx.fillText('G', gx, gy + 28);
@@ -339,11 +344,12 @@
         }
 
         function draw() {
-            ctx.fillStyle = '#f5f7fa';
+            const pal = P();
+            ctx.fillStyle = pal.bg;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Harakat yo'li
-            ctx.strokeStyle = '#cfd8dc';
+            ctx.strokeStyle = pal.rail;
             ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.moveTo(40, magY + 32);
@@ -355,7 +361,7 @@
             drawGalvanometer();
 
             // Sarlavha
-            ctx.fillStyle = '#37474f';
+            ctx.fillStyle = pal.ink;
             ctx.font = 'bold 16px Arial';
             ctx.textAlign = 'left';
             ctx.fillText('EYK = −N·ΔΦ/Δt = ' + state.emfSmooth.toFixed(1) + ' mV', 20, 36);
@@ -399,6 +405,9 @@
 
         document.getElementById('posSlider').disabled = true;
         resetInduction();
+
+        // Rejim almashganda kanvasni qayta chizamiz
+        window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
     </script>
 </body>
 </html>

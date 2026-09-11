@@ -9,14 +9,23 @@
     <link rel="stylesheet" href="../styles.css">
     <style>
         :root {
-            --primary: #2a5298;
-            --primary-dark: #1e3c72;
-            --accent: #667eea;
-            --accent-2: #764ba2;
-            --page-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --header-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --accent: #6366f1;
+            --accent-2: #a855f7;
+            --header-bg: linear-gradient(135deg, #312e81 0%, #4f46e5 60%, #7c3aed 100%);
         }
         canvas { cursor: crosshair; }
+
+        /* Model cheklovi haqida eslatma — har ikki rejimda ham o'qiladi */
+        .note-box {
+            margin-top: var(--sp-3);
+            background: color-mix(in srgb, var(--accent) 10%, var(--card-bg));
+            border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+            padding: var(--sp-4);
+            border-radius: var(--r-xs);
+        }
+        .legend-color { border-color: var(--border) !important; }
 
         .legend {
             display: grid;
@@ -37,13 +46,9 @@
             height: 30px;
             border-radius: 50%;
             margin-right: 10px;
-            border: 2px solid #333;
+            border: 2px solid var(--border);
         }
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
-            .main-content { padding: 16px; gap: 14px; }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
             .control-group { padding: 12px; }
             .info-panel { padding: 16px; }
@@ -88,7 +93,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label for="speedSlider">
@@ -157,7 +162,7 @@
                     <strong>Rezerford tajribasi (1909-yil)</strong> - Atom tuzilishini o'rganishda muhim rol o'ynagan tajriba.
                     Ernest Rezerford musbat zaryadlangan alfa zarralarni yupqa oltin folgaga yo'naltirdi.
                 </p>
-                <p style="margin-top: 10px; background: rgba(255,255,255,0.5); padding: 10px; border-radius: 6px;">
+                <p class="note-box">
                     ⚠️ <strong>Model haqida muhim eslatma:</strong> bu modelda barcha alfa zarralar
                     <em>bitta</em> yadroga qaratilgan, shuning uchun sochilish foizi 50% atrofida chiqadi.
                     Haqiqiy tajribada folgada son-sanoqsiz atom bor, lekin yadro atom hajmining atigi

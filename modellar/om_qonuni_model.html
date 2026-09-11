@@ -9,29 +9,24 @@
     <link rel="stylesheet" href="../styles.css">
     <style>
         :root {
-            --primary: #b26a00;
-            --primary-dark: #7a4a00;
-            --accent: #ffb300;
-            --accent-2: #ff8f00;
-            --page-bg: linear-gradient(135deg, #232526 0%, #414345 100%);
-            --header-bg: linear-gradient(135deg, #7a4a00 0%, #ffb300 100%);
+            --primary: #b45309;
+            --primary-dark: #78350f;
+            --accent: #f59e0b;
+            --accent-2: #fbbf24;
+            --header-bg: linear-gradient(135deg, #78350f 0%, #b45309 55%, #f59e0b 100%);
         }
         canvas { background: #1c1e24; }
 
 
-        .stat-value.highlight { color: #e65100; font-size: 1.15em; }
+        .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 75%, #b45309);
+            font-size: 1.05rem;
+        }
+        html.dark .stat-value.highlight, body.dark .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 45%, white);
+        }
 
-        .info-panel { background: #fff8e1; border-left-color: #ffb300; }
-        .info-panel h3 { color: #7a4a00; }
-        .info-panel p { color: #5d4037; line-height: 1.7; }
-        body.dark .info-panel { background: #2b2410; }
-        body.dark .info-panel h3 { color: #ffe082; }
-        body.dark .info-panel p { color: #e8d5a3; }
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
-            .main-content { padding: 16px; gap: 14px; }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
             .control-group { padding: 12px; }
             .info-panel { padding: 16px; }
@@ -52,7 +47,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label for="voltageSlider">Kuchlanish (U):

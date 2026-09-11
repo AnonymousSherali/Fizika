@@ -6,223 +6,189 @@
     <meta name="description" content="Fizik modellar loyihasining arxitekturasi va algoritmlari - interaktiv diagrammalar.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📊%3C/text%3E%3C/svg%3E">
     <title>Loyiha Algoritmi - Fizik Modellar</title>
+    <link rel="stylesheet" href="../styles.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #4338ca;
+            --primary-dark: #312e81;
+            --accent: #6366f1;
+            --accent-2: #8b5cf6;
+            --header-bg: linear-gradient(135deg, #312e81 0%, #4338ca 55%, #6366f1 100%);
+            --container-max: 2000px;
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            overflow-x: auto;
-        }
-        
+        body { overflow-x: auto; }
+
+        /* Diagramma sahifasi konteyneri (kanvas keng bo'lgani uchun alohida) */
         .main-container {
-            background: linear-gradient(135deg, #4a5f8f 0%, #5a4d8a 100%);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            background: var(--container-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r-xl);
+            padding: var(--sp-5);
+            box-shadow: var(--shadow-xl);
             min-width: min(1400px, 100%);
-            max-width: 2000px;
+            max-width: var(--container-max);
             margin: 0 auto;
         }
-        
+
         .header {
-            background: linear-gradient(135deg, #36467a 0%, #4a3d6d 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-radius: var(--r-lg);
+            margin-bottom: var(--sp-5);
+            padding: var(--sp-6);
         }
-        
-        .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .header h1::before {
-            content: '📊 ';
-        }
-        
-        .header p {
-            font-size: 1.3em;
-            opacity: 0.95;
-        }
-        
+        .header h1::before { content: '📊 '; }
+
+        /* ===== Tablar ===== */
         .tabs {
             display: flex;
-            gap: 0;
-            margin-bottom: 20px;
-            border-radius: 12px;
+            flex-wrap: wrap;
+            margin-bottom: var(--sp-5);
+            border-radius: var(--r-sm);
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
         }
-        
         .tab {
-            flex: 1;
-            padding: 20px;
-            background: rgba(255,255,255,0.1);
-            color: white;
+            flex: 1 1 180px;
+            padding: var(--sp-4);
+            background: var(--panel-bg);
+            color: var(--text-muted);
             border: none;
+            border-bottom: 3px solid transparent;
             cursor: pointer;
-            font-size: 1.1em;
-            font-weight: bold;
-            transition: all 0.3s;
-            border-right: 2px solid rgba(255,255,255,0.2);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.25s var(--ease);
         }
-        
-        .tab:last-child {
-            border-right: none;
-        }
-        
-        .tab:hover {
-            background: rgba(255,255,255,0.15);
-        }
-        
+        .tab:hover { background: color-mix(in srgb, var(--primary) 8%, var(--panel-bg)); color: var(--text); }
         .tab.active {
-            background: rgba(255,255,255,0.95);
-            color: #36467a;
-            box-shadow: inset 0 -4px 0 #667eea;
+            background: var(--card-bg);
+            color: var(--primary);
+            border-bottom-color: var(--primary);
         }
-        
+        html.dark .tab.active, body.dark .tab.active {
+            color: color-mix(in srgb, var(--accent) 55%, white);
+            border-bottom-color: color-mix(in srgb, var(--accent) 55%, white);
+        }
+
+        /* ===== Kanvas ===== */
         .canvas-container {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: var(--sp-5);
+            box-shadow: var(--shadow-sm);
             overflow: auto;
             max-height: 1000px;
         }
-        
         canvas {
             display: block;
             margin: 0 auto;
-            background: #f8f9fa;
-            border-radius: 10px;
+            background: #f8fafc;
+            border-radius: var(--r-sm);
+            border: 1px solid var(--border);
         }
-        
+        html.dark canvas, body.dark canvas { filter: invert(0.9) hue-rotate(180deg); }
+
+        /* ===== Boshqaruv tugmalari ===== */
         .controls {
             display: flex;
-            gap: 15px;
+            gap: var(--sp-3);
             justify-content: center;
             flex-wrap: wrap;
-            margin: 20px 0;
-        }
-        
-        .btn {
-            padding: 15px 30px;
+            margin: var(--sp-5) 0;
+            background: none;
             border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 1em;
+            padding: 0;
+            box-shadow: none;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--sp-2);
+            padding: var(--sp-3) var(--sp-5);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            color: white;
+            background: var(--card-bg);
+            color: var(--text);
+            box-shadow: var(--shadow-xs);
+            transition: transform 0.2s var(--ease), box-shadow 0.22s var(--ease), border-color 0.22s var(--ease);
         }
-        
-        .btn-download {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        
-        .btn-print {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-        }
-        
-        .btn-zoom {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-            color: #212529;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-        }
-        
+        .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .btn-zoom:hover { color: var(--primary); }
+        .btn-download { background: linear-gradient(135deg, #059669, #10b981); color: white; border-color: transparent; }
+        .btn-print { background: var(--header-bg); color: white; border-color: transparent; }
+
         .zoom-level {
             display: inline-flex;
             align-items: center;
-            background: rgba(255,255,255,0.2);
-            padding: 15px 25px;
-            border-radius: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1em;
+            padding: var(--sp-3) var(--sp-5);
+            border-radius: var(--r-sm);
+            background: color-mix(in srgb, var(--primary) 12%, transparent);
+            color: var(--primary);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
-        
+        html.dark .zoom-level, body.dark .zoom-level {
+            background: color-mix(in srgb, var(--accent) 20%, transparent);
+            color: color-mix(in srgb, var(--accent) 55%, white);
+        }
+
+        /* ===== Legenda ===== */
         .legend {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--sp-3);
+            margin: var(--sp-5) 0;
         }
-        
         .legend-item {
             display: flex;
             align-items: center;
-            background: rgba(255,255,255,0.15);
-            padding: 15px;
-            border-radius: 10px;
-            color: white;
-            border-left: 5px solid;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-left-width: 3px;
+            padding: var(--sp-3) var(--sp-4);
+            border-radius: var(--r-sm);
+            color: var(--text-muted);
+            font-size: 0.88rem;
         }
-        
+        .legend-item strong { color: var(--text); }
         .legend-box {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            margin-right: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .info-box {
-            background: rgba(255,255,255,0.2);
-            border-left: 5px solid #ffc107;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            color: white;
-        }
-        
-        .info-box h3 {
-            margin-bottom: 10px;
-            font-size: 1.3em;
+            width: 30px; height: 30px;
+            border-radius: var(--r-xs);
+            margin-right: var(--sp-3);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-xs);
         }
 
-        /* theme.js qo'shadigan suzuvchi tugmalar uchun (bu sahifa styles.css'ni ishlatmaydi) */
-        .floating-btn {
-            position: fixed;
-            width: 52px; height: 52px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            font-size: 1.5em;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 5px 18px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-            z-index: 1000;
-            background: linear-gradient(135deg, #36467a 0%, #4a3d6d 100%);
-            color: white;
+        /* ===== Ma'lumot qutisi ===== */
+        .info-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            padding: var(--sp-5);
+            border-radius: var(--r-md);
+            color: var(--text-muted);
+            line-height: 1.7;
         }
-        .floating-btn:hover { transform: scale(1.1); }
-        #themeToggle { bottom: 25px; right: 25px; }
-        #scrollTop { bottom: 90px; right: 25px; opacity: 0; pointer-events: none; }
-        #scrollTop.show { opacity: 1; pointer-events: auto; }
-        body.dark .main-container { background: linear-gradient(135deg, #1e2438 0%, #262040 100%); }
-        body.dark .canvas-container { background: #1a1f2e; }
-        body.dark canvas { filter: brightness(0.88); }
+        .info-box h3 { color: var(--text); margin-bottom: var(--sp-3); font-size: 1.05rem; }
+        .info-box strong { color: var(--text); }
+
+        @media (max-width: 768px) {
+            .main-container { padding: var(--sp-4); border-radius: var(--r-lg); }
+            .header { padding: var(--sp-5) var(--sp-4); }
+            .canvas-container { padding: var(--sp-3); }
+            .btn { flex: 1 1 140px; justify-content: center; }
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <div class="header" style="position: relative;">
-            <a href="../index.html" style="position:absolute;left:20px;top:20px;color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:8px 16px;border-radius:20px;font-size:0.9em;">← Bosh sahifa</a>
+        <div class="header">
+            <a href="../index.html" class="back-link">← Bosh sahifa</a>
             <h1>LOYIHA ALGORITMI</h1>
             <p>⚛️ Rezerford Tajribasi va 🪐 Kepler Qonunlari</p>
         </div>

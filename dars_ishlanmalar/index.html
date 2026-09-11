@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../styles.css">
     <style>
         .container { max-width: 1200px; }
-        .content { padding: 40px; color: var(--text); }
+        .content { padding: var(--sp-7) var(--sp-6); color: var(--text); }
 
         .grade-nav {
             display: flex;
@@ -21,14 +21,14 @@
             color: white;
             text-decoration: none;
             background: rgba(255,255,255,0.2);
-            padding: 10px 28px;
-            border-radius: 22px;
+            padding: var(--sp-2) var(--sp-5);
+            border-radius: var(--r-pill);
             font-weight: bold;
             transition: all 0.3s;
         }
         .grade-nav a:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
 
-        .section { margin-bottom: 45px; }
+        .section { margin-bottom: var(--sp-8); }
         .section h2 {
             color: var(--primary-dark);
             font-size: 1.9em;
@@ -37,7 +37,7 @@
             border-bottom: 3px solid var(--accent);
         }
         .section .count { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95em; }
-        body.dark .section h2 { color: #8ab4ff; border-bottom-color: #4a5f8f; }
+        html.dark .section h2, body.dark .section h2 { color: var(--text); border-bottom-color: var(--border); }
 
         .cards {
             display: grid;
@@ -47,9 +47,9 @@
         }
         .card {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 15px;
-            padding: 26px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: var(--r-lg);
+            padding: var(--sp-5);
+            box-shadow: var(--shadow-sm);
             transition: all 0.3s;
             border: 2px solid transparent;
             display: flex;
@@ -57,29 +57,29 @@
         }
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-lg);
             border-color: var(--accent);
         }
         body.dark .card { background: linear-gradient(135deg, #232838 0%, #2c3447 100%); }
 
         .card-icon { font-size: 2.6em; margin-bottom: 12px; }
         .card h3 { color: var(--primary-dark); font-size: 1.25em; margin-bottom: 10px; line-height: 1.35; }
-        body.dark .card h3 { color: #8ab4ff; }
+        html.dark .card h3, body.dark .card h3 { color: var(--text); }
         .card .meta { color: var(--text-muted); font-size: 0.88em; margin-bottom: 16px; }
 
         .card-links { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .btn {
             display: inline-block;
             padding: 10px 22px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--header-bg);
             color: white;
             text-decoration: none;
-            border-radius: 22px;
+            border-radius: var(--r-sm);
             font-weight: bold;
             font-size: 0.92em;
             transition: all 0.3s;
         }
-        .btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); }
         .docx-link {
             color: var(--primary);
             font-size: 0.88em;
@@ -91,8 +91,8 @@
             transition: all 0.3s;
         }
         .docx-link:hover { background: var(--primary); color: white; }
-        body.dark .docx-link { color: #8ab4ff; border-color: #8ab4ff; }
-        body.dark .docx-link:hover { background: #8ab4ff; color: #1a1f2e; }
+        html.dark .docx-link, body.dark .docx-link { color: color-mix(in srgb, var(--accent) 55%, white); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+        html.dark .docx-link:hover, body.dark .docx-link:hover { background: var(--accent); color: white; }
 
         .model-badge {
             display: inline-block;
@@ -117,12 +117,11 @@
             font-size: 0.78em;
             font-weight: bold;
         }
-        body.dark .type-tag { background: #243049; color: #8ab4ff; }
+        html.dark .type-tag, body.dark .type-tag { background: color-mix(in srgb, var(--accent) 20%, transparent); color: color-mix(in srgb, var(--accent) 55%, white); }
 
         @media (max-width: 600px) {
             .content { padding: 20px 16px; }
             .cards { grid-template-columns: 1fr; }
-            .header h1 { font-size: 1.8em; }
             .header { padding: 24px 16px; }
             .grade-nav { flex-wrap: wrap; }
             .section h2 { font-size: 1.5em; }

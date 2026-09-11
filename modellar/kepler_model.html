@@ -9,68 +9,68 @@
     <link rel="stylesheet" href="../styles.css">
     <style>
         :root {
-            --primary: #1a2a6c;
-            --primary-dark: #1a2a6c;
-            --accent: #fdbb2d;
-            --accent-2: #b21f1f;
-            --page-bg: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-            --header-bg: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            --primary: #7c3aed;
+            --primary-dark: #4c1d95;
+            --accent: #a855f7;
+            --accent-2: #f59e0b;
+            --header-bg: linear-gradient(135deg, #1e1b4b 0%, #6d28d9 50%, #db2777 100%);
         }
 
         .tabs {
             display: flex;
             background: var(--panel-bg);
-            border-bottom: 2px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
         .tab {
             flex: 1;
-            padding: 20px;
+            padding: var(--sp-4);
             text-align: center;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 1.1em;
-            transition: all 0.3s;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.25s var(--ease);
             border: none;
-            background: #e9ecef;
-            color: #495057;
+            border-bottom: 3px solid transparent;
+            background: var(--panel-bg);
+            color: var(--text-muted);
         }
-        .tab:hover { background: #dee2e6; }
+        .tab:hover { background: color-mix(in srgb, var(--primary) 8%, var(--panel-bg)); color: var(--text); }
         .tab.active {
             background: var(--container-bg);
             color: var(--primary);
-            border-bottom: 3px solid var(--primary);
+            border-bottom-color: var(--primary);
         }
-        body.dark .tab { background: #2c3447; color: #b8c0d0; }
-        body.dark .tab:hover { background: #353d52; }
-        body.dark .tab.active { background: var(--container-bg); color: #8ab4ff; border-bottom-color: #8ab4ff; }
+        html.dark .tab.active, body.dark .tab.active {
+            color: color-mix(in srgb, var(--accent) 55%, white);
+            border-bottom-color: color-mix(in srgb, var(--accent) 55%, white);
+        }
 
-        .tab-content { display: none; padding: 30px; }
+        .tab-content { display: none; padding: var(--sp-6); }
         .tab-content.active {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
         }
 
-        .canvas-section { background: #000; position: relative; }
+        .canvas-section { position: relative; }
         .stats { max-height: 400px; overflow-y: auto; }
 
-        .info-panel { background: #d1ecf1; border-left-color: #0c5460; }
-        .info-panel h3 { color: #0c5460; }
-        .info-panel p { color: #0c5460; }
-        body.dark .info-panel { background: #15323a; }
-        body.dark .info-panel h3, body.dark .info-panel p { color: #9fd8e3; }
 
         .law-card {
             background: var(--card-bg);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border-left: 5px solid var(--accent);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: var(--sp-5);
+            border-radius: var(--r-sm);
+            margin: var(--sp-3) 0;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            box-shadow: var(--shadow-sm);
         }
-        .law-card h4 { color: var(--primary); margin-bottom: 10px; }
-        .law-card p { color: var(--text); }
-        body.dark .law-card h4 { color: #8ab4ff; }
+        .law-card h4 { color: var(--primary); margin-bottom: var(--sp-2); }
+        .law-card p { color: var(--text-muted); }
+        html.dark .law-card h4, body.dark .law-card h4 {
+            color: color-mix(in srgb, var(--accent) 55%, white);
+        }
 
         .planet-selector {
             display: grid;
@@ -84,13 +84,10 @@
             .tab-content.active { grid-template-columns: 1fr; }
         }
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
             .tab-content { padding: 16px; }
             .tabs { flex-wrap: wrap; }
             .tab { flex: 1 1 100%; padding: 12px; font-size: 0.95em; }
             .planet-selector { grid-template-columns: repeat(2, 1fr); }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
         }
     </style>
@@ -116,7 +113,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="planet-selector" role="radiogroup" aria-label="Sayyorani tanlash">
                     <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('mercury', event)">Merkuriy</button>
@@ -202,7 +199,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label for="timeIntervalSlider">
@@ -276,7 +273,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label>
