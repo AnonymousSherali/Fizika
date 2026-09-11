@@ -16,8 +16,7 @@
             --header-bg: linear-gradient(135deg, #115e59 0%, #0d9488 55%, #34d399 100%);
         }
         /* Mayatnik kanvasi yorug' fon bilan ko'rsatiladi */
-        canvas { background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%); }
-        body.dark canvas { filter: brightness(0.85) saturate(0.9); }
+        canvas { background: #e0f7fa; }
 
         .planet-selector {
             display: grid;
@@ -26,15 +25,17 @@
             margin: 10px 0;
         }
 
-        .stat-value.highlight { color: #d35400; }
+        .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 75%, #b45309);
+            font-size: 1.05rem;
+        }
+        html.dark .stat-value.highlight, body.dark .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 45%, white);
+        }
 
 
         /* Mayatnik uchun yashil ma'lumot paneli (sariq emas) */
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
-            .main-content { padding: 16px; gap: 14px; }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
             .control-group { padding: 12px; }
             .info-panel { padding: 16px; }
@@ -56,7 +57,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label for="lengthSlider">Ip uzunligi (L):
@@ -142,6 +143,13 @@
     <script>
         const canvas = document.getElementById('pendulumCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
+        const LIGHT = { sky1: '#e0f7fa', sky2: '#b2ebf2', ink: '#0f3443', guide: '#90a4ae',
+                        beam: '#5d4037', beamEdge: '#3e2723', rod: '#37474f', pivot: '#263238' };
+        const DARK  = { sky1: '#0e1b24', sky2: '#12232e', ink: '#9fe6d8', guide: '#4a6572',
+                        beam: '#3e2b24', beamEdge: '#241713', rod: '#8fa6b2', pivot: '#b0bec5' };
+        function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
 
         const bodies = {
             earth:   { name: 'Yer',     g: 9.81 },
@@ -240,9 +248,10 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            const p = P();
             const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            bg.addColorStop(0, '#e0f7fa');
-            bg.addColorStop(1, '#b2ebf2');
+            bg.addColorStop(0, p.sky1);
+            bg.addColorStop(1, p.sky2);
             ctx.fillStyle = bg;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -258,10 +267,10 @@
             const bobY = pivotY + drawLen * Math.cos(state.theta);
 
             // Shift (tavan)
-            ctx.fillStyle = '#5d4037';
+            ctx.fillStyle = p.beam;
             ctx.fillRect(pivotX - 60, pivotY - 12, 120, 12);
             for (let i = -50; i <= 50; i += 14) {
-                ctx.strokeStyle = '#3e2723';
+                ctx.strokeStyle = p.beamEdge;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.moveTo(pivotX + i, pivotY - 12);
@@ -270,7 +279,7 @@
             }
 
             // Muvozanat chizig'i
-            ctx.strokeStyle = '#90a4ae';
+            ctx.strokeStyle = p.guide;
             ctx.setLineDash([6, 6]);
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -301,7 +310,7 @@
             ctx.fillText((state.theta * 180 / Math.PI).toFixed(1) + '°', pivotX + 16, pivotY + 40);
 
             // Ip
-            ctx.strokeStyle = '#37474f';
+            ctx.strokeStyle = p.rod;
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(pivotX, pivotY);
@@ -321,13 +330,13 @@
             ctx.stroke();
 
             // Pivot nuqta
-            ctx.fillStyle = '#263238';
+            ctx.fillStyle = p.pivot;
             ctx.beginPath();
             ctx.arc(pivotX, pivotY, 5, 0, Math.PI * 2);
             ctx.fill();
 
             // Ma'lumot matni
-            ctx.fillStyle = '#0f3443';
+            ctx.fillStyle = p.ink;
             ctx.font = 'bold 18px Arial';
             ctx.textAlign = 'left';
             ctx.fillText('L = ' + state.L.toFixed(2) + ' m', 20, 40);
@@ -398,6 +407,9 @@
         }
 
         resetPendulum();
+
+        // Rejim almashganda kanvasni qayta chizamiz
+        window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
     </script>
 </body>
 </html>

@@ -18,13 +18,15 @@
         canvas { background: #1c1e24; }
 
 
-        .stat-value.highlight { color: #e65100; font-size: 1.15em; }
+        .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 75%, #b45309);
+            font-size: 1.05rem;
+        }
+        html.dark .stat-value.highlight, body.dark .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 45%, white);
+        }
 
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
-            .main-content { padding: 16px; gap: 14px; }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
             .control-group { padding: 12px; }
             .info-panel { padding: 16px; }
@@ -45,7 +47,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label for="voltageSlider">Kuchlanish (U):

@@ -16,7 +16,6 @@
             --header-bg: linear-gradient(135deg, #312e81 0%, #4338ca 55%, #6366f1 100%);
         }
 
-        .header h1 { font-size: 2.2em; }
 
         .progress-wrap { background: var(--border); height: 10px; }
         .progress-bar {
@@ -29,7 +28,7 @@
         /* Start screen */
         .start-screen { text-align: center; }
         .start-screen .quiz-icon { font-size: 4em; margin-bottom: 15px; }
-        .start-screen h2 { color: var(--primary); margin-bottom: 15px; }
+        .start-screen h2 { color: var(--text); margin-bottom: var(--sp-4); }
         .start-screen p { color: var(--text-muted); line-height: 1.7; margin-bottom: 12px; }
 
         .info-grid {
@@ -48,11 +47,11 @@
         .btn {
             display: inline-block;
             padding: 14px 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none; border-radius: 25px;
+            background: var(--header-bg);
+            color: white; border: none; border-radius: var(--r-sm);
             font-size: 1.1em; font-weight: bold; cursor: pointer; transition: all 0.3s;
         }
-        .btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-outline { background: var(--container-bg); color: var(--accent); border: 2px solid var(--accent); }
 
@@ -64,7 +63,7 @@
             padding: 3px 12px; border-radius: 12px;
             font-size: 0.8em; font-weight: bold; margin-bottom: 14px;
         }
-        body.dark .q-tag { background: #243049; color: #8ab4ff; }
+        html.dark .q-tag, body.dark .q-tag { background: color-mix(in srgb, var(--accent) 20%, transparent); color: color-mix(in srgb, var(--accent) 55%, white); }
         .q-text { font-size: 1.3em; color: var(--text); margin-bottom: 25px; line-height: 1.5; }
 
         .options { display: flex; flex-direction: column; gap: 12px; }
@@ -92,12 +91,29 @@
         .option.wrong { border-color: #dc3545; background: #f8d7da; color: #721c24; }
         .option.wrong .letter { background: #dc3545; }
         .option.disabled { pointer-events: none; }
+        /* Javob natijalari — qorong'i rejimda ham ko'zni qamashtirmaydi */
+        html.dark .option.correct, body.dark .option.correct {
+            background: color-mix(in srgb, #10b981 18%, var(--panel-bg));
+            color: #6ee7b7;
+        }
+        html.dark .option.wrong, body.dark .option.wrong {
+            background: color-mix(in srgb, #ef4444 18%, var(--panel-bg));
+            color: #fca5a5;
+        }
+        html.dark .review-item.ok, body.dark .review-item.ok {
+            background: color-mix(in srgb, #10b981 14%, var(--panel-bg));
+        }
+        html.dark .review-item.no, body.dark .review-item.no {
+            background: color-mix(in srgb, #ef4444 14%, var(--panel-bg));
+        }
+        html.dark .review-item .rq, body.dark .review-item .rq { color: var(--text); }
+        html.dark .review-item .ra, body.dark .review-item .ra { color: var(--text-muted); }
 
         .nav-row { display: flex; justify-content: space-between; margin-top: 30px; gap: 12px; }
 
         /* Result screen */
         .result-screen { text-align: center; }
-        .result-screen h2 { color: var(--primary); }
+        .result-screen h2 { color: var(--text); }
         .score-circle {
             width: 180px; height: 180px; margin: 20px auto;
             border-radius: 50%;
@@ -161,7 +177,7 @@
                 <br>
                 <button class="btn" onclick="startQuiz()">▶️ Test Savollari</button>
                 &nbsp;
-                <button class="btn" style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);" onclick="startCalc()">🧮 Hisoblash Masalalari</button>
+                <button class="btn" style="background: linear-gradient(135deg, var(--accent-2), #db2777);" onclick="startCalc()">🧮 Hisoblash Masalalari</button>
             </div>
 
             <!-- QUESTION -->

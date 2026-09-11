@@ -138,7 +138,6 @@ h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.02em; font-weight: 700; }
     opacity: 0.92;
     font-weight: 450;
 }
-.header .subtitle { font-size: 0.95rem; opacity: 0.78; }
 
 /* ===== Orqaga qaytish havolasi ===== */
 .back-link {
@@ -348,8 +347,6 @@ body.dark .formula, html.dark .formula {
 }
 
 /* ===== Tanlov tugmalari guruhi (sayyora / rejim tanlash) ===== */
-.choice-grid { display: grid; gap: var(--sp-2); margin: var(--sp-3) 0; }
-
 .planet-btn, .mode-btn {
     padding: var(--sp-2) var(--sp-2);
     border: 1px solid var(--border);
@@ -457,6 +454,13 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
 }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
+/* ===== color-mix() yo'q brauzerlar uchun zaxira ranglar ===== */
+@supports not (color: color-mix(in srgb, red, blue)) {
+    html.dark .value-display, body.dark .value-display { color: #c7d2fe; background: rgba(255,255,255,0.08); }
+    html.dark .formula, body.dark .formula { color: #c7d2fe; }
+    html.dark .stat-value, body.dark .stat-value { color: #c7d2fe; }
+}
+
 /* ===== Harakatni kamaytirish (foydalanuvchi tanlovi) ===== */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -474,7 +478,17 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
 @media (max-width: 768px) {
     body { padding: var(--sp-3); }
     .container { border-radius: var(--r-lg); }
-    .header { padding: var(--sp-6) var(--sp-4); }
+    .header { padding: var(--sp-4) var(--sp-4) var(--sp-6); }
     .main-content { padding: var(--sp-4); gap: var(--sp-4); }
-    .back-link { left: var(--sp-3); top: var(--sp-3); padding: var(--sp-1) var(--sp-3); font-size: 0.8rem; }
+    /* Kichik ekranda absolyut joylashuv sarlavha bilan to'qnashadi —
+       shuning uchun havola oddiy oqimda, sarlavha ustida turadi */
+    .back-link {
+        position: static;
+        display: inline-flex;
+        align-items: center;
+        margin: 0 auto var(--sp-4);
+        padding: var(--sp-2) var(--sp-4);
+        font-size: 0.8rem;
+    }
+    .back-link:hover { transform: none; }
 }

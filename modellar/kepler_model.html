@@ -19,31 +19,34 @@
         .tabs {
             display: flex;
             background: var(--panel-bg);
-            border-bottom: 2px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
         .tab {
             flex: 1;
-            padding: 20px;
+            padding: var(--sp-4);
             text-align: center;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 1.1em;
-            transition: all 0.3s;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.25s var(--ease);
             border: none;
-            background: #e9ecef;
-            color: #495057;
+            border-bottom: 3px solid transparent;
+            background: var(--panel-bg);
+            color: var(--text-muted);
         }
-        .tab:hover { background: #dee2e6; }
+        .tab:hover { background: color-mix(in srgb, var(--primary) 8%, var(--panel-bg)); color: var(--text); }
         .tab.active {
             background: var(--container-bg);
             color: var(--primary);
-            border-bottom: 3px solid var(--primary);
+            border-bottom-color: var(--primary);
         }
-        body.dark .tab { background: #2c3447; color: #b8c0d0; }
-        body.dark .tab:hover { background: #353d52; }
-        body.dark .tab.active { background: var(--container-bg); color: #8ab4ff; border-bottom-color: #8ab4ff; }
+        html.dark .tab.active, body.dark .tab.active {
+            color: color-mix(in srgb, var(--accent) 55%, white);
+            border-bottom-color: color-mix(in srgb, var(--accent) 55%, white);
+        }
 
-        .tab-content { display: none; padding: 30px; }
+        .tab-content { display: none; padding: var(--sp-6); }
         .tab-content.active {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -56,15 +59,18 @@
 
         .law-card {
             background: var(--card-bg);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border-left: 5px solid var(--accent);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: var(--sp-5);
+            border-radius: var(--r-sm);
+            margin: var(--sp-3) 0;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            box-shadow: var(--shadow-sm);
         }
-        .law-card h4 { color: var(--primary); margin-bottom: 10px; }
-        .law-card p { color: var(--text); }
-        body.dark .law-card h4 { color: #8ab4ff; }
+        .law-card h4 { color: var(--primary); margin-bottom: var(--sp-2); }
+        .law-card p { color: var(--text-muted); }
+        html.dark .law-card h4, body.dark .law-card h4 {
+            color: color-mix(in srgb, var(--accent) 55%, white);
+        }
 
         .planet-selector {
             display: grid;
@@ -78,13 +84,10 @@
             .tab-content.active { grid-template-columns: 1fr; }
         }
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
             .tab-content { padding: 16px; }
             .tabs { flex-wrap: wrap; }
             .tab { flex: 1 1 100%; padding: 12px; font-size: 0.95em; }
             .planet-selector { grid-template-columns: repeat(2, 1fr); }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
         }
     </style>
@@ -110,7 +113,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="planet-selector" role="radiogroup" aria-label="Sayyorani tanlash">
                     <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('mercury', event)">Merkuriy</button>
@@ -196,7 +199,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label for="timeIntervalSlider">
@@ -270,7 +273,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 20px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label>

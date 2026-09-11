@@ -15,11 +15,16 @@
             --accent-2: #f59e0b;
             --header-bg: linear-gradient(135deg, #7c2d12 0%, #c2410c 55%, #f59e0b 100%);
         }
-        canvas { background: linear-gradient(180deg, #e3f2fd 0%, #fff8e1 100%); }
-        body.dark canvas { filter: brightness(0.85) saturate(0.9); }
+        canvas { background: #e3f2fd; }
 
 
-        .stat-value.highlight { color: #c0392b; font-size: 1.1em; }
+        .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 75%, #b45309);
+            font-size: 1.05rem;
+        }
+        html.dark .stat-value.highlight, body.dark .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 45%, white);
+        }
 
         /* Kuchlar legendasi */
         .force-legend {
@@ -42,10 +47,6 @@
         }
 
         @media (max-width: 700px) {
-            .header h1 { font-size: 1.8em; }
-            .header p { font-size: 1em; }
-            .main-content { padding: 16px; gap: 14px; }
-            .controls { padding: 16px; }
             .canvas-section { padding: 10px; }
             .control-group { padding: 12px; }
             .info-panel { padding: 16px; }
@@ -74,7 +75,7 @@
             </div>
 
             <div class="controls">
-                <h2 style="color: var(--primary); margin-bottom: 18px;">⚙️ Sozlamalar</h2>
+                <h2>⚙️ Sozlamalar</h2>
 
                 <div class="control-group">
                     <label for="angleSlider">Qiyalik burchagi (α):
@@ -162,6 +163,15 @@
     <script>
         const canvas = document.getElementById('inclineCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
+        const LIGHT = { sky1: '#e3f2fd', sky2: '#fff8e1', ground: '#8d6e63', groundEdge: '#5d4037',
+                        ramp: '#a1887f', rampEdge: '#4e342e', hatch: '#6d4c41', ink: '#4e342e',
+                        done: '#1b7f4a' };
+        const DARK  = { sky1: '#0d1520', sky2: '#1a1712', ground: '#3e2f29', groundEdge: '#241a16',
+                        ramp: '#4a3a34', rampEdge: '#8d7168', hatch: '#8d7168', ink: '#e8d5b5',
+                        done: '#4ade80' };
+        function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
 
         const G = 9.81;
         const S = 2.0; // qiyalik uzunligi (m)
@@ -254,9 +264,10 @@
 
         function draw() {
             // Fon
+            const pal = P();
             const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            bg.addColorStop(0, '#e3f2fd');
-            bg.addColorStop(1, '#fff8e1');
+            bg.addColorStop(0, pal.sky1);
+            bg.addColorStop(1, pal.sky2);
             ctx.fillStyle = bg;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -266,9 +277,9 @@
             const topY = baseY - D * Math.sin(state.angle);
 
             // Yer
-            ctx.fillStyle = '#8d6e63';
+            ctx.fillStyle = pal.ground;
             ctx.fillRect(0, baseY, canvas.width, canvas.height - baseY);
-            ctx.strokeStyle = '#5d4037';
+            ctx.strokeStyle = pal.groundEdge;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(0, baseY);
@@ -276,19 +287,19 @@
             ctx.stroke();
 
             // Qiya tekislik (uchburchak)
-            ctx.fillStyle = '#a1887f';
+            ctx.fillStyle = pal.ramp;
             ctx.beginPath();
             ctx.moveTo(baseX, baseY);
             ctx.lineTo(topX, baseY);
             ctx.lineTo(topX, topY);
             ctx.closePath();
             ctx.fill();
-            ctx.strokeStyle = '#4e342e';
+            ctx.strokeStyle = pal.rampEdge;
             ctx.lineWidth = 3;
             ctx.stroke();
 
             // Yuza shtrixlari - ishqalanish mavjudligini bildiradi
-            ctx.strokeStyle = '#6d4c41';
+            ctx.strokeStyle = pal.hatch;
             ctx.lineWidth = 1.5;
             for (let t = 0.06; t < 0.98; t += 0.06) {
                 const hx = baseX + t * D * Math.cos(state.angle);
@@ -368,14 +379,14 @@
             drawArrow(ccx, ccy, ccx - N * fScale * nX, ccy - N * fScale * nY, '#e67e22', 'N');
 
             // Sarlavha ma'lumotlari
-            ctx.fillStyle = '#4e342e';
+            ctx.fillStyle = pal.ink;
             ctx.font = 'bold 17px Arial';
             ctx.fillText('s = ' + S.toFixed(1) + ' m (qiyalik uzunligi)', 20, 36);
             ctx.fillText('FIK η = ' + (p.eta * 100).toFixed(1) + '%', 20, 62);
 
             // Progress (bajarilgan ish)
             if (state.t > 0) {
-                ctx.fillStyle = '#27ae60';
+                ctx.fillStyle = pal.done;
                 ctx.font = 'bold 15px Arial';
                 ctx.fillText('Bajarilgan ish: ' + (p.Au * state.t).toFixed(1) + ' J / ' + p.Au.toFixed(1) + ' J', 20, 88);
             }
@@ -420,6 +431,9 @@
         }
 
         resetIncline();
+
+        // Rejim almashganda kanvasni qayta chizamiz
+        window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
     </script>
 </body>
 </html>

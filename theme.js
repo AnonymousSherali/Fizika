@@ -23,7 +23,16 @@
             btn.textContent = isDark ? '☀️' : '🌙';
             btn.setAttribute('aria-pressed', String(isDark));
         }
+        // Kanvasli sahifalar o'z palitrasini yangilashi uchun xabar beramiz
+        try {
+            window.dispatchEvent(new CustomEvent('fizika:theme', { detail: { dark: isDark } }));
+        } catch (e) {}
     }
+
+    // Sahifa kodi uchun qulay yordamchi
+    window.isDarkTheme = function () {
+        return document.body.classList.contains('dark');
+    };
 
     function toggleTheme() {
         var next = document.body.classList.contains('dark') ? 'light' : 'dark';
