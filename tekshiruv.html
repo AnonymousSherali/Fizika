@@ -31,6 +31,7 @@
        Yuklamayotgan fayl bo'lsa, uni qizil rangda ko'rsatadi.</p>
 
     <div id="summary">⏳ Tekshirilmoqda…</div>
+    <div id="cssver" class="box" style="margin-bottom:18px; display:none"></div>
     <div id="list"></div>
 
     <div class="box">
@@ -61,6 +62,55 @@
     </div>
 
     <script>
+        // ===== 1) styles.css YANGI versiyami yoki ESKI keshdanmi? =====
+        // CSS faylini o'qib, yangi dizayn tizimi o'zgaruvchilari bor-yo'qligini tekshiramiz.
+        // Eski CSS da --sp-*, --r-*, --shadow-* yo'q edi — natijada sayt bo'shliqsiz,
+        // yumaloq burchaksiz va soyasiz ochiladi (ranglar esa ishlayveradi).
+        (function () {
+            var box = document.getElementById('cssver');
+            box.style.display = '';
+            box.innerHTML = '<h2>⏳ styles.css versiyasi tekshirilmoqda…</h2>';
+
+            fetch('styles.css?nocache=' + Date.now(), { cache: 'no-store' })
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.text();
+                })
+                .then(function (css) {
+                    var hasSp = css.indexOf('--sp-4') > -1;
+                    var hasR  = css.indexOf('--r-lg') > -1;
+                    var hasSh = css.indexOf('--shadow-sm') > -1;
+                    if (hasSp && hasR && hasSh) {
+                        box.style.background = '#f0fdf4';
+                        box.style.borderColor = '#86efac';
+                        box.innerHTML = '<h2>✅ styles.css — yangi versiya</h2>' +
+                            '<p style="font-size:0.92rem">Dizayn tizimi to\u2019liq: bo\u2019shliq, ' +
+                            'radius va soya o\u2019zgaruvchilari joyida (' + Math.round(css.length / 1024) + ' KB).</p>';
+                    } else {
+                        box.style.background = '#fef2f2';
+                        box.style.borderColor = '#fca5a5';
+                        box.innerHTML = '<h2>❌ Serverda ESKI styles.css turibdi!</h2>' +
+                            '<p style="font-size:0.92rem">Aynan shu sababli sayt <strong>bo\u2019shliqsiz, ' +
+                            'yumaloq burchaksiz va soyasiz</strong> ko\u2019rinadi (ranglar esa ishlaydi). ' +
+                            'Yangi dizayn tizimi o\u2019zgaruvchilari topilmadi: ' +
+                            (hasSp ? '' : '--sp-4 ') + (hasR ? '' : '--r-lg ') + (hasSh ? '' : '--shadow-sm') + '</p>' +
+                            '<ol style="margin-left:18px;margin-top:10px;font-size:0.92rem">' +
+                            '<li>GitHub\u2019dan <strong>yangi <code>styles.css</code></strong> ni yuklab oling</li>' +
+                            '<li>Hostingdagi eski <code>styles.css</code> ustiga <strong>qayta yuklang</strong> (replace)</li>' +
+                            '<li>Shu bilan birga <code>model-tools.css</code>, <code>theme.js</code>, ' +
+                            '<code>model-tools.js</code> va barcha HTML fayllarni ham yangilang</li>' +
+                            '<li>So\u2019ng brauzerda <strong>Ctrl+F5</strong> bosing</li></ol>';
+                    }
+                })
+                .catch(function (e) {
+                    box.style.background = '#fef2f2';
+                    box.style.borderColor = '#fca5a5';
+                    box.innerHTML = '<h2>❌ styles.css umuman yuklanmadi</h2>' +
+                        '<p style="font-size:0.92rem">Xato: ' + e.message + '. Fayl serverda yo\u2019q yoki ' +
+                        '<code>index.html</code> bilan bir xil papkada emas.</p>';
+                });
+        })();
+
         var FILES = [
             ['styles.css', 'Asosiy dizayn'],
             ['model-tools.css', 'Laboratoriya vositalari uslubi'],
@@ -89,7 +139,7 @@
                             '</span><span class="ms">' + label + '</span>';
             list.appendChild(row);
 
-            fetch(path, { method: 'GET', cache: 'no-store' })
+            fetch(path + '?nocache=' + Date.now(), { method: 'GET', cache: 'no-store' })
                 .then(function (r) {
                     var st = row.querySelector('.st'), ms = row.querySelector('.ms');
                     if (r.ok) {
