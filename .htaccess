@@ -1,0 +1,52 @@
+# ============================================================
+# Apache sozlamalari (ahost / cPanel va boshqa Apache hostinglar uchun)
+# Statik sayt: HTML + CSS + JS + PDF
+# ============================================================
+
+# Papka ochilganda index.html ko'rsatilsin
+DirectoryIndex index.html
+
+# ---------- MIME turlari ----------
+# Ba'zi hostinglar CSS/JS ni noto'g'ri turda beradi — brauzer ularni rad etadi
+<IfModule mod_mime.c>
+    AddType text/css                      .css
+    AddType application/javascript        .js
+    AddType image/svg+xml                 .svg
+    AddType application/pdf               .pdf
+    AddType application/vnd.openxmlformats-officedocument.wordprocessingml.document .docx
+    AddType text/html                     .html .htm
+</IfModule>
+
+# ---------- Kodlash ----------
+# O'zbek matni to'g'ri ko'rinishi uchun
+AddDefaultCharset UTF-8
+<IfModule mod_mime.c>
+    AddCharset UTF-8 .html .css .js .md
+</IfModule>
+
+# ---------- Siqish (tezroq yuklanish) ----------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---------- Kesh ----------
+# CSS/JS o'zgarganda brauzer eski nusxani ko'rsatmasligi uchun qisqa kesh
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css              "access plus 1 hours"
+    ExpiresByType application/javascript "access plus 1 hours"
+    ExpiresByType text/html             "access plus 0 seconds"
+    ExpiresByType application/pdf       "access plus 7 days"
+    ExpiresByType image/svg+xml         "access plus 7 days"
+</IfModule>
+
+# ---------- Xavfsizlik ----------
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# Papka ro'yxatini ko'rsatmaslik
+Options -Indexes

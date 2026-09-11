@@ -31,7 +31,11 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │
 ├── index.html                     # 🏠 Bosh sahifa
 ├── styles.css                     # Umumiy stillar (dark mode bilan)
+├── model-tools.css                # Laboratoriya vositalari uslubi
 ├── theme.js                       # Umumiy UI (rejim, animatsiyalar)
+├── model-tools.js                 # Jurnal, navigatsiya, klaviatura
+├── tekshiruv.html                 # 🔍 Deploy tekshiruvi (fayllar yuklanyaptimi)
+├── .htaccess                      # Apache sozlamalari (MIME, kesh)
 │
 ├── modellar/                      # 🎮 Interaktiv modellar
 │   ├── rezerford_model.html       #   Rezerford tajribasi
@@ -102,7 +106,45 @@ cd fizika_modellar
 http-server -p 8000
 ```
 
-### 3-usul: Maktab serveri
+### 3-usul: Hostingga joylash (ahost, cPanel va boshqalar)
+
+**Muhim:** fayllarni yuklashda **papka tuzilishi saqlanishi** shart.
+
+1. Loyihani ZIP qilib yuklab oling (GitHub → Code → Download ZIP)
+2. Hosting **File Manager** ga kiring va `public_html` papkasini oching
+3. ZIP ni **`public_html` ichiga** yuklang va o'sha yerda oching (Extract)
+4. Fayllar shunday joylashishi kerak:
+
+```
+public_html/
+├── index.html          ← bosh sahifa aynan shu yerda
+├── styles.css
+├── model-tools.css
+├── theme.js
+├── model-tools.js
+├── .htaccess           ← Apache sozlamalari (yashirin fayl)
+├── modellar/
+├── testlar/
+├── dars_ishlanmalar/
+└── hujjatlar/
+```
+
+5. **Tekshirish:** brauzerda `sizningsayt.uz/tekshiruv.html` ni oching —
+   u barcha fayllar to'g'ri yuklanayotganini ko'rsatadi
+
+#### Tez-tez uchraydigan xatolar
+
+| Muammo | Sabab | Yechim |
+|--------|-------|--------|
+| Sayt stilsiz (oddiy matn) ochiladi | `styles.css` yuklanmagan yoki noto'g'ri papkada | `tekshiruv.html` bilan tekshiring |
+| Ba'zi sahifalar ochilmaydi | Papkalar yuklanmagan | `modellar/`, `testlar/` papkalarini tekshiring |
+| Eski versiya ko'rinadi | Brauzer keshi | `Ctrl+F5` (yoki `Cmd+Shift+R`) bosing |
+| Fayl topilmadi (404) | Katta-kichik harf | `styles.css` — hammasi kichik harfda |
+
+**Eslatma:** `.htaccess` yashirin fayl. File Manager'da uni ko'rish uchun
+"Show hidden files" (yashirin fayllarni ko'rsatish) ni yoqing.
+
+### 4-usul: Maktab serveri
 
 1. Barcha fayllarni server papkasiga ko'chiring
 2. O'quvchilarga link bering:
