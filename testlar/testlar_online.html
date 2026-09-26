@@ -2,11 +2,12 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20260911">
+    <link rel="stylesheet" href="../styles.css?v=20260926c">
     <style>
         :root {
             --primary: #4f46e5;
@@ -185,7 +186,7 @@
                 <span class="q-tag" id="pTag">Rezerford · Hisoblash</span>
                 <div class="q-text" id="pText"></div>
                 <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                    <input type="number" step="any" id="pInput" placeholder="Javob"
+                    <input type="text" inputmode="decimal" autocomplete="off" id="pInput" placeholder="Javob (masalan 1,66 yoki 1.66)"
                            style="flex:1; min-width:140px; padding:14px 18px; font-size:1.1em; border:2px solid var(--border);
                                   border-radius:12px; background:var(--panel-bg); color:var(--text);"
                            aria-label="Raqamli javob">
@@ -214,7 +215,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260911"></script>
+    <script src="../theme.js?v=20260926c"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -239,14 +240,14 @@
             { tag: "Rezerford · Chuqur", q: "Nima uchun oltin tanlangan?", o: ["Arzon","Yumshoq, yupqa qatlam yasash oson","Radioaktiv","Magnit xossasi bor"], correct: 1 },
             { tag: "Rezerford · Chuqur", q: "Atomning qaysi qismi eng og'ir?", o: ["Elektronlar","Yadro","Neytronlar alohida","Barcha teng"], correct: 1 },
             { tag: "Rezerford · Chuqur", q: "Tajriba natijasi qanday atom modeliga olib keldi?", o: ["Tomson modeli","Rezerford modeli","Bor modeli","Kvant modeli"], correct: 1 },
-            { tag: "Rezerford · Chuqur", q: "Alfa zarralar qaysi elementdan chiqadi?", o: ["Uran","Radiy","Plutoniy","Toriy"], correct: 1 },
+            { tag: "Rezerford · Chuqur", q: "Rezerford tajribasida alfa zarralar manbai sifatida qaysi element ishlatilgan?", o: ["Uran","Radiy","Plutoniy","Toriy"], correct: 1 },
             // ===== Kepler - Asosiy =====
             { tag: "Kepler · Asosiy", q: "Kepler nechta qonun kashf etdi?", o: ["2","3","4","5"], correct: 1 },
             { tag: "Kepler · Asosiy", q: "Kepler qonunlari nimaga tegishli?", o: ["Atom tuzilishi","Sayyoralar harakati","Yorug'lik","Elektr toki"], correct: 1 },
             { tag: "Kepler · Asosiy", q: "Birinchi qonunga ko'ra, sayyoralar qanday orbitada harakat qiladi?", o: ["Aylana","Ellips","Parabola","Giperbola"], correct: 1 },
             { tag: "Kepler · Asosiy", q: "Quyosh ellipsning qayerida joylashgan?", o: ["Markazda","Fokuslaridan birida","Ellips tashqarisida","Yarim katta o'qda"], correct: 1 },
             { tag: "Kepler · Asosiy", q: "Ekssentrisitet (e) nimani bildiradi?", o: ["Orbitaning cho'zilganlik darajasi","Sayyora tezligi","Massa","Harorat"], correct: 0 },
-            { tag: "Kepler · Asosiy", q: "e = 0 bo'lsa, orbit qanday shaklda?", o: ["Ellips","Aylana","Parabola","To'g'ri chiziq"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "e = 0 bo'lsa, orbita qanday shaklda?", o: ["Ellips","Aylana","Parabola","To'g'ri chiziq"], correct: 1 },
             { tag: "Kepler · Asosiy", q: "Ikkinchi qonun nimani ta'kidlaydi?", o: ["Tezlik o'zgarmas","Yuza tezligi o'zgarmas","Tezlanish o'zgarmas","Kuch o'zgarmas"], correct: 1 },
             { tag: "Kepler · Asosiy", q: "Sayyora Quyoshga yaqinroq bo'lganda qanday harakat qiladi?", o: ["Sekinroq","Tezroq","O'zgarmas tezlikda","To'xtaydi"], correct: 1 },
             { tag: "Kepler · Asosiy", q: "Uchinchi qonun formulasi qanday?", o: ["T = a","T² = a³","T³ = a²","T = a²"], correct: 1 },
@@ -342,6 +343,8 @@
         document.addEventListener('keydown', function(e) {
             if (document.getElementById('quizScreen').classList.contains('hidden')) return;
             if (e.target.tagName === 'INPUT') return;
+            // Ctrl+C (nusxalash) va boshqa yorliqlar javobni o'zgartirib yubormasin
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
             const k = e.key.toUpperCase();
             const idx = ['A', 'B', 'C', 'D'].indexOf(k);
             if (idx > -1 && idx < quiz[current].o.length) { selectOption(idx); return; }
@@ -439,9 +442,9 @@
             { tag: "Kepler · Hisoblash", unit: "km/s", ans: 29.3, tol: 3,
               q: "Yer perigeliyda 30.3 km/s tezlikda harakatlanadi. Afeliydagi tezligini toping (km/s). (r\u209A = 0.983 AU, r\u2090 = 1.017 AU)",
               sol: "Impuls momenti saqlanadi: v\u209A\u00B7r\u209A = v\u2090\u00B7r\u2090 \u2192 v\u2090 = 30.3 \u00D7 0.983/1.017 \u2248 29.3 km/s" },
-            { tag: "Kepler · Hisoblash", unit: "ming km", ans: 42.3, tol: 4,
+            { tag: "Kepler · Hisoblash", unit: "ming km", ans: 42.2, tol: 4,
               q: "Geostatsionar yo'ldosh Yer atrofida 24 soatda aylanadi. Orbita radiusini toping (ming km). (M = 5.97\u00D710\u00B2\u2074 kg, G = 6.67\u00D710\u207B\u00B9\u00B9)",
-              sol: "r\u00B3 = T\u00B2GM/4\u03C0\u00B2 = (86400)\u00B2 \u00D7 6.67\u00D710\u207B\u00B9\u00B9 \u00D7 5.97\u00D710\u00B2\u2074 / 39.48 \u2192 r \u2248 4.23\u00D710\u2077 m = 42.3 ming km" }
+              sol: "r\u00B3 = T\u00B2GM/4\u03C0\u00B2 = (86400)\u00B2 \u00D7 6.67\u00D710\u207B\u00B9\u00B9 \u00D7 5.97\u00D710\u00B2\u2074 / 39.48 \u2248 7.53\u00D710\u00B2\u00B2 m\u00B3 \u2192 r \u2248 4.22\u00D710\u2077 m = 42.2 ming km" }
         ];
 
         let pCurrent = 0;
@@ -482,7 +485,9 @@
             if (pAnswered) return;
             const p = calcSet[pCurrent];
             const inp = document.getElementById('pInput');
-            const val = parseFloat(inp.value);
+            // Vergul ham, nuqta ham qabul qilinadi (o'zbek yozuvida o'nli vergul odatiy)
+            const raw = inp.value.trim().replace(/\s+/g, '').replace(',', '.');
+            const val = /^[-+]?\d*\.?\d+(e[-+]?\d+)?$/i.test(raw) ? parseFloat(raw) : NaN;
             if (isNaN(val)) {
                 // Jim qaytish o'rniga aniq ko'rsatma beramiz
                 document.getElementById('pFeedback').innerHTML =

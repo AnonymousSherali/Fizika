@@ -2,12 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Kepler qonunlari interaktiv modeli - sayyoralar harakati: ellips, yuzalar va davr qonunlari. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪐%3C/text%3E%3C/svg%3E">
     <title>Kepler Qonunlari - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260911">
-    <link rel="stylesheet" href="../model-tools.css?v=20260911">
+    <link rel="stylesheet" href="../styles.css?v=20260926c">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926c">
     <style>
         :root {
             --primary: #7c3aed;
@@ -48,9 +49,11 @@
         }
 
         .tab-content { display: none; padding: var(--sp-6); }
+        /* Navigatsiya bo'limlardan tashqarida — 2-3 bo'limda ham ko'rinadi */
+        .kepler-nav-wrap { padding: 0 var(--sp-6) var(--sp-6); }
         .tab-content.active {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
             gap: 20px;
         }
 
@@ -82,10 +85,11 @@
         .planet-btn:hover { transform: scale(1.05); }
 
         @media (max-width: 1024px) {
-            .tab-content.active { grid-template-columns: 1fr; }
+            .tab-content.active { grid-template-columns: minmax(0, 1fr); }
         }
         @media (max-width: 700px) {
             .tab-content { padding: 16px; }
+            .kepler-nav-wrap { padding: 0 16px 16px; }
             .tabs { flex-wrap: wrap; }
             .tab { flex: 1 1 100%; padding: 12px; font-size: 0.95em; }
             .planet-selector { grid-template-columns: repeat(2, 1fr); }
@@ -110,12 +114,12 @@
         <!-- 1-QONUN -->
         <div class="tab-content active" id="tab0">
             <div class="canvas-section">
-                <canvas id="canvas1" width="800" height="600"></canvas>
+                <canvas id="canvas1" role="img" aria-label="Kepler Qonunlari — interaktiv simulyatsiya" width="800" height="600"></canvas>
             </div>
 
             <div class="controls">
                 <div class="task-card">
-                    <h3>🎯 Topshiriq</h3>
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
                         <li>1-qonun: turli sayyoralarni tanlang va <strong>perigeliy/afeliy</strong> ni yozing</li>
                         <li>Ekssentrisitetni oshiring — orbita shakli qanday o'zgardi?</li>
@@ -128,9 +132,9 @@
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="planet-selector" role="radiogroup" aria-label="Sayyorani tanlash">
-                    <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('mercury', event)">Merkuriy</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('mercury', event)">Merkuriy</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('venus', event)">Venera</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('earth', event)">Yer</button>
+                    <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('earth', event)">Yer</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('mars', event)">Mars</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('jupiter', event)">Yupiter</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('saturn', event)">Saturn</button>
@@ -185,8 +189,6 @@
 
             <div class="lab-log"></div>
 
-            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
-
             <div class="info-panel">
                 <h3>📚 Birinchi Qonun: Ellips Qonuni</h3>
                 <div class="law-card">
@@ -211,7 +213,7 @@
         <!-- 2-QONUN -->
         <div class="tab-content" id="tab1">
             <div class="canvas-section">
-                <canvas id="canvas2" width="800" height="600"></canvas>
+                <canvas id="canvas2" role="img" aria-label="Kepler Qonunlari — interaktiv simulyatsiya" width="800" height="600"></canvas>
             </div>
 
             <div class="controls">
@@ -285,7 +287,7 @@
         <!-- 3-QONUN -->
         <div class="tab-content" id="tab2">
             <div class="canvas-section">
-                <canvas id="canvas3" width="800" height="600"></canvas>
+                <canvas id="canvas3" role="img" aria-label="Kepler Qonunlari — interaktiv simulyatsiya" width="800" height="600"></canvas>
             </div>
 
             <div class="controls">
@@ -320,7 +322,7 @@
                 <div class="law-card">
                     <h4>Kepler Uchinchi Qonuni</h4>
                     <p>
-                        <strong>Sayyoraning orbital davrining kvadrati, orbit yarim katta o'qining
+                        <strong>Sayyoraning orbital davrining kvadrati, orbita yarim katta o'qining
                         kubiga to'g'ri proporsionaldir.</strong>
                     </p>
                     <p style="margin-top: 10px;">
@@ -334,10 +336,13 @@
                 </div>
             </div>
         </div>
+        <div class="kepler-nav-wrap">
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
+        </div>
     </div>
 
-    <script src="../theme.js?v=20260911"></script>
-    <script src="../model-tools.js?v=20260911"></script>
+    <script src="../theme.js?v=20260926c"></script>
+    <script src="../model-tools.js?v=20260926c"></script>
     <script>
         // Umumiy o'zgaruvchilar
         let animations = [null, null, null];
@@ -357,9 +362,13 @@
         };
 
         let currentPlanet = 'earth';
+        // Slayder qo'lda surilganda orbita endi haqiqiy sayyoraga tegishli emas
+        let manualOrbit = false;
 
         // Tab almashtirish
+        let activeTab = 0;
         function switchTab(index) {
+            activeTab = index;
             document.querySelectorAll('.tab').forEach((tab, i) => {
                 tab.classList.toggle('active', i === index);
                 tab.setAttribute('aria-selected', i === index ? 'true' : 'false');
@@ -378,6 +387,7 @@
         // Sayyora tanlash
         function selectPlanet(planet, evt) {
             currentPlanet = planet;
+            manualOrbit = false;
             const data = planetsData[planet];
 
             document.querySelectorAll('.planet-btn').forEach(btn => {
@@ -409,6 +419,7 @@
         // Slayder qo'lda surilsa, tanlangan sayyora belgisi olib tashlanadi —
         // aks holda "Yer" yonib turgani holda a = 25 AU ko'rinib qolardi
         function clearPlanetChoice() {
+            manualOrbit = true;
             document.querySelectorAll('.planet-btn').forEach(function (b) {
                 b.classList.remove('active');
                 b.setAttribute('aria-checked', 'false');
@@ -434,7 +445,18 @@
             document.getElementById('speedValue1').textContent = this.value + 'x';
         };
 
-        function drawOrbit1() {
+        // Kadr tezligidan mustaqillik: 120/144 Hz ekranda sayyoralar 2 barobar tez
+        // aylanmasligi uchun har kadr qadami o'tgan vaqtga (60 fps birligida) ko'paytiriladi
+        const lastFrame = [null, null, null];
+        function frameK(i, ts) {
+            if (typeof ts !== 'number') { lastFrame[i] = null; return 1; }
+            const k = lastFrame[i] === null ? 1 : Math.min(3, (ts - lastFrame[i]) / (1000 / 60));
+            lastFrame[i] = ts;
+            return k;
+        }
+
+        function drawOrbit1(ts) {
+            const kf = frameK(0, ts);
             ctx1.fillStyle = '#000';
             ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
 
@@ -530,7 +552,7 @@
                 // Katta e va tezlikda bir kadrdagi burchak cheklanadi, aks holda
                 // sayyora perigeliy atrofida orbitadan "sakrab" o'tardi.
                 const step = 0.02 * orbit1.speed / (1 + orbit1.e * Math.cos(orbit1.angle));
-                orbit1.angle += Math.min(step, 0.12);
+                orbit1.angle += Math.min(step, 0.12) * kf;
                 animations[0] = requestAnimationFrame(drawOrbit1);
             }
         }
@@ -774,7 +796,8 @@
             document.getElementById('speedValue2').textContent = this.value + 'x';
         };
 
-        function drawOrbit2() {
+        function drawOrbit2(ts) {
+            const kf = frameK(1, ts);
             ctx2.fillStyle = '#000';
             ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
             drawStars(ctx2, stars2);
@@ -870,7 +893,7 @@
                 // Teng vaqtda teng yuza: dA/kadr = (b/2)(a + c*cos th)*dth = const
                 // bo'lishi uchun dth = k / (1 + e*cos th)
                 const angularSpeed = 0.012 * orbit2.speed / (1 + orbit2.e * Math.cos(orbit2.angle));
-                orbit2.angle += Math.min(angularSpeed, 0.12);
+                orbit2.angle += Math.min(angularSpeed, 0.12) * kf;
 
                 animations[1] = requestAnimationFrame(drawOrbit2);
             }
@@ -932,7 +955,8 @@
             if (!isRunning[2]) drawOrbit3();
         };
 
-        function drawOrbit3() {
+        function drawOrbit3(ts) {
+            const kf = frameK(2, ts);
             ctx3.fillStyle = '#000';
             ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
@@ -958,7 +982,7 @@
                 if (!showAll && planet.a > 2) {
                     if (isRunning[2]) {
                         const sp = parseFloat(document.getElementById('speedSlider3').value);
-                        planet.angle += (0.02 / planet.T) * sp;
+                        planet.angle += (0.02 / planet.T) * sp * kf;
                     }
                     return;
                 }
@@ -1005,7 +1029,7 @@
                 // Harakat
                 if (isRunning[2]) {
                     const speed = parseFloat(document.getElementById('speedSlider3').value);
-                    planet.angle += (0.02 / planet.T) * speed;
+                    planet.angle += (0.02 / planet.T) * speed * kf;
                 }
             });
 
@@ -1038,15 +1062,41 @@
         resetAnimation3();
 
         // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
-        window.modelControls = { start: startAnimation1, pause: pauseAnimation1, reset: resetAnimation1 };
-        window.modelIsRunning = function () { return isRunning[0]; };
+        // Bo'limlar orasida ← → / Home / End bilan o'tish (tablist standarti)
+        document.querySelector('.tabs').addEventListener('keydown', function (e) {
+            const n = 3;
+            let next = null;
+            if (e.key === 'ArrowRight') next = (activeTab + 1) % n;
+            else if (e.key === 'ArrowLeft') next = (activeTab + n - 1) % n;
+            else if (e.key === 'Home') next = 0;
+            else if (e.key === 'End') next = n - 1;
+            if (next === null) return;
+            e.preventDefault();
+            switchTab(next);
+            document.querySelectorAll('.tab')[next].focus();
+        });
+
+        // Klaviatura yorliqlari faqat ko'rinib turgan bo'lim animatsiyasini boshqaradi
+        const TAB_CTRL = [
+            { start: startAnimation1, pause: pauseAnimation1, reset: resetAnimation1 },
+            { start: startAnimation2, pause: pauseAnimation2, reset: resetAnimation2 },
+            { start: startAnimation3, pause: pauseAnimation3, reset: resetAnimation3 }
+        ];
+        window.modelControls = {
+            start: function () { TAB_CTRL[activeTab].start(); },
+            pause: function () { TAB_CTRL[activeTab].pause(); },
+            reset: function () { TAB_CTRL[activeTab].reset(); }
+        };
+        window.modelIsRunning = function () { return isRunning[activeTab]; };
+        // Jurnal 1-qonun bo'limida — boshqa bo'limda o'lchov yozilmaydi
+        window.labCanCapture = function () { return activeTab === 0; };
         window.labFields = [
-            { label: "Sayyora", get: function () { return planetsData[currentPlanet].name; } },
+            { label: "Sayyora", get: function () { return manualOrbit ? "qo'lda" : planetsData[currentPlanet].name; } },
             { label: "a (AU)", get: function () { return orbit1.a.toFixed(3); } },
             { label: "e", get: function () { return orbit1.e.toFixed(3); } },
-            { label: "Perigeliy", get: function () { return document.getElementById('perihelion').textContent; } },
-            { label: "Afeliy", get: function () { return document.getElementById('aphelion').textContent; } },
-            { label: "T²/a³", get: function () { return (Math.pow(planetsData[currentPlanet].T,2)/Math.pow(planetsData[currentPlanet].a,3)).toFixed(3); } }
+            { label: "Perigeliy (AU)", get: function () { return labNum('perihelion'); } },
+            { label: "Afeliy (AU)", get: function () { return labNum('aphelion'); } },
+            { label: "T²/a³", get: function () { return manualOrbit ? '—' : (Math.pow(planetsData[currentPlanet].T,2)/Math.pow(planetsData[currentPlanet].a,3)).toFixed(3); } }
         ];
     </script>
 </body>

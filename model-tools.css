@@ -7,6 +7,7 @@
 /* ===== Modellar orasida navigatsiya ===== */
 .model-nav {
     grid-column: 1 / -1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: var(--sp-2);
@@ -51,7 +52,7 @@
     padding: var(--sp-4);
     margin-bottom: var(--sp-4);
 }
-.task-card h3 {
+.task-card h3, .task-card__title {
     font-size: 0.95rem;
     color: var(--text);
     margin-bottom: var(--sp-3);
@@ -95,6 +96,7 @@ html.dark .task-card li::before, body.dark .task-card li::before {
 /* ===== Laboratoriya jurnali ===== */
 .lab-log {
     grid-column: 1 / -1;
+    min-width: 0;      /* keng jadval grid ustunini cho'zmasin — o'zi ichida aylansin */
     background: var(--panel-bg);
     border: 1px solid var(--border);
     border-radius: var(--r-md);
@@ -190,12 +192,13 @@ kbd {
 .kbd-hint {
     display: flex;
     align-items: center;
-    gap: var(--sp-2);
+    gap: var(--sp-1) var(--sp-3);
     flex-wrap: wrap;
     margin-top: var(--sp-3);
     font-size: 0.8rem;
     color: var(--text-muted);
 }
+.kbd-hint span { white-space: nowrap; }
 
 @media (max-width: 700px) {
     .model-nav { padding: var(--sp-3); }

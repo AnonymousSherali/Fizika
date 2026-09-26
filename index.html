@@ -2,6 +2,7 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="10-11 sinflar uchun 6 ta interaktiv fizika modeli: Rezerford, Kepler, mayatnik, qiya tekislik, Om qonuni, induksiya. Onlayn testlar va 13 ta dars ishlanma.">
     <meta name="keywords" content="fizika, Rezerford, Kepler, mayatnik, interaktiv model, 10-sinf, 11-sinf, test, dars ishlanma">
@@ -10,8 +11,8 @@
     <meta property="og:type" content="website">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔬%3C/text%3E%3C/svg%3E">
     <title>Fizik Modellar — Interaktiv O'quv Platformasi</title>
-    <link rel="stylesheet" href="styles.css?v=20260911">
-    <link rel="stylesheet" href="model-tools.css?v=20260911">
+    <link rel="stylesheet" href="styles.css?v=20260926c">
+    <link rel="stylesheet" href="model-tools.css?v=20260926c">
     <style>
         .container { max-width: 1240px; }
 
@@ -250,7 +251,7 @@
             transition: border-color 0.25s var(--ease), transform 0.25s var(--ease-out);
         }
         .feature:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); }
-        .feature h4 { color: var(--text); margin-bottom: var(--sp-1); font-size: 0.95rem; }
+        .feature h3 { color: var(--text); margin-bottom: var(--sp-1); font-size: 0.95rem; }
         .feature p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; }
 
         /* ===== Ko'rsatma qutisi ===== */
@@ -263,16 +264,18 @@
         }
         .info-box h3 { color: var(--text); margin-bottom: var(--sp-3); font-size: 1.05rem; }
         .steps { list-style: none; display: grid; gap: var(--sp-3); }
+        /* flex emas: <strong>/<kbd> alohida ustunlarga bo'linib, mobilda kesilardi */
         .steps li {
-            display: flex;
-            gap: var(--sp-3);
-            align-items: flex-start;
+            position: relative;
+            padding-left: 36px;
             color: var(--text-muted);
             font-size: 0.92rem;
             line-height: 1.6;
         }
+        .steps li strong { color: var(--text); }
         .steps .num {
-            flex-shrink: 0;
+            position: absolute;
+            left: 0; top: 0;
             width: 24px; height: 24px;
             display: grid; place-items: center;
             background: color-mix(in srgb, var(--accent) 14%, transparent);
@@ -280,6 +283,12 @@
             border-radius: 50%;
             font-size: 0.78rem;
             font-weight: 700;
+        }
+
+        html.dark .card-tag, body.dark .card-tag,
+        html.dark .section-eyebrow, body.dark .section-eyebrow,
+        html.dark .steps .num, body.dark .steps .num {
+            color: color-mix(in srgb, var(--accent) 50%, white);
         }
 
         /* ===== Footer ===== */
@@ -334,7 +343,7 @@
                 <div class="cards">
                     <article class="card">
                         <span class="card-tag">11-sinf</span>
-                        <div class="card-icon">⚛️</div>
+                        <div class="card-icon" aria-hidden="true">⚛️</div>
                         <h3>Rezerford tajribasi</h3>
                         <p>Alfa zarralarning oltin folgadan sochilishi. Zarra energiyasi va yadroga minimal yaqinlashuv masofasi jonli hisoblanadi.</p>
                         <a href="modellar/rezerford_model.html" class="btn">Modelni ochish →</a>
@@ -342,7 +351,7 @@
 
                     <article class="card">
                         <span class="card-tag">11-sinf</span>
-                        <div class="card-icon">🪐</div>
+                        <div class="card-icon" aria-hidden="true">🪐</div>
                         <h3>Kepler qonunlari</h3>
                         <p>Uchala qonun alohida bo'limda: ellips orbita, teng yuzalar va T²=a³ munosabati. Sekkizta sayyora haqiqiy ma'lumotlar bilan.</p>
                         <a href="modellar/kepler_model.html" class="btn">Modelni ochish →</a>
@@ -350,7 +359,7 @@
 
                     <article class="card">
                         <span class="card-tag">10-sinf</span>
-                        <div class="card-icon">🕰️</div>
+                        <div class="card-icon" aria-hidden="true">🕰️</div>
                         <h3>Matematik mayatnik</h3>
                         <p>Tebranish davri orqali erkin tushish tezlanishini aniqlang. Oltita osmoniy jismda sinab, o'lchov xatoligini baholang.</p>
                         <a href="modellar/mayatnik_model.html" class="btn">Modelni ochish →</a>
@@ -358,7 +367,7 @@
 
                     <article class="card">
                         <span class="card-tag">10-sinf</span>
-                        <div class="card-icon">📐</div>
+                        <div class="card-icon" aria-hidden="true">📐</div>
                         <h3>Qiya tekislik (FIK)</h3>
                         <p>To'rtta kuch vektori bilan foydali ish koeffitsiyenti. Energiya balansi A=A<sub>f</sub>+A<sub>ishq</sub> jonli tekshiriladi.</p>
                         <a href="modellar/qiya_tekislik_model.html" class="btn">Modelni ochish →</a>
@@ -366,7 +375,7 @@
 
                     <article class="card">
                         <span class="card-tag">10-sinf</span>
-                        <div class="card-icon">🔌</div>
+                        <div class="card-icon" aria-hidden="true">🔌</div>
                         <h3>Om qonuni</h3>
                         <p>I = U/R. Ampermetr ketma-ket, voltmetr parallel ulangan zanjir. Zarralar tezligi tokka, rezistor qizishi quvvatga bog'liq.</p>
                         <a href="modellar/om_qonuni_model.html" class="btn">Modelni ochish →</a>
@@ -374,7 +383,7 @@
 
                     <article class="card">
                         <span class="card-tag">10-sinf</span>
-                        <div class="card-icon">🧲</div>
+                        <div class="card-icon" aria-hidden="true">🧲</div>
                         <h3>Elektromagnit induksiya</h3>
                         <p>Faradey qonuni va Lens qoidasi. Magnitni harakatlantiring — galvanometr strelkasi oqim o'zgarishiga javob beradi.</p>
                         <a href="modellar/induksiya_model.html" class="btn">Modelni ochish →</a>
@@ -391,21 +400,21 @@
                 </div>
                 <div class="cards">
                     <article class="card">
-                        <div class="card-icon">🔟</div>
+                        <div class="card-icon" aria-hidden="true">🔟</div>
                         <h3>10-sinf — 7 ta dars</h3>
                         <p>Matematik mayatnik, energiya aylanishi, elektromagnit induksiya, ichki qarshilik, qiya tekislik, Om qonuni, yarim o'tkazgichli diod.</p>
-                        <a href="dars_ishlanmalar/#sinf10" class="btn btn-secondary">Ochish →</a>
+                        <a href="dars_ishlanmalar/index.html#sinf10" class="btn btn-secondary">Ochish →</a>
                     </article>
 
                     <article class="card">
-                        <div class="card-icon">1️⃣1️⃣</div>
+                        <div class="card-icon" aria-hidden="true">1️⃣1️⃣</div>
                         <h3>11-sinf — 6 ta dars</h3>
                         <p>Rezonans hodisasi, Rezerford tajribasi, Kepler qonunlari, difraksion panjara, yorug'lik kuchi, Xarita metodi.</p>
-                        <a href="dars_ishlanmalar/#sinf11" class="btn btn-secondary">Ochish →</a>
+                        <a href="dars_ishlanmalar/index.html#sinf11" class="btn btn-secondary">Ochish →</a>
                     </article>
 
                     <article class="card">
-                        <div class="card-icon">📚</div>
+                        <div class="card-icon" aria-hidden="true">📚</div>
                         <h3>Metodika qo'llanma</h3>
                         <p>Dars o'tish texnikasi, guruh ishlari va baholash mezonlari bo'yicha amaliy tavsiyalar.</p>
                         <a href="hujjatlar/metodika_qollanma.pdf" class="btn btn-secondary" download>PDF yuklab olish</a>
@@ -422,19 +431,19 @@
                 </div>
                 <div class="cards">
                     <article class="card">
-                        <div class="card-icon">🎯</div>
+                        <div class="card-icon" aria-hidden="true">🎯</div>
                         <h3>Onlayn interaktiv test</h3>
                         <p>40 ta test savoli va 9 ta hisoblash masalasi. Avtomatik baholash, to'liq yechimlar va xatolar tahlili bilan.</p>
                         <a href="testlar/testlar_online.html" class="btn">Testni boshlash →</a>
                     </article>
                     <article class="card">
-                        <div class="card-icon">✅</div>
+                        <div class="card-icon" aria-hidden="true">✅</div>
                         <h3>Testlar to'plami</h3>
-                        <p>100+ savol: asosiy bilimlar, chuqur tushunish va hisoblash masalalari — chop etishga tayyor PDF.</p>
+                        <p>50+ savol va masala: asosiy bilimlar, chuqur tushunish va hisoblash masalalari — chop etishga tayyor PDF.</p>
                         <a href="testlar/testlar.pdf" class="btn btn-success" download>PDF yuklab olish</a>
                     </article>
                     <article class="card">
-                        <div class="card-icon">📄</div>
+                        <div class="card-icon" aria-hidden="true">📄</div>
                         <h3>Loyiha hujjatlari</h3>
                         <p>To'liq yo'riqnoma: o'rnatish, foydalanish va texnik yordam bo'yicha ma'lumotlar.</p>
                         <a href="hujjatlar/README.pdf" class="btn btn-secondary" download>PDF yuklab olish</a>
@@ -458,7 +467,7 @@
                         <div class="stat-label">Dars ishlanma</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-number">100+</div>
+                        <div class="stat-number">50+</div>
                         <div class="stat-label">Test savoli</div>
                     </div>
                     <div class="stat">
@@ -476,31 +485,31 @@
                 </div>
                 <div class="features">
                     <div class="feature">
-                        <h4>🔬 Haqiqiy fizika</h4>
+                        <h3>🔬 Haqiqiy fizika</h3>
                         <p>Animatsiyalar emas — differensial tenglamalar real vaqtda yechiladi</p>
                     </div>
                     <div class="feature">
-                        <h4>🇺🇿 O'zbek tilida</h4>
+                        <h3>🇺🇿 O'zbek tilida</h3>
                         <p>To'liq o'zbekcha interfeys, formulalar va tushuntirishlar</p>
                     </div>
                     <div class="feature">
-                        <h4>📋 Laboratoriya jurnali</h4>
+                        <h3>📋 Laboratoriya jurnali</h3>
                         <p>O'lchovlarni jadvalga yozib boring va Excel'ga nusxalang</p>
                     </div>
                     <div class="feature">
-                        <h4>🎯 Tayyor topshiriqlar</h4>
+                        <h3>🎯 Tayyor topshiriqlar</h3>
                         <p>Har bir modelda qadam-baqadam tajriba rejasi</p>
                     </div>
                     <div class="feature">
-                        <h4>💻 Oflayn ishlaydi</h4>
+                        <h3>💻 Oflayn ishlaydi</h3>
                         <p>Internetsiz ham to'liq funksional — maktab sharoitiga mos</p>
                     </div>
                     <div class="feature">
-                        <h4>📱 Har qanday ekranda</h4>
+                        <h3>📱 Har qanday ekranda</h3>
                         <p>Telefon, planshet va kompyuterda bir xil qulay</p>
                     </div>
                     <div class="feature">
-                        <h4>🌙 Qorong'i rejim</h4>
+                        <h3>🌙 Qorong'i rejim</h3>
                         <p>Ko'z charchamasligi uchun kunduzgi va tungi rejim</p>
                     </div>
                 </div>
@@ -533,7 +542,7 @@
         </footer>
     </div>
 
-    <script src="theme.js?v=20260911"></script>
+    <script src="theme.js?v=20260926c"></script>
     <script>
         // ===== Header foni: zarralar tarmog'i =====
         (function() {
@@ -585,22 +594,53 @@
                 });
             }
 
-            function step() {
+            // Header ekranda ko'rinmasa yoki tab yashirin bo'lsa animatsiya to'xtaydi
+            // (aks holda sahifa pastida ham 60 fps da bekor chizilib, batareyani yeydi)
+            let visible = true, rafId = null, last = null;
+
+            function step(ts) {
+                rafId = null;
+                const k = last === null ? 1 : Math.min(3, (ts - last) / (1000 / 60));
+                last = ts;
                 particles.forEach(p => {
-                    p.x += p.vx; p.y += p.vy;
+                    p.x += p.vx * k; p.y += p.vy * k;
                     if (p.x < 0 || p.x > fx.width) p.vx *= -1;
                     if (p.y < 0 || p.y > fx.height) p.vy *= -1;
                 });
                 render();
-                requestAnimationFrame(step);
+                schedule();
+            }
+            function schedule() {
+                if (reduced || !visible || document.hidden || rafId !== null) return;
+                rafId = requestAnimationFrame(step);
+            }
+            function halt() {
+                if (rafId !== null) cancelAnimationFrame(rafId);
+                rafId = null; last = null;
             }
 
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver(function (en) {
+                    visible = en[0].isIntersecting;
+                    if (visible) schedule(); else halt();
+                }).observe(header);
+            }
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) halt(); else schedule();
+            });
+
+            // Faqat kenglik o'zgarganda qayta yaratamiz: mobilda manzil paneli
+            // yashiringanda balandlik o'zgaradi va rasm "sakrab" ketardi
+            let lastW = header.clientWidth;
             window.addEventListener('resize', function() {
+                if (header.clientWidth === lastW) return;
+                lastW = header.clientWidth;
                 init();
                 if (reduced) render();
             });
             init();
-            if (reduced) render(); else requestAnimationFrame(step);
+            render();
+            schedule();
         })();
 
         // ===== Statistika sanog'i =====

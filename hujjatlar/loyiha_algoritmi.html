@@ -2,11 +2,12 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Fizik modellar loyihasining arxitekturasi va algoritmlari - interaktiv diagrammalar.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📊%3C/text%3E%3C/svg%3E">
     <title>Loyiha Algoritmi - Fizik Modellar</title>
-    <link rel="stylesheet" href="../styles.css?v=20260911">
+    <link rel="stylesheet" href="../styles.css?v=20260926c">
     <style>
         :root {
             --primary: #4338ca;
@@ -87,7 +88,9 @@
             border-radius: var(--r-sm);
             border: 1px solid var(--border);
         }
-        html.dark canvas, body.dark canvas { filter: invert(0.9) hue-rotate(180deg); }
+        /* Diagramma qorong'i rejimda ham yorug' "qog'oz" bo'lib qoladi: invert filtri
+           emoji va legenda ranglarini buzardi */
+        html.dark canvas, body.dark canvas { border-color: var(--border); }
 
         /* ===== Boshqaruv tugmalari ===== */
         .controls {
@@ -174,7 +177,7 @@
             color: var(--text-muted);
             line-height: 1.7;
         }
-        .info-box h3 { color: var(--text); margin-bottom: var(--sp-3); font-size: 1.05rem; }
+        .info-box h2 { color: var(--text); margin-bottom: var(--sp-3); font-size: 1.05rem; }
         .info-box strong { color: var(--text); }
 
         @media (max-width: 768px) {
@@ -193,11 +196,11 @@
             <p>⚛️ Rezerford Tajribasi va 🪐 Kepler Qonunlari</p>
         </div>
         
-        <div class="tabs">
-            <button class="tab active" onclick="changeDiagram(0)">1. Umumiy Arxitektura</button>
-            <button class="tab" onclick="changeDiagram(1)">2. Model Ishlash</button>
-            <button class="tab" onclick="changeDiagram(2)">3. Deploy Jarayoni</button>
-            <button class="tab" onclick="changeDiagram(3)">4. Foydalanuvchi Oqimi</button>
+        <div class="tabs" role="tablist" aria-label="Diagramma turlari">
+            <button class="tab active" role="tab" aria-selected="true" onclick="changeDiagram(0)">1. Umumiy Arxitektura</button>
+            <button class="tab" role="tab" aria-selected="false" onclick="changeDiagram(1)">2. Model Ishlash</button>
+            <button class="tab" role="tab" aria-selected="false" onclick="changeDiagram(2)">3. Deploy Jarayoni</button>
+            <button class="tab" role="tab" aria-selected="false" onclick="changeDiagram(3)">4. Foydalanuvchi Oqimi</button>
         </div>
         
         <div class="controls">
@@ -209,7 +212,7 @@
         </div>
         
         <div class="canvas-container">
-            <canvas id="mainCanvas" width="2400" height="1400"></canvas>
+            <canvas id="mainCanvas" role="img" aria-label="Loyiha algoritmi diagrammasi" width="2400" height="1400"></canvas>
         </div>
         
         <div class="legend">
@@ -240,8 +243,8 @@
         </div>
         
         <div class="info-box">
-            <h3>💡 Ko'rsatma</h3>
-            <p>Faqat 2 ta asosiy model: Rezerford Tajribasi va Kepler Qonunlari. Zoom In/Out, PNG yuklab olish va chop etish imkoniyatlari mavjud.</p>
+            <h2>💡 Ko'rsatma</h2>
+            <p>Loyiha 6 ta interaktiv model (Rezerford, Kepler, mayatnik, qiya tekislik, Om qonuni, induksiya), laboratoriya jurnali, dars ishlanmalar va onlayn testlardan iborat. Diagrammani kattalashtirish, PNG sifatida yuklab olish va chop etish mumkin.</p>
         </div>
     </div>
 
@@ -455,8 +458,15 @@
         }
         
         // DIAGRAMMA 1 - FAQAT 2 TA MODEL
+        // Fon oq bilan to'ldiriladi: aks holda yuklab olingan PNG shaffof bo'lib,
+        // qorong'i rasm ko'ruvchida qora matn ko'rinmasdi
+        function clearBg() {
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
         function draw1() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            clearBg();
             ctx.fillStyle = C.text;
             ctx.font = 'bold 36px Arial';
             ctx.textAlign = 'center';
@@ -469,11 +479,11 @@
             drawBox(120, 340, 160, 80, C.green, 'UI/UX Dizayn', '🎨');
             arrow(200, 310, 200, 340);
             
-            // FAQAT 2 TA MODEL
-            drawBox(100, 480, 200, 95, C.cyan, 'Rezerford Tajribasi', '⚛️');
+            // Interaktiv qism
+            drawBox(100, 480, 200, 95, C.cyan, '6 ta Interaktiv Model', '🎮');
             arrow(160, 420, 200, 480);
             
-            drawBox(350, 480, 200, 95, C.cyan, 'Kepler Qonunlari', '🪐');
+            drawBox(350, 480, 200, 95, C.cyan, 'Laboratoriya Jurnali', '📋');
             arrow(240, 420, 450, 480);
             
             drawBox(800, 230, 180, 80, C.green, 'Dars Ishlanma', '📚');
@@ -493,14 +503,14 @@
             drawDiam(1190, 540, 180, 110, C.yellow, 'Deploy Platform?');
             arrow(1190, 410, 1190, 485);
             
-            drawBox(980, 700, 130, 70, C.red, 'Netlify', '🌐');
-            arrow(1130, 580, 1045, 700, 'Oson');
+            drawBox(980, 700, 130, 70, C.red, 'Apache hosting', '🖥️');
+            arrow(1130, 580, 1045, 700, 'cPanel');
             
             drawBox(1150, 700, 130, 70, C.red, 'Railway', '🚂');
-            arrow(1190, 595, 1215, 700, 'Flex');
+            arrow(1190, 595, 1215, 700, 'Python');
             
-            drawBox(1320, 700, 130, 70, C.red, 'Vercel', '▲');
-            arrow(1250, 580, 1385, 700, 'Pro');
+            drawBox(1320, 700, 130, 70, C.red, 'Oflayn (fayl)', '💻');
+            arrow(1250, 580, 1385, 700, 'Maktab');
             
             drawCirc(1215, 880, 70, C.purple, 'LIVE SITE', '🌍');
             arrow(1045, 770, 1160, 830);
@@ -515,7 +525,7 @@
         
         // DIAGRAMMA 2 - O'ZGARMAYDI
         function draw2() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            clearBg();
             ctx.fillStyle = C.text;
             ctx.font = 'bold 36px Arial';
             ctx.textAlign = 'center';
@@ -577,7 +587,7 @@
         
         // DIAGRAMMA 3 - O'ZGARMAYDI
         function draw3() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            clearBg();
             ctx.fillStyle = C.text;
             ctx.font = 'bold 36px Arial';
             ctx.textAlign = 'center';
@@ -600,14 +610,14 @@
             drawDiam(750, 475, 200, 120, C.yellow, 'Platform?');
             arrow(600, 475, 650, 475);
             
-            drawBox(450, 680, 180, 85, C.green, 'Netlify', '🌐');
-            arrow(700, 520, 540, 680, 'Fast');
+            drawBox(450, 680, 180, 85, C.green, 'Apache hosting', '🖥️');
+            arrow(700, 520, 540, 680, 'FTP/ZIP');
             
             drawBox(750, 680, 180, 85, C.green, 'Railway', '🚂');
             arrow(750, 535, 840, 680);
             
-            drawBox(1050, 680, 180, 85, C.green, 'Vercel', '▲');
-            arrow(800, 520, 1140, 680, 'Pro');
+            drawBox(1050, 680, 180, 85, C.green, 'Oflayn (fayl)', '💻');
+            arrow(800, 520, 1140, 680, 'ZIP');
             
             drawBox(450, 805, 180, 75, C.green, 'Build', '🔨');
             arrow(540, 765, 540, 805);
@@ -643,7 +653,7 @@
         
         // DIAGRAMMA 4 - FAQAT 2 TA MODEL
         function draw4() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            clearBg();
             ctx.fillStyle = C.text;
             ctx.font = 'bold 36px Arial';
             ctx.textAlign = 'center';
@@ -733,7 +743,10 @@
         function changeDiagram(n) {
             currentDiagram = n;
             const tabs = document.querySelectorAll('.tab');
-            tabs.forEach((t, i) => t.classList.toggle('active', i === n));
+            tabs.forEach((t, i) => {
+                t.classList.toggle('active', i === n);
+                t.setAttribute('aria-selected', i === n ? 'true' : 'false');
+            });
             
             if (n === 0) draw1();
             else if (n === 1) draw2();
@@ -787,6 +800,6 @@
         draw1();
         applyZoom();
     </script>
-    <script src="../theme.js?v=20260911"></script>
+    <script src="../theme.js?v=20260926c"></script>
 </body>
 </html>

@@ -2,12 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Om qonuni interaktiv modeli - zanjirning bir qismi uchun I = U/R. 10-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔌%3C/text%3E%3C/svg%3E">
     <title>Om Qonuni - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260911">
-    <link rel="stylesheet" href="../model-tools.css?v=20260911">
+    <link rel="stylesheet" href="../styles.css?v=20260926c">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926c">
     <style>
         :root {
             --primary: #b45309;
@@ -20,7 +21,7 @@
 
 
         .stat-value.highlight {
-            color: color-mix(in srgb, var(--accent-2) 75%, #b45309);
+            color: color-mix(in srgb, var(--primary) 55%, #7c2d12);
             font-size: 1.05rem;
         }
         html.dark .stat-value.highlight, body.dark .stat-value.highlight {
@@ -44,12 +45,12 @@
 
         <div class="main-content">
             <div class="canvas-section">
-                <canvas id="circuitCanvas" width="800" height="520"></canvas>
+                <canvas id="circuitCanvas" role="img" aria-label="Om Qonuni — interaktiv simulyatsiya" width="800" height="520"></canvas>
             </div>
 
             <div class="controls">
                 <div class="task-card">
-                    <h3>🎯 Topshiriq</h3>
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
                         <li>U = <strong>6 V</strong>, R = <strong>10 Ω</strong> qilib tokni yoqing</li>
                         <li>I va P qiymatlarini jurnalga yozing</li>
@@ -77,6 +78,7 @@
 
                 <button class="action btn-primary" onclick="startCircuit()">▶️ Tokni Yoqish</button>
                 <button class="action btn-secondary" onclick="pauseCircuit()">⏸️ To'xtatish</button>
+                <button class="action btn-secondary" onclick="resetCircuit()">🔄 Qayta</button>
 
                 <div class="stats">
                     <h3>📊 O'lchovlar</h3>
@@ -96,9 +98,10 @@
                         <span class="stat-label">Quvvat (P = U·I):</span>
                         <span class="stat-value" id="pValue">3.60 W</span>
                     </div>
-                    <p class="warn-note" id="powerWarn" hidden>⚠️ Bunday quvvatda oddiy rezistor
-                        qizib ketardi — maktab laboratoriyasidagi rezistorlar odatda
-                        <strong>0.25–2 W</strong> ga mo'ljallangan.</p>
+                    <p class="warn-note" id="powerWarn" hidden>⚠️ <strong>P &gt; 10 W</strong> — oddiy rezistor bunday
+                        quvvatda qattiq qizib, kuyib qolishi mumkin. Maktab laboratoriyasidagi
+                        rezistorlar odatda bir necha vattga mo'ljallangan — amalda R ni kattaroq
+                        yoki U ni kichikroq oling.</p>
                 </div>
             </div>
 
@@ -126,8 +129,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260911"></script>
-    <script src="../model-tools.js?v=20260911"></script>
+    <script src="../theme.js?v=20260926c"></script>
+    <script src="../model-tools.js?v=20260926c"></script>
     <script>
         const canvas = document.getElementById('circuitCanvas');
         const ctx = canvas.getContext('2d');
@@ -337,12 +340,20 @@
             state.running = false;
             if (animationId) cancelAnimationFrame(animationId);
         }
+        // Qayta: tok o'chiriladi, zarralar boshlang'ich joyiga qaytadi.
+        // U va R sozlamalari saqlanadi (boshqa modellardagi "Qayta" bilan bir xil)
+        function resetCircuit() {
+            pauseCircuit();
+            state.t = 0;
+            updateStats();
+            draw();
+        }
 
         updateStats();
         draw();
 
         // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
-        window.modelControls = { start: startCircuit, pause: pauseCircuit };
+        window.modelControls = { start: startCircuit, pause: pauseCircuit, reset: resetCircuit };
         window.modelIsRunning = function () { return state.running; };
         window.labFields = [
             { label: "U (V)", get: function () { return state.U.toFixed(1); } },

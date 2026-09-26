@@ -1,10 +1,12 @@
 # ============================================================
 # Apache sozlamalari (ahost / cPanel va boshqa Apache hostinglar uchun)
 # Statik sayt: HTML + CSS + JS + PDF
+#
+# Faqat eng keng ruxsat etilgan direktivalar ishlatilgan (AllowOverride FileInfo).
+# DirectoryIndex, Expires va Options ataylab qo'yilmagan: ular ko'p shared
+# hostinglarda ruxsat etilmaydi va butun saytga 500 xato beradi.
+# index.html Apache'da standart bosh sahifa bo'lgani uchun DirectoryIndex shart emas.
 # ============================================================
-
-# Papka ochilganda index.html ko'rsatilsin
-DirectoryIndex index.html
 
 # ---------- MIME turlari ----------
 # Ba'zi hostinglar CSS/JS ni noto'g'ri turda beradi — brauzer ularni rad etadi
@@ -15,38 +17,33 @@ DirectoryIndex index.html
     AddType application/pdf               .pdf
     AddType application/vnd.openxmlformats-officedocument.wordprocessingml.document .docx
     AddType text/html                     .html .htm
-</IfModule>
-
-# ---------- Kodlash ----------
-# O'zbek matni to'g'ri ko'rinishi uchun
-AddDefaultCharset UTF-8
-<IfModule mod_mime.c>
+    # O'zbek matni to'g'ri ko'rinishi uchun
     AddCharset UTF-8 .html .css .js .md
 </IfModule>
 
 # ---------- Siqish (tezroq yuklanish) ----------
+# AddOutputFilterByType mod_filter'ni talab qiladi — u yo'q bo'lsa 500 bermasligi uchun
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/css text/plain
-    AddOutputFilterByType DEFLATE application/javascript application/json
-    AddOutputFilterByType DEFLATE image/svg+xml
+    <IfModule mod_filter.c>
+        AddOutputFilterByType DEFLATE text/html text/css text/plain
+        AddOutputFilterByType DEFLATE application/javascript application/json
+        AddOutputFilterByType DEFLATE image/svg+xml
+    </IfModule>
 </IfModule>
 
-# ---------- Kesh ----------
-# CSS/JS o'zgarganda brauzer eski nusxani ko'rsatmasligi uchun qisqa kesh
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType text/css              "access plus 1 hours"
-    ExpiresByType application/javascript "access plus 1 hours"
-    ExpiresByType text/html             "access plus 0 seconds"
-    ExpiresByType application/pdf       "access plus 7 days"
-    ExpiresByType image/svg+xml         "access plus 7 days"
-</IfModule>
-
-# ---------- Xavfsizlik ----------
+# ---------- Kesh va xavfsizlik ----------
 <IfModule mod_headers.c>
+    # HTML har safar yangidan tekshiriladi — yangi versiya darhol ko'rinadi
+    <FilesMatch "\.html?$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    # CSS/JS havolalarida ?v=... versiya bor, shuning uchun keshlash xavfsiz
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "max-age=86400"
+    </FilesMatch>
+    <FilesMatch "\.(pdf|docx|svg)$">
+        Header set Cache-Control "max-age=604800"
+    </FilesMatch>
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
 </IfModule>
-
-# Papka ro'yxatini ko'rsatmaslik
-Options -Indexes

@@ -164,7 +164,7 @@ h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.02em; font-weight: 700; }
 /* ===== Asosiy tarkib (model sahifalari) ===== */
 .main-content {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
     gap: var(--sp-5);
     padding: var(--sp-6);
 }
@@ -444,8 +444,10 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
 .floating-btn:hover { transform: translateY(-3px) scale(1.06); box-shadow: var(--shadow-xl); }
 .floating-btn:active { transform: translateY(0) scale(0.97); }
 #themeToggle { bottom: var(--sp-5); right: var(--sp-5); }
-#scrollTop { bottom: calc(var(--sp-5) + 60px); right: var(--sp-5); opacity: 0; pointer-events: none; }
-#scrollTop.show { opacity: 1; pointer-events: auto; }
+/* visibility: ko'rinmas tugma Tab bilan fokus olmasin (opacity yetarli emas) */
+#scrollTop { bottom: calc(var(--sp-5) + 60px); right: var(--sp-5); opacity: 0; pointer-events: none;
+             visibility: hidden; transition: opacity 0.25s var(--ease), visibility 0s linear 0.25s, transform 0.25s var(--ease-out); }
+#scrollTop.show { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
 
 /* ===== Scroll-reveal animatsiya ===== */
 .reveal {
@@ -462,6 +464,16 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
     html.dark .stat-value, body.dark .stat-value { color: #c7d2fe; }
 }
 
+/* ===== Chop etish ===== */
+/* Aylantirilmagan bo'limlar opacity:0 da qolib, qog'ozga bo'sh chiqardi */
+@media print {
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .floating-btn, .back-link, .model-nav, .lab-log__actions, .kbd-hint { display: none !important; }
+    body { background: #fff !important; padding: 0; }
+    body::before { display: none; }
+    .container { box-shadow: none; border: none; }
+}
+
 /* ===== Harakatni kamaytirish (foydalanuvchi tanlovi) ===== */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -474,7 +486,8 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
 
 /* ===== Responsiv ===== */
 @media (max-width: 1024px) {
-    .main-content { grid-template-columns: 1fr; }
+    /* minmax(0, 1fr): ichidagi keng jadval (jurnal) ustunni cho'zib yubormasin */
+    .main-content { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 768px) {
     body { padding: var(--sp-3); }
