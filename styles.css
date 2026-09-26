@@ -444,8 +444,10 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
 .floating-btn:hover { transform: translateY(-3px) scale(1.06); box-shadow: var(--shadow-xl); }
 .floating-btn:active { transform: translateY(0) scale(0.97); }
 #themeToggle { bottom: var(--sp-5); right: var(--sp-5); }
-#scrollTop { bottom: calc(var(--sp-5) + 60px); right: var(--sp-5); opacity: 0; pointer-events: none; }
-#scrollTop.show { opacity: 1; pointer-events: auto; }
+/* visibility: ko'rinmas tugma Tab bilan fokus olmasin (opacity yetarli emas) */
+#scrollTop { bottom: calc(var(--sp-5) + 60px); right: var(--sp-5); opacity: 0; pointer-events: none;
+             visibility: hidden; transition: opacity 0.25s var(--ease), visibility 0s linear 0.25s, transform 0.25s var(--ease-out); }
+#scrollTop.show { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
 
 /* ===== Scroll-reveal animatsiya ===== */
 .reveal {

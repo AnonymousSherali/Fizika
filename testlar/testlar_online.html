@@ -7,7 +7,7 @@
     <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926b">
+    <link rel="stylesheet" href="../styles.css?v=20260926c">
     <style>
         :root {
             --primary: #4f46e5;
@@ -186,7 +186,7 @@
                 <span class="q-tag" id="pTag">Rezerford · Hisoblash</span>
                 <div class="q-text" id="pText"></div>
                 <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                    <input type="number" step="any" id="pInput" placeholder="Javob"
+                    <input type="text" inputmode="decimal" autocomplete="off" id="pInput" placeholder="Javob (masalan 1,66 yoki 1.66)"
                            style="flex:1; min-width:140px; padding:14px 18px; font-size:1.1em; border:2px solid var(--border);
                                   border-radius:12px; background:var(--panel-bg); color:var(--text);"
                            aria-label="Raqamli javob">
@@ -215,7 +215,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926b"></script>
+    <script src="../theme.js?v=20260926c"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -485,7 +485,9 @@
             if (pAnswered) return;
             const p = calcSet[pCurrent];
             const inp = document.getElementById('pInput');
-            const val = parseFloat(inp.value);
+            // Vergul ham, nuqta ham qabul qilinadi (o'zbek yozuvida o'nli vergul odatiy)
+            const raw = inp.value.trim().replace(/\s+/g, '').replace(',', '.');
+            const val = /^[-+]?\d*\.?\d+(e[-+]?\d+)?$/i.test(raw) ? parseFloat(raw) : NaN;
             if (isNaN(val)) {
                 // Jim qaytish o'rniga aniq ko'rsatma beramiz
                 document.getElementById('pFeedback').innerHTML =

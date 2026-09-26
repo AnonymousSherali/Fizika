@@ -7,8 +7,8 @@
     <meta name="description" content="Kepler qonunlari interaktiv modeli - sayyoralar harakati: ellips, yuzalar va davr qonunlari. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪐%3C/text%3E%3C/svg%3E">
     <title>Kepler Qonunlari - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926b">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926b">
+    <link rel="stylesheet" href="../styles.css?v=20260926c">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926c">
     <style>
         :root {
             --primary: #7c3aed;
@@ -341,8 +341,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926b"></script>
-    <script src="../model-tools.js?v=20260926b"></script>
+    <script src="../theme.js?v=20260926c"></script>
+    <script src="../model-tools.js?v=20260926c"></script>
     <script>
         // Umumiy o'zgaruvchilar
         let animations = [null, null, null];
@@ -1062,6 +1062,20 @@
         resetAnimation3();
 
         // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        // Bo'limlar orasida ← → / Home / End bilan o'tish (tablist standarti)
+        document.querySelector('.tabs').addEventListener('keydown', function (e) {
+            const n = 3;
+            let next = null;
+            if (e.key === 'ArrowRight') next = (activeTab + 1) % n;
+            else if (e.key === 'ArrowLeft') next = (activeTab + n - 1) % n;
+            else if (e.key === 'Home') next = 0;
+            else if (e.key === 'End') next = n - 1;
+            if (next === null) return;
+            e.preventDefault();
+            switchTab(next);
+            document.querySelectorAll('.tab')[next].focus();
+        });
+
         // Klaviatura yorliqlari faqat ko'rinib turgan bo'lim animatsiyasini boshqaradi
         const TAB_CTRL = [
             { start: startAnimation1, pause: pauseAnimation1, reset: resetAnimation1 },

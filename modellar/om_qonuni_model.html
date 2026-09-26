@@ -7,8 +7,8 @@
     <meta name="description" content="Om qonuni interaktiv modeli - zanjirning bir qismi uchun I = U/R. 10-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔌%3C/text%3E%3C/svg%3E">
     <title>Om Qonuni - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926b">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926b">
+    <link rel="stylesheet" href="../styles.css?v=20260926c">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926c">
     <style>
         :root {
             --primary: #b45309;
@@ -129,8 +129,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926b"></script>
-    <script src="../model-tools.js?v=20260926b"></script>
+    <script src="../theme.js?v=20260926c"></script>
+    <script src="../model-tools.js?v=20260926c"></script>
     <script>
         const canvas = document.getElementById('circuitCanvas');
         const ctx = canvas.getContext('2d');
@@ -340,14 +340,11 @@
             state.running = false;
             if (animationId) cancelAnimationFrame(animationId);
         }
-        // Boshlang'ich holat: U = 6 V, R = 10 Ω, tok o'chiq
+        // Qayta: tok o'chiriladi, zarralar boshlang'ich joyiga qaytadi.
+        // U va R sozlamalari saqlanadi (boshqa modellardagi "Qayta" bilan bir xil)
         function resetCircuit() {
             pauseCircuit();
-            state.U = 6; state.R = 10; state.t = 0;
-            document.getElementById('voltageSlider').value = 6;
-            document.getElementById('resistanceSlider').value = 10;
-            document.getElementById('voltageValue').textContent = '6.0 V';
-            document.getElementById('resistanceValue').textContent = '10 Ω';
+            state.t = 0;
             updateStats();
             draw();
         }
