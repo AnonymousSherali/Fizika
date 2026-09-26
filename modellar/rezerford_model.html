@@ -7,8 +7,8 @@
     <meta name="description" content="Rezerford tajribasi interaktiv modeli - alfa zarralarning oltin folga bilan ta'siri. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚛️%3C/text%3E%3C/svg%3E">
     <title>Rezerford Tajribasi - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926">
+    <link rel="stylesheet" href="../styles.css?v=20260926b">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926b">
     <style>
         :root {
             --primary: #4f46e5;
@@ -68,7 +68,7 @@
 
         <div class="main-content">
             <div class="canvas-section">
-                <canvas id="experimentCanvas" width="800" height="600"></canvas>
+                <canvas id="experimentCanvas" role="img" aria-label="Rezerford Tajribasi — interaktiv simulyatsiya" width="800" height="600"></canvas>
 
                 <div class="legend">
                     <div class="legend-item">
@@ -96,7 +96,7 @@
 
             <div class="controls">
                 <div class="task-card">
-                    <h3>🎯 Topshiriq</h3>
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
                         <li>Tezlikni <strong>1.0·10⁷</strong> ga qo'ying va tajribani boshlang</li>
                         <li>Statistikada <strong>sochilish %</strong> va <strong>r_min</strong> ni yozib oling</li>
@@ -203,8 +203,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926"></script>
-    <script src="../model-tools.js?v=20260926"></script>
+    <script src="../theme.js?v=20260926b"></script>
+    <script src="../model-tools.js?v=20260926b"></script>
     <script>
         const canvas = document.getElementById('experimentCanvas');
         const ctx = canvas.getContext('2d');
@@ -399,20 +399,38 @@
             ctx.restore();
         }
 
-        function animate() {
+        // Qat'iy qadam (1/60 s): 120/144 Hz ekranda ham zarralar bir xil tezlikda uchadi
+        const STEP_MS = 1000 / 60;
+        let lastTs = null, acc = 0;
+
+        function animate(ts) {
+            if (ts === undefined) ts = performance.now();
+            if (lastTs === null) lastTs = ts - STEP_MS;
+            acc += Math.min(ts - lastTs, 100);   // tab almashganda sakrash bo'lmasin
+            lastTs = ts;
+            let steps = 0;
+            while (acc >= STEP_MS && steps < 6) {
+                particles.forEach(particle => particle.update());
+                acc -= STEP_MS;
+                steps++;
+            }
+
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             drawNucleus();
             drawSource();
-
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
-            });
-
+            particles.forEach(particle => particle.draw());
             updateStats();
 
+            // Seriya tugadi: hamma zarra uchirildi va ekrandan chiqdi — siklni to'xtatamiz
+            // (aks holda 60 fps da bekorga ishlab turardi, Space esa "pauza" qilardi)
+            const seriesDone = pendingCount === 0 && particles.length > 0 &&
+                               particles.every(p => p.status !== 'flying');
+            if (seriesDone) {
+                isRunning = false;
+                animationId = null;
+                return;
+            }
             if (isRunning) {
                 animationId = requestAnimationFrame(animate);
             }
@@ -431,7 +449,8 @@
         function startExperiment() {
             if (isRunning) return;
             isRunning = true;
-            const allDone = particles.length > 0 && particles.every(p => p.status !== 'flying');
+            const allDone = pendingCount === 0 && particles.length > 0 &&
+                            particles.every(p => p.status !== 'flying');
             if (particles.length === 0 || allDone) {
                 // Yangi seriya: oldingi natijalar tozalanadi
                 particles = [];
@@ -442,6 +461,7 @@
                 // Pauzadan keyin qolgan zarralarni uchirishni davom ettiramiz
                 createParticles(pendingCount);
             }
+            lastTs = null; acc = 0;
             animate();
         }
 

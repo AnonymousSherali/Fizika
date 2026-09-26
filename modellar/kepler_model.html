@@ -7,8 +7,8 @@
     <meta name="description" content="Kepler qonunlari interaktiv modeli - sayyoralar harakati: ellips, yuzalar va davr qonunlari. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪐%3C/text%3E%3C/svg%3E">
     <title>Kepler Qonunlari - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926">
+    <link rel="stylesheet" href="../styles.css?v=20260926b">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926b">
     <style>
         :root {
             --primary: #7c3aed;
@@ -49,6 +49,8 @@
         }
 
         .tab-content { display: none; padding: var(--sp-6); }
+        /* Navigatsiya bo'limlardan tashqarida — 2-3 bo'limda ham ko'rinadi */
+        .kepler-nav-wrap { padding: 0 var(--sp-6) var(--sp-6); }
         .tab-content.active {
             display: grid;
             grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
@@ -87,6 +89,7 @@
         }
         @media (max-width: 700px) {
             .tab-content { padding: 16px; }
+            .kepler-nav-wrap { padding: 0 16px 16px; }
             .tabs { flex-wrap: wrap; }
             .tab { flex: 1 1 100%; padding: 12px; font-size: 0.95em; }
             .planet-selector { grid-template-columns: repeat(2, 1fr); }
@@ -111,12 +114,12 @@
         <!-- 1-QONUN -->
         <div class="tab-content active" id="tab0">
             <div class="canvas-section">
-                <canvas id="canvas1" width="800" height="600"></canvas>
+                <canvas id="canvas1" role="img" aria-label="Kepler Qonunlari — interaktiv simulyatsiya" width="800" height="600"></canvas>
             </div>
 
             <div class="controls">
                 <div class="task-card">
-                    <h3>🎯 Topshiriq</h3>
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
                         <li>1-qonun: turli sayyoralarni tanlang va <strong>perigeliy/afeliy</strong> ni yozing</li>
                         <li>Ekssentrisitetni oshiring — orbita shakli qanday o'zgardi?</li>
@@ -186,8 +189,6 @@
 
             <div class="lab-log"></div>
 
-            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
-
             <div class="info-panel">
                 <h3>📚 Birinchi Qonun: Ellips Qonuni</h3>
                 <div class="law-card">
@@ -212,7 +213,7 @@
         <!-- 2-QONUN -->
         <div class="tab-content" id="tab1">
             <div class="canvas-section">
-                <canvas id="canvas2" width="800" height="600"></canvas>
+                <canvas id="canvas2" role="img" aria-label="Kepler Qonunlari — interaktiv simulyatsiya" width="800" height="600"></canvas>
             </div>
 
             <div class="controls">
@@ -286,7 +287,7 @@
         <!-- 3-QONUN -->
         <div class="tab-content" id="tab2">
             <div class="canvas-section">
-                <canvas id="canvas3" width="800" height="600"></canvas>
+                <canvas id="canvas3" role="img" aria-label="Kepler Qonunlari — interaktiv simulyatsiya" width="800" height="600"></canvas>
             </div>
 
             <div class="controls">
@@ -335,10 +336,13 @@
                 </div>
             </div>
         </div>
+        <div class="kepler-nav-wrap">
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
+        </div>
     </div>
 
-    <script src="../theme.js?v=20260926"></script>
-    <script src="../model-tools.js?v=20260926"></script>
+    <script src="../theme.js?v=20260926b"></script>
+    <script src="../model-tools.js?v=20260926b"></script>
     <script>
         // Umumiy o'zgaruvchilar
         let animations = [null, null, null];
@@ -441,7 +445,18 @@
             document.getElementById('speedValue1').textContent = this.value + 'x';
         };
 
-        function drawOrbit1() {
+        // Kadr tezligidan mustaqillik: 120/144 Hz ekranda sayyoralar 2 barobar tez
+        // aylanmasligi uchun har kadr qadami o'tgan vaqtga (60 fps birligida) ko'paytiriladi
+        const lastFrame = [null, null, null];
+        function frameK(i, ts) {
+            if (typeof ts !== 'number') { lastFrame[i] = null; return 1; }
+            const k = lastFrame[i] === null ? 1 : Math.min(3, (ts - lastFrame[i]) / (1000 / 60));
+            lastFrame[i] = ts;
+            return k;
+        }
+
+        function drawOrbit1(ts) {
+            const kf = frameK(0, ts);
             ctx1.fillStyle = '#000';
             ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
 
@@ -537,7 +552,7 @@
                 // Katta e va tezlikda bir kadrdagi burchak cheklanadi, aks holda
                 // sayyora perigeliy atrofida orbitadan "sakrab" o'tardi.
                 const step = 0.02 * orbit1.speed / (1 + orbit1.e * Math.cos(orbit1.angle));
-                orbit1.angle += Math.min(step, 0.12);
+                orbit1.angle += Math.min(step, 0.12) * kf;
                 animations[0] = requestAnimationFrame(drawOrbit1);
             }
         }
@@ -781,7 +796,8 @@
             document.getElementById('speedValue2').textContent = this.value + 'x';
         };
 
-        function drawOrbit2() {
+        function drawOrbit2(ts) {
+            const kf = frameK(1, ts);
             ctx2.fillStyle = '#000';
             ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
             drawStars(ctx2, stars2);
@@ -877,7 +893,7 @@
                 // Teng vaqtda teng yuza: dA/kadr = (b/2)(a + c*cos th)*dth = const
                 // bo'lishi uchun dth = k / (1 + e*cos th)
                 const angularSpeed = 0.012 * orbit2.speed / (1 + orbit2.e * Math.cos(orbit2.angle));
-                orbit2.angle += Math.min(angularSpeed, 0.12);
+                orbit2.angle += Math.min(angularSpeed, 0.12) * kf;
 
                 animations[1] = requestAnimationFrame(drawOrbit2);
             }
@@ -939,7 +955,8 @@
             if (!isRunning[2]) drawOrbit3();
         };
 
-        function drawOrbit3() {
+        function drawOrbit3(ts) {
+            const kf = frameK(2, ts);
             ctx3.fillStyle = '#000';
             ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
@@ -965,7 +982,7 @@
                 if (!showAll && planet.a > 2) {
                     if (isRunning[2]) {
                         const sp = parseFloat(document.getElementById('speedSlider3').value);
-                        planet.angle += (0.02 / planet.T) * sp;
+                        planet.angle += (0.02 / planet.T) * sp * kf;
                     }
                     return;
                 }
@@ -1012,7 +1029,7 @@
                 // Harakat
                 if (isRunning[2]) {
                     const speed = parseFloat(document.getElementById('speedSlider3').value);
-                    planet.angle += (0.02 / planet.T) * speed;
+                    planet.angle += (0.02 / planet.T) * speed * kf;
                 }
             });
 

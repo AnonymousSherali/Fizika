@@ -52,7 +52,7 @@
     padding: var(--sp-4);
     margin-bottom: var(--sp-4);
 }
-.task-card h3 {
+.task-card h3, .task-card__title {
     font-size: 0.95rem;
     color: var(--text);
     margin-bottom: var(--sp-3);
@@ -192,12 +192,13 @@ kbd {
 .kbd-hint {
     display: flex;
     align-items: center;
-    gap: var(--sp-2);
+    gap: var(--sp-1) var(--sp-3);
     flex-wrap: wrap;
     margin-top: var(--sp-3);
     font-size: 0.8rem;
     color: var(--text-muted);
 }
+.kbd-hint span { white-space: nowrap; }
 
 @media (max-width: 700px) {
     .model-nav { padding: var(--sp-3); }

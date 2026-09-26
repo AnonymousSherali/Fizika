@@ -43,6 +43,14 @@
     // Sahifa o'z funksiyalarini window.modelControls orqali e'lon qiladi:
     //   window.modelControls = { start: fn, pause: fn, reset: fn };
     function initKeyboard() {
+        // Fokus qanday olingan: sichqoncha/sensor bilanmi yoki Tab bilanmi.
+        // (:focus-visible bu yerda ishonchsiz — Chrome tugma bosilgan zahoti uni yoqadi)
+        var pointerFocus = false;
+        document.addEventListener('pointerdown', function () { pointerFocus = true; }, true);
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Tab') pointerFocus = false;
+        }, true);
+
         document.addEventListener('keydown', function (e) {
             // Brauzer yorliqlari (Ctrl+R yangilash, Ctrl+S, Cmd+C ...) ga aralashmaymiz
             if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -53,9 +61,17 @@
             if (!c) return;
 
             if (e.code === 'Space') {
-                // Fokus tugma/havolada bo'lsa, Space o'sha elementni bosishi kerak —
-                // aks holda klaviatura bilan hech bir tugmani bosib bo'lmasdi
-                if (t && t.closest && t.closest('button, a, summary, [role="button"], [role="radio"], [role="tab"]')) return;
+                // Klaviatura bilan (Tab orqali) fokuslangan tugma bo'lsa, Space o'sha
+                // tugmani bossin. Sichqoncha bilan bosilgandan keyin fokus tugmada qoladi,
+                // lekin :focus-visible bo'lmaydi — bu holda Space boshlash/pauza qiladi.
+                var ctl = t && t.closest && t.closest('button, a, summary, [role="button"], [role="radio"], [role="tab"]');
+                if (ctl) {
+                    // Tab bilan kelingan bo'lsa — Space o'sha tugmani bosadi (standart xulq)
+                    if (!pointerFocus) return;
+                    // Sichqoncha bilan bosilgan tugmada fokus qolgan: uni olib qo'yamiz,
+                    // aks holda Space'ning keyup'i "Boshlash"ni qayta bosib, pauzani bekor qilardi
+                    ctl.blur();
+                }
                 e.preventDefault();
                 if (e.repeat) return;
                 if (window.modelIsRunning && window.modelIsRunning()) {
@@ -80,9 +96,10 @@
         if (!anchor) return;
         var p = document.createElement('p');
         p.className = 'kbd-hint';
-        p.innerHTML = '<kbd>Space</kbd> boshlash/pauza' +
-                      (c.reset ? ' · <kbd>R</kbd> qayta' : '') +
-                      (window.labFields ? ' · <kbd>S</kbd> o\'lchovni yozish' : '');
+        var items = ['<kbd>Space</kbd> boshlash/pauza'];
+        if (c.reset) items.push('<kbd>R</kbd> qayta');
+        if (window.labFields) items.push('<kbd>S</kbd> o\'lchovni yozish');
+        p.innerHTML = items.map(function (x) { return '<span>' + x + '</span>'; }).join('');
         anchor.parentNode.insertBefore(p, anchor);
     }
 
@@ -126,10 +143,8 @@
         var LIMIT = 30;
         function capture() {
             // Sahifa hozir o'lchov olish mumkin emasligini aytishi mumkin (masalan boshqa tab)
-            if (window.labCanCapture && !window.labCanCapture()) {
-                flash('Bu bo\'limda o\'lchov yozilmaydi — 1-bo\'limga o\'ting');
-                return;
-            }
+            // Jurnal hozir ko'rinmayotgan bo'limda bo'lsa (kepler 2-3 bo'lim) — yozmaymiz
+            if (window.labCanCapture && !window.labCanCapture()) return;
             if (rows.length >= LIMIT) {
                 flash('Jurnal to\'ldi (' + LIMIT + ' ta) — nusxalab, keyin tozalang');
                 return;
@@ -187,7 +202,10 @@
             ta.style.opacity = '0';
             document.body.appendChild(ta);
             ta.select();
-            try { document.execCommand('copy'); done(); } catch (e) {}
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) {}
+            if (ok) done();
+            else window.prompt('Nusxalab bo\'lmadi. Matnni qo\'lda nusxalang (Ctrl+C):', text);
             document.body.removeChild(ta);
         }
 

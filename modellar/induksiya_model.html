@@ -7,8 +7,8 @@
     <meta name="description" content="Elektromagnit induksiya interaktiv modeli - Faradey qonuni va Lens qoidasi. 10-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧲%3C/text%3E%3C/svg%3E">
     <title>Elektromagnit Induksiya - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926">
+    <link rel="stylesheet" href="../styles.css?v=20260926b">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926b">
     <style>
         :root {
             --primary: #0891b2;
@@ -54,12 +54,12 @@
 
         <div class="main-content">
             <div class="canvas-section">
-                <canvas id="inductionCanvas" width="800" height="520"></canvas>
+                <canvas id="inductionCanvas" role="img" aria-label="Elektromagnit Induksiya — interaktiv simulyatsiya" width="800" height="520"></canvas>
             </div>
 
             <div class="controls">
                 <div class="task-card">
-                    <h3>🎯 Topshiriq</h3>
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
                         <li>Avtomatik rejimda tezlikni <strong>0.5x</strong> qilib boshlang</li>
                         <li>Maksimal EYK qiymatini jurnalga yozing</li>
@@ -164,8 +164,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926"></script>
-    <script src="../model-tools.js?v=20260926"></script>
+    <script src="../theme.js?v=20260926b"></script>
+    <script src="../model-tools.js?v=20260926b"></script>
     <script>
         const canvas = document.getElementById('inductionCanvas');
         const ctx = canvas.getContext('2d');

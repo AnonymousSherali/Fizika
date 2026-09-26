@@ -462,6 +462,16 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
     html.dark .stat-value, body.dark .stat-value { color: #c7d2fe; }
 }
 
+/* ===== Chop etish ===== */
+/* Aylantirilmagan bo'limlar opacity:0 da qolib, qog'ozga bo'sh chiqardi */
+@media print {
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .floating-btn, .back-link, .model-nav, .lab-log__actions, .kbd-hint { display: none !important; }
+    body { background: #fff !important; padding: 0; }
+    body::before { display: none; }
+    .container { box-shadow: none; border: none; }
+}
+
 /* ===== Harakatni kamaytirish (foydalanuvchi tanlovi) ===== */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

@@ -7,8 +7,8 @@
     <meta name="description" content="Matematik mayatnik interaktiv modeli - erkin tushish tezlanishini aniqlash. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕰️%3C/text%3E%3C/svg%3E">
     <title>Matematik Mayatnik - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926">
+    <link rel="stylesheet" href="../styles.css?v=20260926b">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926b">
     <style>
         :root {
             --primary: #0f766e;
@@ -56,12 +56,12 @@
 
         <div class="main-content">
             <div class="canvas-section">
-                <canvas id="pendulumCanvas" width="800" height="600"></canvas>
+                <canvas id="pendulumCanvas" role="img" aria-label="Matematik Mayatnik — interaktiv simulyatsiya" width="800" height="600"></canvas>
             </div>
 
             <div class="controls">
                 <div class="task-card">
-                    <h3>🎯 Topshiriq</h3>
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
                         <li>Ip uzunligini <strong>1.00 m</strong> qilib, burchakni <strong>10°</strong> ga qo'ying</li>
                         <li>«Boshlash» tugmasini bosing va kamida <strong>5 ta tebranish</strong> kuting</li>
@@ -105,7 +105,7 @@
                 <button class="action btn-primary" onclick="startPendulum()">▶️ Boshlash</button>
                 <button class="action btn-secondary" onclick="pausePendulum()">⏸️ Pauza</button>
                 <button class="action btn-secondary" onclick="resetPendulum()">🔄 Qayta</button>
-                <p class="kbd-hint"><kbd>Space</kbd> boshlash/pauza · <kbd>R</kbd> qayta · <kbd>S</kbd> o'lchovni yozish</p>
+                <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
                     <h3>📊 O'lchovlar</h3>
@@ -161,8 +161,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926"></script>
-    <script src="../model-tools.js?v=20260926"></script>
+    <script src="../theme.js?v=20260926b"></script>
+    <script src="../model-tools.js?v=20260926b"></script>
     <script>
         const canvas = document.getElementById('pendulumCanvas');
         const ctx = canvas.getContext('2d');
