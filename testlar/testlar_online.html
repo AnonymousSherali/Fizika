@@ -2,11 +2,12 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20260911">
+    <link rel="stylesheet" href="../styles.css?v=20260926">
     <style>
         :root {
             --primary: #4f46e5;
@@ -214,7 +215,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260911"></script>
+    <script src="../theme.js?v=20260926"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -342,6 +343,8 @@
         document.addEventListener('keydown', function(e) {
             if (document.getElementById('quizScreen').classList.contains('hidden')) return;
             if (e.target.tagName === 'INPUT') return;
+            // Ctrl+C (nusxalash) va boshqa yorliqlar javobni o'zgartirib yubormasin
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
             const k = e.key.toUpperCase();
             const idx = ['A', 'B', 'C', 'D'].indexOf(k);
             if (idx > -1 && idx < quiz[current].o.length) { selectOption(idx); return; }

@@ -44,25 +44,46 @@
     //   window.modelControls = { start: fn, pause: fn, reset: fn };
     function initKeyboard() {
         document.addEventListener('keydown', function (e) {
+            // Brauzer yorliqlari (Ctrl+R yangilash, Ctrl+S, Cmd+C ...) ga aralashmaymiz
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
             var t = e.target;
-            if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+            if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' ||
+                      t.tagName === 'SELECT' || t.isContentEditable)) return;
             var c = window.modelControls;
             if (!c) return;
 
             if (e.code === 'Space') {
+                // Fokus tugma/havolada bo'lsa, Space o'sha elementni bosishi kerak —
+                // aks holda klaviatura bilan hech bir tugmani bosib bo'lmasdi
+                if (t && t.closest && t.closest('button, a, summary, [role="button"], [role="radio"], [role="tab"]')) return;
                 e.preventDefault();
-                // Boshlash/pauza almashadi
+                if (e.repeat) return;
                 if (window.modelIsRunning && window.modelIsRunning()) {
                     if (c.pause) c.pause();
                 } else if (c.start) {
                     c.start();
                 }
             } else if (e.key === 'r' || e.key === 'R' || e.key === 'к' || e.key === 'К') {
-                if (c.reset) { e.preventDefault(); c.reset(); }
-            } else if (e.key === 's' || e.key === 'S' || e.key === 'ы') {
-                if (window.labLog) { e.preventDefault(); window.labLog.capture(); }
+                if (c.reset && !e.repeat) { e.preventDefault(); c.reset(); }
+            } else if (e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы') {
+                // Tugmani bosib turish jurnalni bir zumda to'ldirib yubormasin
+                if (window.labLog && !e.repeat) { e.preventDefault(); window.labLog.capture(); }
             }
         });
+    }
+
+    // Klaviatura yordamini har bir model paneliga avtomatik qo'shamiz
+    function addKbdHint() {
+        var c = window.modelControls;
+        if (!c || document.querySelector('.kbd-hint')) return;
+        var anchor = document.querySelector('.controls .stats');
+        if (!anchor) return;
+        var p = document.createElement('p');
+        p.className = 'kbd-hint';
+        p.innerHTML = '<kbd>Space</kbd> boshlash/pauza' +
+                      (c.reset ? ' · <kbd>R</kbd> qayta' : '') +
+                      (window.labFields ? ' · <kbd>S</kbd> o\'lchovni yozish' : '');
+        anchor.parentNode.insertBefore(p, anchor);
     }
 
     // ---------- 3) Laboratoriya jurnali ----------
@@ -102,8 +123,17 @@
             empty.style.display = rows.length ? 'none' : '';
         }
 
+        var LIMIT = 30;
         function capture() {
-            if (rows.length >= 30) return; // jurnal cheksiz o'smasin
+            // Sahifa hozir o'lchov olish mumkin emasligini aytishi mumkin (masalan boshqa tab)
+            if (window.labCanCapture && !window.labCanCapture()) {
+                flash('Bu bo\'limda o\'lchov yozilmaydi — 1-bo\'limga o\'ting');
+                return;
+            }
+            if (rows.length >= LIMIT) {
+                flash('Jurnal to\'ldi (' + LIMIT + ' ta) — nusxalab, keyin tozalang');
+                return;
+            }
             rows.push(fields.map(function (f) {
                 try { return f.get(); } catch (e) { return '-'; }
             }));
@@ -112,6 +142,18 @@
             var wrap = host.querySelector('.lab-log__wrap');
             if (wrap) wrap.scrollTop = wrap.scrollHeight;
         }
+
+        // Qisqa xabar (jurnal to'lganda va h.k.) — jim qaytish o'rniga
+        function flash(msg) {
+            empty.textContent = '⚠️ ' + msg;
+            empty.style.display = '';
+            clearTimeout(flash._t);
+            flash._t = setTimeout(function () {
+                empty.innerHTML = emptyHtml;
+                render();
+            }, 2200);
+        }
+        var emptyHtml = empty.innerHTML;
 
         host.querySelector('#labCapture').onclick = capture;
 
@@ -168,6 +210,7 @@
         buildNav();
         initKeyboard();
         initLabLog();
+        addKbdHint();
     }
 
     if (document.readyState === 'loading') {

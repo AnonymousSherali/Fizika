@@ -164,7 +164,7 @@ h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.02em; font-weight: 700; }
 /* ===== Asosiy tarkib (model sahifalari) ===== */
 .main-content {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
     gap: var(--sp-5);
     padding: var(--sp-6);
 }
@@ -474,7 +474,8 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
 
 /* ===== Responsiv ===== */
 @media (max-width: 1024px) {
-    .main-content { grid-template-columns: 1fr; }
+    /* minmax(0, 1fr): ichidagi keng jadval (jurnal) ustunni cho'zib yubormasin */
+    .main-content { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 768px) {
     body { padding: var(--sp-3); }

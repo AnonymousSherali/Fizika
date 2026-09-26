@@ -2,12 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Kepler qonunlari interaktiv modeli - sayyoralar harakati: ellips, yuzalar va davr qonunlari. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪐%3C/text%3E%3C/svg%3E">
     <title>Kepler Qonunlari - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260911">
-    <link rel="stylesheet" href="../model-tools.css?v=20260911">
+    <link rel="stylesheet" href="../styles.css?v=20260926">
+    <link rel="stylesheet" href="../model-tools.css?v=20260926">
     <style>
         :root {
             --primary: #7c3aed;
@@ -50,7 +51,7 @@
         .tab-content { display: none; padding: var(--sp-6); }
         .tab-content.active {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
             gap: 20px;
         }
 
@@ -82,7 +83,7 @@
         .planet-btn:hover { transform: scale(1.05); }
 
         @media (max-width: 1024px) {
-            .tab-content.active { grid-template-columns: 1fr; }
+            .tab-content.active { grid-template-columns: minmax(0, 1fr); }
         }
         @media (max-width: 700px) {
             .tab-content { padding: 16px; }
@@ -128,9 +129,9 @@
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="planet-selector" role="radiogroup" aria-label="Sayyorani tanlash">
-                    <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('mercury', event)">Merkuriy</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('mercury', event)">Merkuriy</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('venus', event)">Venera</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('earth', event)">Yer</button>
+                    <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('earth', event)">Yer</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('mars', event)">Mars</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('jupiter', event)">Yupiter</button>
                     <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('saturn', event)">Saturn</button>
@@ -336,8 +337,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260911"></script>
-    <script src="../model-tools.js?v=20260911"></script>
+    <script src="../theme.js?v=20260926"></script>
+    <script src="../model-tools.js?v=20260926"></script>
     <script>
         // Umumiy o'zgaruvchilar
         let animations = [null, null, null];
@@ -361,7 +362,9 @@
         let manualOrbit = false;
 
         // Tab almashtirish
+        let activeTab = 0;
         function switchTab(index) {
+            activeTab = index;
             document.querySelectorAll('.tab').forEach((tab, i) => {
                 tab.classList.toggle('active', i === index);
                 tab.setAttribute('aria-selected', i === index ? 'true' : 'false');
@@ -1042,8 +1045,20 @@
         resetAnimation3();
 
         // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
-        window.modelControls = { start: startAnimation1, pause: pauseAnimation1, reset: resetAnimation1 };
-        window.modelIsRunning = function () { return isRunning[0]; };
+        // Klaviatura yorliqlari faqat ko'rinib turgan bo'lim animatsiyasini boshqaradi
+        const TAB_CTRL = [
+            { start: startAnimation1, pause: pauseAnimation1, reset: resetAnimation1 },
+            { start: startAnimation2, pause: pauseAnimation2, reset: resetAnimation2 },
+            { start: startAnimation3, pause: pauseAnimation3, reset: resetAnimation3 }
+        ];
+        window.modelControls = {
+            start: function () { TAB_CTRL[activeTab].start(); },
+            pause: function () { TAB_CTRL[activeTab].pause(); },
+            reset: function () { TAB_CTRL[activeTab].reset(); }
+        };
+        window.modelIsRunning = function () { return isRunning[activeTab]; };
+        // Jurnal 1-qonun bo'limida — boshqa bo'limda o'lchov yozilmaydi
+        window.labCanCapture = function () { return activeTab === 0; };
         window.labFields = [
             { label: "Sayyora", get: function () { return manualOrbit ? "qo'lda" : planetsData[currentPlanet].name; } },
             { label: "a (AU)", get: function () { return orbit1.a.toFixed(3); } },

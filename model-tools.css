@@ -7,6 +7,7 @@
 /* ===== Modellar orasida navigatsiya ===== */
 .model-nav {
     grid-column: 1 / -1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: var(--sp-2);
@@ -95,6 +96,7 @@ html.dark .task-card li::before, body.dark .task-card li::before {
 /* ===== Laboratoriya jurnali ===== */
 .lab-log {
     grid-column: 1 / -1;
+    min-width: 0;      /* keng jadval grid ustunini cho'zmasin — o'zi ichida aylansin */
     background: var(--panel-bg);
     border: 1px solid var(--border);
     border-radius: var(--r-md);

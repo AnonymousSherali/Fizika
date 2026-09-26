@@ -4,7 +4,9 @@
 # ============================================================
 
 # Papka ochilganda index.html ko'rsatilsin
-DirectoryIndex index.html
+<IfModule mod_dir.c>
+    DirectoryIndex index.html
+</IfModule>
 
 # ---------- MIME turlari ----------
 # Ba'zi hostinglar CSS/JS ni noto'g'ri turda beradi — brauzer ularni rad etadi
@@ -48,5 +50,6 @@ AddDefaultCharset UTF-8
     Header set X-Frame-Options "SAMEORIGIN"
 </IfModule>
 
-# Papka ro'yxatini ko'rsatmaslik
-Options -Indexes
+# Eslatma: "Options -Indexes" ataylab qo'yilmagan — ko'p shared hostinglarda
+# (cPanel) AllowOverride Options ga ruxsat bermaydi va butun sayt 500 xato beradi.
+# Papka ro'yxatini yopish kerak bo'lsa, buni hosting panelidan (Indexes) qiling.
