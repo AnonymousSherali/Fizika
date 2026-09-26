@@ -452,8 +452,8 @@
             { label: 'g (m/s²)',     get: function () { return state.g.toFixed(2); } },
             { label: 'T nazariy (s)',get: function () { return theoreticalPeriod().toFixed(3); } },
             { label: 'Tebranish',    get: function () { return Math.floor(state.oscillations); } },
-            { label: 'g o\'lchangan',get: function () { return document.getElementById('measuredG').textContent; } },
-            { label: 'Xatolik',      get: function () { return document.getElementById('gError').textContent; } }
+            { label: 'g o\'lch. (m/s²)', get: function () { return labNum('measuredG'); } },
+            { label: 'Xatolik (%)',  get: function () { return labNum('gError'); } }
         ];
     </script>
 </body>

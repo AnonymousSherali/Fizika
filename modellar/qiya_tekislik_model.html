@@ -169,7 +169,7 @@
                 </p>
                 <p style="margin-top: 10px;">
                     💡 <strong>Tajriba:</strong> Burchak va ishqalanishni o'zgartirib FIK qanday
-                    o'zgarishini kuzating. Burchak kattalashsa FIK ortadi (ishqalanish yo'li qisqaradi),
+                    o'zgarishini kuzating. Burchak kattalashsa FIK ortadi (η = 1/(1 + μ·ctg α): burchak ortganda ctg α kamayadi),
                     μ ortsa FIK kamayadi. Massa FIKga ta'sir qilmaydi — tekshirib ko'ring!
                 </p>
             </div>
@@ -378,7 +378,7 @@
             ctx.restore();
 
             // Yuk markazi (kuch vektorlari shu nuqtadan chiqadi)
-            const ccx = bx + (bw / 2) * Math.cos(state.angle) + (bh / 2) * Math.sin(state.angle);
+            const ccx = bx + (bw / 2) * Math.cos(state.angle) - (bh / 2) * Math.sin(state.angle);
             const ccy = by - (bw / 2) * Math.sin(state.angle) - (bh / 2) * Math.cos(state.angle);
 
             // Kuch vektorlari (masshtablangan)

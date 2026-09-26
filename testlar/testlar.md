@@ -32,7 +32,7 @@
    - C) Musbat ✓
    - D) O'zgaruvchan
 
-**5. Alfa zarrani zaryadi nechaga teng?**
+**5. Alfa zarraning zaryadi nechaga teng?**
    - A) +e
    - B) +2e ✓
    - C) +3e
@@ -117,7 +117,7 @@
 **8. Atomning qaysi qismi eng og'ir?**
    - A) Elektronlar
    - B) Yadro ✓
-   - C) Neyronlar
+   - C) Neytronlar alohida
    - D) Barcha teng
 
 **9. Tajriba natijasi qanday atom modeliga olib keldi?**
@@ -126,7 +126,7 @@
    - C) Bor modeli
    - D) Kvant modeli
 
-**10. Alfa zarralar qaysi elementdan chiqadi?**
+**10. Rezerford tajribasida alfa zarralar manbai sifatida qaysi element ishlatilgan?**
    - A) Uran
    - B) Radiy ✓
    - C) Plutoniy
@@ -218,7 +218,7 @@ Foiz = (150/1000) × 100% = 15%
    - C) Massa
    - D) Harorat
 
-**6. e = 0 bo'lsa, orbit qanday shaklda?**
+**6. e = 0 bo'lsa, orbita qanday shaklda?**
    - A) Ellips
    - B) Aylana ✓
    - C) Parabola
@@ -294,7 +294,7 @@ Foiz = (150/1000) × 100% = 15%
    - C) Yer
    - D) Mars
 
-**8. T²/a³ qiymati nechaga teng (Quyosh sistemasi)?**
+**8. T²/a³ qiymati nechaga teng (Quyosh sistemasi, T yilda, a AU da)?**
    - A) 0
    - B) 1 ✓
    - C) π
@@ -361,7 +361,7 @@ v_a = 29.3 km/s
 
 **Javob:** v_a ≈ 29.3 km/s ✓
 
-**5. Geostatsionar yo'ldosh Yer atrofida 24 soatda aylanadi. Orbit radiusini toping (M_Yer = 5.97×10²⁴ kg, G = 6.67×10⁻¹¹).**
+**5. Geostatsionar yo'ldosh Yer atrofida 24 soatda aylanadi. Orbita radiusini toping (M_Yer = 5.97×10²⁴ kg, G = 6.67×10⁻¹¹).**
 
 **Berilgan:**
 - T = 24 soat = 86400 s
@@ -373,12 +373,12 @@ v_a = 29.3 km/s
 T² = (4π²/GM) × r³
 r³ = T² × GM / 4π²
 r³ = (86400)² × 6.67×10⁻¹¹ × 5.97×10²⁴ / (4π²)
-r³ = 7.54×10²² / 39.48
-r³ = 1.91×10²¹
-r = 4.23×10⁷ m = 42,300 km
+r³ = 2.97×10²⁴ / 39.48
+r³ = 7.53×10²²
+r = 4.22×10⁷ m = 42 200 km
 ```
 
-**Javob:** r ≈ 42,300 km ✓
+**Javob:** r ≈ 42 200 km ✓
 
 ---
 
@@ -401,7 +401,7 @@ r = 4.23×10⁷ m = 42,300 km
 3. Barcha sayyoralar aylana orbitada. **NOTO'G'RI** ✗
 4. Kepler 3 ta qonun kashf etdi. **TO'G'RI** ✓
 5. Quyosh ellipsning markazida. **NOTO'G'RI** ✗
-6. Perigeliydа sayyora tezroq. **TO'G'RI** ✓
+6. Perigeliyda sayyora tezroq. **TO'G'RI** ✓
 7. Ekssentrisitet 0 dan 1 gacha. **TO'G'RI** ✓
 8. T² = a² formula to'g'ri. **NOTO'G'RI** ✗
 9. Yadro atomning eng og'ir qismi. **TO'G'RI** ✓

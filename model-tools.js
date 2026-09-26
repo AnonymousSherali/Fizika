@@ -153,6 +153,16 @@
         render();
     }
 
+    // ---------- Jurnal uchun yordamchi ----------
+    // "4.7 MeV" -> 4.7 : ustun sarlavhasida birlik bor, katakda faqat son bo'lsin
+    // (Excel'ga nusxalanganda son sifatida o'qiladi). O'lchov yo'q bo'lsa "—".
+    window.labNum = function (id) {
+        var el = document.getElementById(id);
+        if (!el) return '—';
+        var v = parseFloat(String(el.textContent).replace(',', '.').replace('+', ''));
+        return isNaN(v) ? '—' : v;
+    };
+
     // ---------- Ishga tushirish ----------
     function boot() {
         buildNav();

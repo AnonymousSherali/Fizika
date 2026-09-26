@@ -47,7 +47,7 @@ tuzilishi haqida to'g'ri tasavvurga ega bo'lishlari.
 - ✓ Ish varaqlari
 
 **Qo'shimcha:**
-- Plakатlar
+- Plakatlar
 - Videomateriallar
 - Qo'shimcha misollar
 

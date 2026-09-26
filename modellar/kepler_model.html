@@ -320,7 +320,7 @@
                 <div class="law-card">
                     <h4>Kepler Uchinchi Qonuni</h4>
                     <p>
-                        <strong>Sayyoraning orbital davrining kvadrati, orbit yarim katta o'qining
+                        <strong>Sayyoraning orbital davrining kvadrati, orbita yarim katta o'qining
                         kubiga to'g'ri proporsionaldir.</strong>
                     </p>
                     <p style="margin-top: 10px;">
@@ -357,6 +357,8 @@
         };
 
         let currentPlanet = 'earth';
+        // Slayder qo'lda surilganda orbita endi haqiqiy sayyoraga tegishli emas
+        let manualOrbit = false;
 
         // Tab almashtirish
         function switchTab(index) {
@@ -378,6 +380,7 @@
         // Sayyora tanlash
         function selectPlanet(planet, evt) {
             currentPlanet = planet;
+            manualOrbit = false;
             const data = planetsData[planet];
 
             document.querySelectorAll('.planet-btn').forEach(btn => {
@@ -409,6 +412,7 @@
         // Slayder qo'lda surilsa, tanlangan sayyora belgisi olib tashlanadi —
         // aks holda "Yer" yonib turgani holda a = 25 AU ko'rinib qolardi
         function clearPlanetChoice() {
+            manualOrbit = true;
             document.querySelectorAll('.planet-btn').forEach(function (b) {
                 b.classList.remove('active');
                 b.setAttribute('aria-checked', 'false');
@@ -1041,12 +1045,12 @@
         window.modelControls = { start: startAnimation1, pause: pauseAnimation1, reset: resetAnimation1 };
         window.modelIsRunning = function () { return isRunning[0]; };
         window.labFields = [
-            { label: "Sayyora", get: function () { return planetsData[currentPlanet].name; } },
+            { label: "Sayyora", get: function () { return manualOrbit ? "qo'lda" : planetsData[currentPlanet].name; } },
             { label: "a (AU)", get: function () { return orbit1.a.toFixed(3); } },
             { label: "e", get: function () { return orbit1.e.toFixed(3); } },
-            { label: "Perigeliy", get: function () { return document.getElementById('perihelion').textContent; } },
-            { label: "Afeliy", get: function () { return document.getElementById('aphelion').textContent; } },
-            { label: "T²/a³", get: function () { return (Math.pow(planetsData[currentPlanet].T,2)/Math.pow(planetsData[currentPlanet].a,3)).toFixed(3); } }
+            { label: "Perigeliy (AU)", get: function () { return labNum('perihelion'); } },
+            { label: "Afeliy (AU)", get: function () { return labNum('aphelion'); } },
+            { label: "T²/a³", get: function () { return manualOrbit ? '—' : (Math.pow(planetsData[currentPlanet].T,2)/Math.pow(planetsData[currentPlanet].a,3)).toFixed(3); } }
         ];
     </script>
 </body>

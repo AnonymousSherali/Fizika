@@ -178,7 +178,7 @@
                         tick: '#4a6572' };
         function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
 
-        const coilX = 560, coilY = 230; // g'altak markazi
+        const coilY = 230; // g'altak o'qining balandligi
         const magY = 230;
 
         let state = {
@@ -229,16 +229,16 @@
             if (!state.running) draw();
         };
 
+        // G'altakning magnitga qaragan chap cheti QOTIRILGAN: o'ramlar qo'shilganda
+        // g'altak o'ngga uzayadi. Shunda bitta o'ram oqimi Φ N ga bog'liq bo'lmaydi
+        // va EYK = −N·ΔΦ/Δt da N ga to'g'ri proporsionallik aniq bajariladi.
+        const COIL_LEFT = 500;
+        function coilWidth() { return Math.min(180, 30 + state.N * 9); }
+
         // Bitta o'ram orqali o'tuvchi magnit oqimi (shartli birlikda, 0..1).
-        // Magnit uchi g'altak chetiga yetganda maksimal bo'ladi.
-        // G'altakning chap cheti o'ramlar soniga qarab siljiydi — shuning uchun
-        // doimiy qiymat emas, drawCoil bilan bir xil formuladan hisoblanadi
-        function coilEdge() {
-            const w = Math.min(180, 30 + state.N * 9);
-            return coilX - w / 2;
-        }
+        // Magnit uchi g'altak chetiga yetganda (d = 0) maksimal bo'ladi.
         function fluxSingle(magX) {
-            const d = coilEdge() - (magX + 55); // magnit uchi bilan g'altak chetigacha masofa
+            const d = Math.max(0, COIL_LEFT - (magX + 55));
             return 1 / (1 + Math.pow(d / 70, 2));
         }
 
@@ -298,8 +298,8 @@
 
         function drawCoil() {
             const n = state.N;
-            const w = Math.min(180, 30 + n * 9);
-            const x0 = coilX - w / 2;
+            const w = coilWidth();
+            const x0 = COIL_LEFT;
             // Har bir o'ram - ellips
             for (let i = 0; i < n; i++) {
                 const ex = x0 + (i + 0.5) * (w / n);
@@ -337,7 +337,7 @@
             ctx.fillStyle = P().ink;
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('N = ' + n + ' o\'ram', coilX, coilY - 78);
+            ctx.fillText('N = ' + n + ' o\'ram', x0 + w / 2, coilY - 78);
         }
 
         function drawGalvanometer() {
@@ -361,7 +361,8 @@
                 ctx.stroke();
             }
             // Strelka: EYK ga proporsional og'adi (chegaralangan)
-            const angle = Math.max(-60, Math.min(60, state.emfSmooth * 3));
+            // Yumshoq to'yinish: kichik va katta EYK farqi strelkada ko'rinadi
+            const angle = 60 * Math.tanh(state.emfSmooth / 400);
             const rad = (angle - 90) * Math.PI / 180;
             ctx.strokeStyle = '#d84315';
             ctx.lineWidth = 3;
@@ -452,8 +453,8 @@
         window.labFields = [
             { label: "Tezlik", get: function () { return state.speed.toFixed(1)+'x'; } },
             { label: "N", get: function () { return state.N; } },
-            { label: "Φ (sh.b.)", get: function () { return document.getElementById('fluxValue').textContent; } },
-            { label: "EYK (sh.b.)", get: function () { return document.getElementById('emfValue').textContent; } },
+            { label: "Φ (sh.b.)", get: function () { return labNum('fluxValue'); } },
+            { label: "EYK (sh.b.)", get: function () { return labNum('emfValue'); } },
             { label: "Yo'nalish", get: function () { return document.getElementById('dirValue').textContent; } }
         ];
     </script>

@@ -481,13 +481,13 @@
         window.modelIsRunning = function () { return isRunning; };
         window.labFields = [
             { label: "v (×10⁷ m/s)", get: function () { return (settings.speed/1e7).toFixed(1); } },
-            { label: "E (MeV)", get: function () { return document.getElementById('energyValue').textContent; } },
-            { label: "r_min (fm)", get: function () { return document.getElementById('rMinValue').textContent; } },
+            { label: "E (MeV)", get: function () { return labNum('energyValue'); } },
+            { label: "r_min (fm)", get: function () { return labNum('rMinValue'); } },
             { label: "Umumiy", get: function () { return stats.total; } },
             { label: "O'tgan", get: function () { return stats.passed; } },
             { label: "Sochilgan", get: function () { return stats.scattered; } },
             { label: "Qaytgan", get: function () { return stats.reflected; } },
-            { label: "Sochilish %", get: function () { return document.getElementById('scatteringRate').textContent; } }
+            { label: "Sochilish (%)", get: function () { return labNum('scatteringRate'); } }
         ];
     </script>
 </body>
