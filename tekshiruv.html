@@ -81,8 +81,10 @@
                     var hasSp = css.indexOf('--sp-4') > -1;
                     var hasR  = css.indexOf('--r-lg') > -1;
                     var hasSh = css.indexOf('--shadow-sm') > -1;
-                    // Oxirgi versiya belgisi: mobil tuzatish (minmax(0, 1fr)) va chop etish stillari
-                    var latest = css.indexOf('minmax(0, 1fr)') > -1 && css.indexOf('@media print') > -1;
+                    // Oxirgi versiya belgisi: mobil tuzatish (minmax(0, 1fr)), chop etish stillari
+                    // va yopishqoq kanvas (is-sticky)
+                    var latest = css.indexOf('minmax(0, 1fr)') > -1 && css.indexOf('@media print') > -1 &&
+                                 css.indexOf('is-sticky') > -1;
                     if (hasSp && hasR && hasSh && !latest) {
                         box.style.background = '#fffbeb';
                         box.style.borderColor = '#fcd34d';
