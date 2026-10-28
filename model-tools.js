@@ -223,12 +223,58 @@
         return isNaN(v) ? '—' : v;
     };
 
+    // ---------- Slayderning to'ldirilgan qismi ----------
+    // Trekning chap qismi (min..qiymat) rang bilan bo'yaladi: --fill CSS o'zgaruvchisi.
+    // Qiymat dasturiy o'zgarganda (masalan "Qayta" tugmasi) input hodisasi bo'lmaydi,
+    // shuning uchun har bir bosishdan keyin ham sinxronlaymiz.
+    function initSliderFill() {
+        var sliders = document.querySelectorAll('input[type="range"]');
+        if (!sliders.length) return;
+        function paint(s) {
+            var min = parseFloat(s.min) || 0;
+            var max = s.max === '' ? 100 : parseFloat(s.max);
+            var pct = max > min ? (parseFloat(s.value) - min) / (max - min) * 100 : 0;
+            s.style.setProperty('--fill', Math.max(0, Math.min(100, pct)) + '%');
+        }
+        function paintAll() { sliders.forEach(paint); }
+        sliders.forEach(function (s) {
+            s.addEventListener('input', function () { paint(s); });
+            s.addEventListener('change', function () { paint(s); });
+        });
+        document.addEventListener('click', function () { setTimeout(paintAll, 0); });
+        document.addEventListener('keyup', function () { setTimeout(paintAll, 0); });
+        paintAll();
+    }
+
+    // ---------- Kanvas ekranda qolishi (katta ekran) ----------
+    // Boshqaruv paneli uzun bo'lsa ham model ko'rinib tursin. Faqat kanvas bloki
+    // oynaga to'liq sig'ganda yopishtiramiz — aks holda pastki qismi yetib bo'lmay qoladi.
+    function initStickyCanvas() {
+        var sections = document.querySelectorAll('.canvas-section');
+        if (!sections.length) return;
+        function sync() {
+            var wide = window.innerWidth > 1024;
+            sections.forEach(function (sec) {
+                var h = sec.offsetHeight;
+                sec.classList.toggle('is-sticky', wide && h > 0 && h < window.innerHeight - 32);
+            });
+        }
+        window.addEventListener('resize', sync);
+        if ('ResizeObserver' in window) {
+            var ro = new ResizeObserver(sync);
+            sections.forEach(function (sec) { ro.observe(sec); });
+        }
+        sync();
+    }
+
     // ---------- Ishga tushirish ----------
     function boot() {
         buildNav();
         initKeyboard();
         initLabLog();
         addKbdHint();
+        initSliderFill();
+        initStickyCanvas();
     }
 
     if (document.readyState === 'loading') {
