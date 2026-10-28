@@ -7,7 +7,7 @@
     <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20261028">
+    <link rel="stylesheet" href="../styles.css?v=20261028b">
     <style>
         :root {
             --primary: #4f46e5;
@@ -215,7 +215,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261028"></script>
+    <script src="../theme.js?v=20261028b"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -486,8 +486,11 @@
             const p = calcSet[pCurrent];
             const inp = document.getElementById('pInput');
             // Vergul ham, nuqta ham qabul qilinadi (o'zbek yozuvida o'nli vergul odatiy)
-            const raw = inp.value.trim().replace(/\s+/g, '').replace(',', '.');
-            const val = /^[-+]?\d*\.?\d+(e[-+]?\d+)?$/i.test(raw) ? parseFloat(raw) : NaN;
+            // Unicode minus (−) ham qabul qilinadi; oxiridagi birlik ("45 fm") e'tiborsiz,
+            // lekin son davom etsa ("1.2.3") javob noaniq deb rad etiladi
+            const raw = inp.value.trim().replace(/\s+/g, '').replace(/[\u2212\u2013]/g, '-').replace(',', '.');
+            const m = raw.match(/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?/i);
+            const val = m && !/^[.\d]/.test(raw.slice(m[0].length)) ? parseFloat(m[0]) : NaN;
             if (isNaN(val)) {
                 // Jim qaytish o'rniga aniq ko'rsatma beramiz
                 document.getElementById('pFeedback').innerHTML =
@@ -510,11 +513,14 @@
             document.getElementById('pInput').disabled = true;
             document.getElementById('pCheckBtn').disabled = true;
             document.getElementById('pNextBtn').disabled = false;
+            // Maydon o'chgach fokus BODY ga tushmasin — Enter bilan davom etish mumkin bo'lsin
+            document.getElementById('pNextBtn').focus();
         }
 
         // Enter tugmasi bilan tekshirish
         document.getElementById('pInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkProblem();
+            // preventDefault: aks holda shu Enter fokus o'tgan "Keyingi" tugmasini ham bosib yuboradi
+            if (e.key === 'Enter') { e.preventDefault(); checkProblem(); }
         });
 
         function nextProblem() {

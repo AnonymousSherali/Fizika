@@ -174,6 +174,9 @@
 
         host.querySelector('#labClear').onclick = function () {
             rows = [];
+            // "Jurnal to'ldi" ogohlantirishi bo'sh jadval ustida qolib ketmasin
+            clearTimeout(flash._t);
+            empty.innerHTML = emptyHtml;
             render();
         };
 
@@ -183,10 +186,13 @@
                 return [i + 1].concat(r).join('\t');
             })).join('\n');
             var btn = this;
+            // Asl yozuv bir marta saqlanadi: tez ikki marta bosilsa ham
+            // tugma "✓ Nusxalandi" holatida qotib qolmaydi
+            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
             var done = function () {
-                var old = btn.textContent;
                 btn.textContent = '✓ Nusxalandi';
-                setTimeout(function () { btn.textContent = old; }, 1500);
+                clearTimeout(btn._t);
+                btn._t = setTimeout(function () { btn.textContent = btn.dataset.label; }, 1500);
             };
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
