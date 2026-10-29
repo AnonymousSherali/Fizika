@@ -7,8 +7,8 @@
     <meta name="description" content="Rezerford tajribasi interaktiv modeli - alfa zarralarning oltin folga bilan ta'siri. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚛️%3C/text%3E%3C/svg%3E">
     <title>Rezerford Tajribasi - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926c">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926c">
+    <link rel="stylesheet" href="../styles.css?v=20261029">
+    <link rel="stylesheet" href="../model-tools.css?v=20261029">
     <style>
         :root {
             --primary: #4f46e5;
@@ -118,10 +118,13 @@
 
                 <div class="control-group">
                     <label for="distanceSlider">
-                        Nishonga masofa (nm):
+                        Manbadan folgagacha (sh.b.):
                         <span class="value-display" id="distanceValue">50</span>
                     </label>
-                    <input type="range" id="distanceSlider" min="10" max="100" step="5" value="50" aria-label="Nishonga masofa">
+                    <input type="range" id="distanceSlider" min="10" max="100" step="5" value="50" aria-label="Manbadan folgagacha masofa">
+                    <p class="hint-note">Faqat sxemani suradi: sochilish burchagi
+                        manba masofasiga emas, <strong>tezlik</strong> va <strong>nishon parametri</strong> (yadrodan
+                        o'tish masofasi) ga bog'liq. Tekshirib ko'ring!</p>
                 </div>
 
                 <div class="control-group">
@@ -203,8 +206,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926c"></script>
-    <script src="../model-tools.js?v=20260926c"></script>
+    <script src="../theme.js?v=20261029"></script>
+    <script src="../model-tools.js?v=20261029"></script>
     <script>
         const canvas = document.getElementById('experimentCanvas');
         const ctx = canvas.getContext('2d');
@@ -255,10 +258,9 @@
         document.getElementById('countSlider').oninput = function() {
             settings.count = parseInt(this.value);
             document.getElementById('countValue').textContent = this.value;
-            // Yangi son eski seriya bilan aralashmasligi uchun kutayotganlar bekor qilinadi
-            spawnTimers.forEach(clearTimeout);
-            spawnTimers = [];
-            pendingCount = 0;
+            // Yangi son eski seriya bilan aralashmasligi uchun seriya qaytadan boshlanadi
+            // (aks holda pauzadan keyin seriya qolgan bir necha zarra bilan tugardi)
+            if (particles.length > 0 || pendingCount > 0) resetExperiment();
         };
 
         class AlphaParticle {
@@ -442,7 +444,10 @@
             document.getElementById('scatteredParticles').textContent = stats.scattered;
             document.getElementById('reflectedParticles').textContent = stats.reflected;
 
-            const scatterRate = stats.total > 0 ? ((stats.scattered + stats.reflected) / stats.total * 100).toFixed(1) : 0;
+            // Maxraj — faqat natijasi aniq zarralar (hali uchayotganlar hisobga olinmaydi),
+            // aks holda seriya o'rtasida foiz past chiqib, jurnalga noto'g'ri yozilardi
+            const doneCount = stats.passed + stats.scattered + stats.reflected;
+            const scatterRate = doneCount > 0 ? ((stats.scattered + stats.reflected) / doneCount * 100).toFixed(1) : 0;
             document.getElementById('scatteringRate').textContent = scatterRate + '%';
         }
 

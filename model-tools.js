@@ -17,7 +17,11 @@
         { file: 'mayatnik_model.html',      icon: '🕰️', name: 'Mayatnik' },
         { file: 'qiya_tekislik_model.html', icon: '📐', name: 'Qiya tekislik' },
         { file: 'om_qonuni_model.html',     icon: '🔌', name: 'Om qonuni' },
-        { file: 'induksiya_model.html',     icon: '🧲', name: 'Induksiya' }
+        { file: 'induksiya_model.html',     icon: '🧲', name: 'Induksiya' },
+        { file: 'prujinali_mayatnik_model.html', icon: '🌀', name: 'Prujinali mayatnik' },
+        { file: 'otilgan_jism_model.html',  icon: '🎯', name: 'Otilgan jism' },
+        { file: 'gaz_qonunlari_model.html', icon: '🎈', name: 'Gaz qonunlari' },
+        { file: 'kondensator_model.html',   icon: '🔋', name: 'Kondensator' }
     ];
 
     function currentFile() {
@@ -121,6 +125,7 @@
             '<div class="lab-log__actions">' +
               '<button type="button" class="lab-btn lab-btn--main" id="labCapture">➕ O\'lchovni yozish</button>' +
               '<button type="button" class="lab-btn" id="labCopy">📄 Nusxalash</button>' +
+              '<button type="button" class="lab-btn" id="labCsv">⬇️ CSV (Excel)</button>' +
               '<button type="button" class="lab-btn" id="labClear">🗑️ Tozalash</button>' +
             '</div>' +
             '<div class="lab-log__wrap"><table class="lab-table"><thead><tr>' +
@@ -174,6 +179,9 @@
 
         host.querySelector('#labClear').onclick = function () {
             rows = [];
+            // "Jurnal to'ldi" ogohlantirishi bo'sh jadval ustida qolib ketmasin
+            clearTimeout(flash._t);
+            empty.innerHTML = emptyHtml;
             render();
         };
 
@@ -183,16 +191,43 @@
                 return [i + 1].concat(r).join('\t');
             })).join('\n');
             var btn = this;
+            // Asl yozuv bir marta saqlanadi: tez ikki marta bosilsa ham
+            // tugma "✓ Nusxalandi" holatida qotib qolmaydi
+            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
             var done = function () {
-                var old = btn.textContent;
                 btn.textContent = '✓ Nusxalandi';
-                setTimeout(function () { btn.textContent = old; }, 1500);
+                clearTimeout(btn._t);
+                btn._t = setTimeout(function () { btn.textContent = btn.dataset.label; }, 1500);
             };
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
             } else {
                 fallbackCopy(text, done);
             }
+        };
+
+        // CSV fayl: ";" ajratuvchi va o'nli vergul — rus/o'zbek tilidagi Excel shu
+        // formatni to'g'ridan-to'g'ri ustunlarga ajratadi. BOM — kirill/lotin harflar
+        // (o', Φ, Ω) buzilmasligi uchun.
+        host.querySelector('#labCsv').onclick = function () {
+            if (!rows.length) { flash('Avval kamida bitta o\'lchov yozing'); return; }
+            function cell(v) {
+                var t = String(v);
+                // Son (yoki "6.0" kabi son-matn) bo'lsa o'nli nuqta vergulga almashadi
+                if (/^[-+]?\d+(\.\d+)?(e[-+]?\d+)?$/i.test(t)) t = t.replace('.', ',');
+                return /[;"\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+            }
+            var lines = [['#'].concat(fields.map(function (f) { return f.label; })).map(cell).join(';')];
+            rows.forEach(function (r, i) { lines.push([i + 1].concat(r).map(cell).join(';')); });
+            var blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+            var a = document.createElement('a');
+            var d = new Date();
+            var stamp = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+            a.href = URL.createObjectURL(blob);
+            a.download = (currentFile().replace(/_model\.html$|\.html$/, '') || 'jurnal') + '_jurnal_' + stamp + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
         };
 
         function fallbackCopy(text, done) {
@@ -223,12 +258,58 @@
         return isNaN(v) ? '—' : v;
     };
 
+    // ---------- Slayderning to'ldirilgan qismi ----------
+    // Trekning chap qismi (min..qiymat) rang bilan bo'yaladi: --fill CSS o'zgaruvchisi.
+    // Qiymat dasturiy o'zgarganda (masalan "Qayta" tugmasi) input hodisasi bo'lmaydi,
+    // shuning uchun har bir bosishdan keyin ham sinxronlaymiz.
+    function initSliderFill() {
+        var sliders = document.querySelectorAll('input[type="range"]');
+        if (!sliders.length) return;
+        function paint(s) {
+            var min = parseFloat(s.min) || 0;
+            var max = s.max === '' ? 100 : parseFloat(s.max);
+            var pct = max > min ? (parseFloat(s.value) - min) / (max - min) * 100 : 0;
+            s.style.setProperty('--fill', Math.max(0, Math.min(100, pct)) + '%');
+        }
+        function paintAll() { sliders.forEach(paint); }
+        sliders.forEach(function (s) {
+            s.addEventListener('input', function () { paint(s); });
+            s.addEventListener('change', function () { paint(s); });
+        });
+        document.addEventListener('click', function () { setTimeout(paintAll, 0); });
+        document.addEventListener('keyup', function () { setTimeout(paintAll, 0); });
+        paintAll();
+    }
+
+    // ---------- Kanvas ekranda qolishi (katta ekran) ----------
+    // Boshqaruv paneli uzun bo'lsa ham model ko'rinib tursin. Faqat kanvas bloki
+    // oynaga to'liq sig'ganda yopishtiramiz — aks holda pastki qismi yetib bo'lmay qoladi.
+    function initStickyCanvas() {
+        var sections = document.querySelectorAll('.canvas-section');
+        if (!sections.length) return;
+        function sync() {
+            var wide = window.innerWidth > 1024;
+            sections.forEach(function (sec) {
+                var h = sec.offsetHeight;
+                sec.classList.toggle('is-sticky', wide && h > 0 && h < window.innerHeight - 32);
+            });
+        }
+        window.addEventListener('resize', sync);
+        if ('ResizeObserver' in window) {
+            var ro = new ResizeObserver(sync);
+            sections.forEach(function (sec) { ro.observe(sec); });
+        }
+        sync();
+    }
+
     // ---------- Ishga tushirish ----------
     function boot() {
         buildNav();
         initKeyboard();
         initLabLog();
         addKbdHint();
+        initSliderFill();
+        initStickyCanvas();
     }
 
     if (document.readyState === 'loading') {

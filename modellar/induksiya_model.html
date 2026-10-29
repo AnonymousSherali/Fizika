@@ -7,8 +7,8 @@
     <meta name="description" content="Elektromagnit induksiya interaktiv modeli - Faradey qonuni va Lens qoidasi. 10-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧲%3C/text%3E%3C/svg%3E">
     <title>Elektromagnit Induksiya - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926c">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926c">
+    <link rel="stylesheet" href="../styles.css?v=20261029">
+    <link rel="stylesheet" href="../model-tools.css?v=20261029">
     <style>
         :root {
             --primary: #0891b2;
@@ -62,7 +62,7 @@
                     <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
                         <li>Avtomatik rejimda tezlikni <strong>0.5x</strong> qilib boshlang</li>
-                        <li>Maksimal EYK qiymatini jurnalga yozing</li>
+                        <li>Bir necha tebranishdan keyin <strong>Maks. |EYK|</strong> ni jurnalga yozing (<kbd>S</kbd>)</li>
                         <li>Tezlikni <strong>2x</strong> ga oshiring — EYK qanday o'zgardi?</li>
                         <li>O'ramlar sonini <strong>10 → 25</strong> ga oshiring va takrorlang</li>
                         <li><strong>Savol:</strong> EYK nimaga proporsional? Magnit to'xtaganda EYK qancha?</li>
@@ -83,7 +83,7 @@
                     <label for="posSlider">Magnit pozitsiyasi:
                         <span class="value-display" id="posValue">-</span>
                     </label>
-                    <input type="range" id="posSlider" min="0" max="100" step="1" value="10" aria-label="Magnit pozitsiyasi">
+                    <input type="range" id="posSlider" min="0" max="100" step="1" value="0" aria-label="Magnit pozitsiyasi">
                 </div>
 
                 <div class="control-group">
@@ -117,6 +117,10 @@
                     <div class="stat-item">
                         <span class="stat-label">Induksiya EYK:</span>
                         <span class="stat-value highlight" id="emfValue">0 sh.b.</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Maks. |EYK|:</span>
+                        <span class="stat-value" id="emfMaxValue">0.0 sh.b.</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Tok yo'nalishi:</span>
@@ -164,8 +168,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926c"></script>
-    <script src="../model-tools.js?v=20260926c"></script>
+    <script src="../theme.js?v=20261029"></script>
+    <script src="../model-tools.js?v=20261029"></script>
     <script>
         const canvas = document.getElementById('inductionCanvas');
         const ctx = canvas.getContext('2d');
@@ -190,6 +194,7 @@
             prevFlux: 0,
             emf: 0,
             emfSmooth: 0,
+            emfMax: 0,         // shu sozlamalardagi eng katta |EYK| (topshiriq uchun)
             speed: 1,
             N: 10
         };
@@ -204,6 +209,13 @@
             bA.setAttribute('aria-checked', m === 'auto' ? 'true' : 'false');
             bM.setAttribute('aria-checked', m === 'manual' ? 'true' : 'false');
             document.getElementById('posSlider').disabled = (m === 'auto');
+            if (m === 'auto') {
+                // Fazani magnitning hozirgi joyiga moslaymiz — aks holda bir kadrda
+                // sakrab, EYK keskin (o'nlab marta) oshib ketardi
+                const k = Math.max(-1, Math.min(1, (state.magX - 250) / 195));
+                state.phase = Math.asin(k);
+            }
+            resetEmfMax();
             if (m === 'manual') startInduction();
         }
 
@@ -225,14 +237,22 @@
         document.getElementById('speedSlider').oninput = function() {
             state.speed = parseFloat(this.value);
             document.getElementById('speedValue').textContent = state.speed.toFixed(1) + 'x';
+            resetEmfMax();
         };
         document.getElementById('turnsSlider').oninput = function() {
             state.N = parseInt(this.value);
             document.getElementById('turnsValue').textContent = state.N;
             // O'ramlar soni g'altak enini o'zgartiradi -> oqim bazasi ham yangilanadi
             state.prevFlux = fluxSingle(state.magX);
+            resetEmfMax();
             if (!state.running) draw();
         };
+
+        // Sozlama o'zgarsa maksimum qaytadan o'lchanadi
+        function resetEmfMax() {
+            state.emfMax = 0;
+            document.getElementById('emfMaxValue').textContent = '0.0 sh.b.';
+        }
 
         // G'altakning magnitga qaragan chap cheti QOTIRILGAN: o'ramlar qo'shilganda
         // g'altak o'ngga uzayadi. Shunda bitta o'ram oqimi Φ N ga bog'liq bo'lmaydi
@@ -272,6 +292,10 @@
             document.getElementById('fluxValue').textContent = (flux * 10).toFixed(2) + ' sh.b.';
             document.getElementById('linkageValue').textContent = (flux * state.N * 10).toFixed(1) + ' sh.b.';
             document.getElementById('emfValue').textContent = state.emfSmooth.toFixed(1) + ' sh.b.';
+            if (state.running && Math.abs(state.emfSmooth) > state.emfMax) {
+                state.emfMax = Math.abs(state.emfSmooth);
+                document.getElementById('emfMaxValue').textContent = state.emfMax.toFixed(1) + ' sh.b.';
+            }
             // Lens qoidasi: oqim ORTSA (magnit yaqinlashmoqda) g'altak magnitni ITARADI.
             // Oqim ortganda EYK = -N*dPhi/dt < 0 bo'ladi.
             const dir = Math.abs(state.emfSmooth) < 1 ? '— (tok yo\'q)' :
@@ -444,10 +468,10 @@
             state.emf = 0;
             state.emfSmooth = 0;
             state.prevFlux = fluxSingle(state.magX);
-            document.getElementById('fluxValue').textContent = (state.prevFlux * 10).toFixed(2) + ' sh.b.';
-            document.getElementById('linkageValue').textContent = (state.prevFlux * state.N * 10).toFixed(1) + ' sh.b.';
-            document.getElementById('emfValue').textContent = '0.0 sh.b.';
-            document.getElementById('dirValue').textContent = '-';
+            // Slayder va yozuvlar magnitning haqiqiy joyiga mos bo'lsin
+            document.getElementById('posSlider').value = 0;
+            resetEmfMax();
+            updateReadouts(state.prevFlux);
             draw();
         }
 
@@ -461,10 +485,11 @@
         window.modelControls = { start: startInduction, pause: pauseInduction, reset: resetInduction };
         window.modelIsRunning = function () { return state.running; };
         window.labFields = [
-            { label: "Tezlik", get: function () { return state.speed.toFixed(1)+'x'; } },
+            { label: "Tezlik (x)", get: function () { return +state.speed.toFixed(1); } },
             { label: "N", get: function () { return state.N; } },
             { label: "Φ (sh.b.)", get: function () { return labNum('fluxValue'); } },
             { label: "EYK (sh.b.)", get: function () { return labNum('emfValue'); } },
+            { label: "Maks. |EYK|", get: function () { return labNum('emfMaxValue'); } },
             { label: "Yo'nalish", get: function () { return document.getElementById('dirValue').textContent; } }
         ];
     </script>

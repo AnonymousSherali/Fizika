@@ -218,3 +218,12 @@ kbd {
     line-height: 1.5;
 }
 .warn-note strong { color: var(--text); }
+
+/* ===== Neytral izoh (sozlama nimani anglatishi) ===== */
+.hint-note {
+    margin-top: var(--sp-2);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+.hint-note strong { color: var(--text); }

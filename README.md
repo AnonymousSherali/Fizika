@@ -36,6 +36,8 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 ├── model-tools.js                 # Jurnal, navigatsiya, klaviatura
 ├── tekshiruv.html                 # 🔍 Deploy tekshiruvi (fayllar yuklanyaptimi)
 ├── .htaccess                      # Apache sozlamalari (MIME, kesh)
+├── fonts/                         # Inter shrifti (internetsiz ham ishlaydi)
+├── img/                           # Bosh sahifadagi model rasmlari
 │
 ├── modellar/                      # 🎮 Interaktiv modellar
 │   ├── rezerford_model.html       #   Rezerford tajribasi
@@ -43,12 +45,16 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │   ├── mayatnik_model.html        #   Matematik mayatnik
 │   ├── qiya_tekislik_model.html   #   Qiya tekislik (FIK)
 │   ├── om_qonuni_model.html       #   Om qonuni (I = U/R)
-│   └── induksiya_model.html       #   Elektromagnit induksiya
+│   ├── induksiya_model.html       #   Elektromagnit induksiya
+│   ├── prujinali_mayatnik_model.html # Prujinali mayatnik
+│   ├── otilgan_jism_model.html    #   Burchak ostida otilgan jism
+│   ├── gaz_qonunlari_model.html   #   Ideal gaz qonunlari
+│   └── kondensator_model.html     #   Yassi kondensator
 │
 ├── dars_ishlanmalar/              # 📚 Dars ishlanmalar
 │   ├── index.html                 #   Sahifa (/dars_ishlanmalar/)
 │   ├── 10-sinf/                   #   7 ta dars (PDF + DOCX)
-│   └── 11-sinf/                   #   6 ta dars (PDF + DOCX)
+│   └── 11-sinf/                   #   6 ta dars (PDF; 4 tasi DOCX ham)
 │
 ├── testlar/                       # 📝 Test va baholash
 │   ├── testlar_online.html        #   Onlayn interaktiv test
@@ -72,16 +78,16 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 ### 1-usul: Bevosita brauzerda ochish
 
 **Windows:**
-1. `rezerford_model.html` faylini toping
+1. Loyiha papkasidagi `index.html` (bosh sahifa) faylini toping
 2. Fayl ustiga o'ng tugmachani bosing
 3. "Open with" → Brauzerni tanlang (Chrome, Firefox, Edge)
 
 **Mac/Linux:**
 ```bash
 # Terminal orqali
-cd fizika_modellar
-open rezerford_model.html        # Mac
-xdg-open rezerford_model.html    # Linux
+cd Fizika
+open index.html        # Mac
+xdg-open index.html    # Linux
 ```
 
 ### 2-usul: Lokal server orqali
@@ -89,11 +95,12 @@ xdg-open rezerford_model.html    # Linux
 **Python bilan:**
 ```bash
 # Python 3
-cd fizika_modellar
+cd Fizika
 python -m http.server 8000
 
 # Keyin brauzerda oching:
-# http://localhost:8000/rezerford_model.html
+# http://localhost:8000/  (bosh sahifa)
+# http://localhost:8000/modellar/rezerford_model.html
 ```
 
 **Node.js bilan:**
@@ -102,7 +109,7 @@ python -m http.server 8000
 npm install -g http-server
 
 # Ishga tushiring
-cd fizika_modellar
+cd Fizika
 http-server -p 8000
 ```
 
@@ -148,8 +155,8 @@ public_html/
 
 1. Barcha fayllarni server papkasiga ko'chiring
 2. O'quvchilarga link bering:
-   - `http://maktab-server/fizika/rezerford_model.html`
-   - `http://maktab-server/fizika/kepler_model.html`
+   - `http://maktab-server/fizika/  (bosh sahifa)`
+   - `http://maktab-server/fizika/modellar/kepler_model.html`
 
 ---
 
@@ -205,17 +212,17 @@ public_html/
    - Keyin yuqori tezlikda (3.0)
    - Natijalarni solishtiring
 
-3. **Masofa ta'sirini o'rganish:**
-   - Yaqin masofa (10 nm)
-   - Uzoq masofa (100 nm)
-   - Farqlarni tahlil qiling
+3. **Manba masofasi ta'sir qiladimi?**
+   - Masofani 10 va 100 qilib, bir xil tezlikda seriya o'tkazing
+   - Natija o'zgarmaydi: sochilish faqat tezlik (energiya) va
+     nishon parametriga bog'liq — buning sababini tushuntiring
 
 ### KEPLER MODELI
 
 #### 3 ta bo'lim:
 
 **1-QONUN: ELLIPS**
-- Sayyora tanlash (Merkuriy, Venera, Yer, Mars)
+- Sayyora tanlash (Quyosh sistemasining 8 ta sayyorasi)
 - Yarim katta o'q (a) o'zgartirish
 - Ekssentrisitet (e) sozlash
 - Perigeliy va afeliy masofalarini kuzatish

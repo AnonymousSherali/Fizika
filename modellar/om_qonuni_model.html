@@ -7,8 +7,8 @@
     <meta name="description" content="Om qonuni interaktiv modeli - zanjirning bir qismi uchun I = U/R. 10-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔌%3C/text%3E%3C/svg%3E">
     <title>Om Qonuni - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20260926c">
-    <link rel="stylesheet" href="../model-tools.css?v=20260926c">
+    <link rel="stylesheet" href="../styles.css?v=20261029">
+    <link rel="stylesheet" href="../model-tools.css?v=20261029">
     <style>
         :root {
             --primary: #b45309;
@@ -129,8 +129,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20260926c"></script>
-    <script src="../model-tools.js?v=20260926c"></script>
+    <script src="../theme.js?v=20261029"></script>
+    <script src="../model-tools.js?v=20261029"></script>
     <script>
         const canvas = document.getElementById('circuitCanvas');
         const ctx = canvas.getContext('2d');
@@ -156,7 +156,8 @@
             if (!state.running) draw();
         };
 
-        function current() { return state.U / state.R; }
+        // Kalit ochiq (tok yoqilmagan yoki to'xtatilgan) bo'lsa zanjirda tok yo'q
+        function current() { return state.running ? state.U / state.R : 0; }
 
         function updateStats() {
             const I = current();
@@ -278,7 +279,8 @@
             ctx.lineTo(460, 68);
             ctx.lineTo(426, 68);
             ctx.stroke();
-            drawMeter(400, 68, 'V', state.U.toFixed(1), 'V');
+            // Voltmetr rezistorga parallel: U_R = I·R (kalit ochiq bo'lsa 0)
+            drawMeter(400, 68, 'V', (current() * state.R).toFixed(1), 'V');
         }
 
         function draw() {
@@ -290,6 +292,12 @@
             drawVoltmeter();
             drawBattery();
             drawMeter(400, B, 'A', current().toFixed(2), 'A');
+            if (!state.running) {
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '600 15px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Kalit ochiq — tok yo\'q. «Tokni yoqish» ni bosing', 400, B + 80);
+            }
 
             // Tok zarralari (shartli musbat zaryad yo'nalishi: + dan -)
             const I = current();
@@ -333,12 +341,15 @@
             if (!state.running) {
                 state.running = true;
                 lastTs = null;
+                updateStats();
                 animationId = requestAnimationFrame(loop);
             }
         }
         function pauseCircuit() {
             state.running = false;
             if (animationId) cancelAnimationFrame(animationId);
+            updateStats();
+            draw();
         }
         // Qayta: tok o'chiriladi, zarralar boshlang'ich joyiga qaytadi.
         // U va R sozlamalari saqlanadi (boshqa modellardagi "Qayta" bilan bir xil)
