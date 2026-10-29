@@ -98,13 +98,19 @@ def generate_params(problem: Problem, rng):
         return None, None
     import math
 
-    values = {}
-    for name, (lo, hi, step) in problem.params.items():
-        n = int(round((hi - lo) / step))
-        v = lo + step * rng.randint(0, max(n, 0))
-        values[name] = round(v, 10)
-    ans = safe_eval(problem.formula, {**values, "pi": math.pi})
-    return values, ans
+    # Tasodifiy qiymatlar formulani buzsa (masalan nolga bo'lish) — boshqa qiymatlar olinadi;
+    # 10 urinishdan keyin ham bo'lmasa masala parametrsiz (asl javob bilan) beriladi
+    for _ in range(10):
+        values = {}
+        for name, (lo, hi, step) in problem.params.items():
+            n = int(round((hi - lo) / step))
+            v = lo + step * rng.randint(0, max(n, 0))
+            values[name] = round(v, 10)
+        try:
+            return values, safe_eval(problem.formula, {**values, "pi": math.pi})
+        except (ValueError, ZeroDivisionError):
+            continue
+    return None, None
 
 
 def is_expired(attempt: Attempt) -> bool:

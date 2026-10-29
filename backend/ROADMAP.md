@@ -183,8 +183,26 @@ yangi sahifalar shu uslubdagi statik HTML. Backend ishlamasa sayt hozirgidek (of
 | `oqituvchi/index.html`: topshiriq berish (lab/test), sinf bo'yicha holat, ishni ko'rish va baholash, qaytarish | ✅ | |
 | `oqituvchi/index.html`: savollarim (qo'shish, Excel import, statistika) | ✅ | |
 | E2E: o'qituvchi → sinf → o'quvchilar → topshiriq → o'quvchi bajaradi → baho | ✅ | Playwright (qo'lda ishga tushiriladi) |
-| `testlar_online.html` mashq rejimi savollarini API'dan olish | ⬜ | hozir o'rnatilgan bank (oflayn ishlashi uchun qulay) |
-| Katalog va dars ishlanmalar API'dan | ⬜ | 4-bosqich (kontent boshqaruvi bilan) |
+| `testlar_online.html` mashq savollari serverdan (`quiz/bank/`), server bo'lmasa — o'rnatilgan bank | ✅ | admin tasdiqlagan/arxivlagan savol saytda darhol aks etadi |
+| Bosh sahifa katalogi serverdan: nofaol model yashiriladi, tartib/nom/tavsif admin bo'yicha | ✅ | `import_simulations` qayta ishga tushirilsa nom/tavsif sahifadagidek qaytadi |
+| Dars ishlanmalar: nashrdan olingan statik ishlanma yashiriladi, faqat nashr etilganlar | ✅ | |
+| Ruscha tarjimalar admin paneldan (`i18n/ru.js` fayldagi lug'at ustiga) | ✅ | `export_i18n` shart emas; brauzer keshi 10 daqiqa |
+| O'qituvchi panelida masalalar: oddiy va parametrli, «Namunani ko'rish» (`quiz/problems/preview/`) | ✅ | |
+| Xavfsizlik: formula hisoblagichida daraja/uzunlik chegarasi (`9**9**9**9` serverni osib qo'yardi) | ✅ | |
 | Yangi sahifalarning ruscha tarjimasi (i18n-ru.js) | ⬜ | |
 | `sw.js`: `/api/`, `/admin/`, `/media/` keshlanmaydi | ✅ | |
+
+### Sahifalar va backend (tekshiruv, 2026-11-01)
+| Sahifa | Backend bilan aloqa | Admin paneldagi o'zgarish saytda ko'rinadimi |
+|---|---|---|
+| `index.html` (katalog) | `simulations/` | ✅ nofaol model, tartib, nom, tavsif; ruscha matnlar — tarjimalar orqali |
+| `modellar/*_model.html` (15 ta) | jurnal avto-saqlash, oflayn navbat, topshiriq rejimi, kutilgan natijalar (o'qituvchi) | ✅ kutilgan natijalar, topshiriq qadamlari |
+| `testlar/testlar_online.html` (mashq) | `quiz/bank/` | ✅ savollar/masalalar (holat, matn, parametrlar) |
+| `testlar/nazorat.html` | `quiz/attempts/` | ✅ |
+| `dars_ishlanmalar/index.html` | `lesson-plans/`, yuklab olish hisobi | ✅ nashr/rad, yangi ishlanmalar |
+| `kirish.html`, `profil.html` | `auth/*`, `me/` | ✅ (hisob holati, bloklash, tasdiqlash) |
+| `oquvchi/`, `oqituvchi/` | sinflar, topshiriqlar, baholar, statistika, savollar, masalalar, ishlanmalar, bildirishnomalar | ✅ |
+| Barcha sahifalar (ruscha rejim) | `i18n/ru.js` | ✅ tarjimalar |
+| `maxfiylik.html`, `hujjatlar/loyiha_algoritmi.html`, `tekshiruv.html` | yo'q — statik matn | — (kerak emas) |
+| `modellar/index.html`, `testlar/index.html`, `hujjatlar/index.html` | yo'q — yo'naltirish sahifalari | — |
 | Topilgan va tuzatilgan xato: yopishqoq kanvas pastdagi jurnal ustiga chiqardi (panel ekran tepasidan chiqqanda) | ✅ | |

@@ -28,12 +28,27 @@ def safe_eval(expr: str, names: dict) -> float:
         if isinstance(node, ast.Name) and node.id in names:
             return names[node.id]
         if isinstance(node, ast.BinOp) and type(node.op) in _OPS:
-            return _OPS[type(node.op)](ev(node.left), ev(node.right))
+            left, right = ev(node.left), ev(node.right)
+            # Daraja chegaralanadi: 9**9**9 kabi ifoda serverni «osib qo'ymasin» (o'qituvchi formulasi ham shu yerda)
+            if isinstance(node.op, ast.Pow) and abs(right) > 64:
+                raise ValueError("Daraja ko'rsatkichi juda katta")
+            try:
+                r = _OPS[type(node.op)](float(left), right)
+            except OverflowError as e:
+                raise ValueError("Natija juda katta") from e
+            if isinstance(r, complex):  # (-8)**0.5
+                raise ValueError("Manfiy sondan ildiz")
+            return r
         if isinstance(node, ast.UnaryOp) and type(node.op) in _OPS:
             return _OPS[type(node.op)](ev(node.operand))
         raise ValueError("Ruxsat etilmagan ifoda")
 
-    return float(ev(ast.parse(expr, mode="eval")))
+    if len(expr) > 300:
+        raise ValueError("Ifoda juda uzun")
+    r = float(ev(ast.parse(expr, mode="eval")))
+    if not math.isfinite(r):
+        raise ValueError("Natija son emas")
+    return r
 
 
 def find_column(columns: list[dict], prefix: str | None) -> int | None:

@@ -69,6 +69,8 @@ class ProblemSerializer(serializers.ModelSerializer):
         fields = ["id", "topic", "text_uz", "text_ru", "answer", "unit", "tolerance_pct", "solution_uz",
                   "solution_ru", "params", "formula", "status", "stats_total", "stats_correct", "created_at"]
         read_only_fields = ["stats_total", "stats_correct", "created_at"]
+        # Parametrli masalada javob formuladan hisoblanadi — majburiy emas
+        extra_kwargs = {"answer": {"required": False}}
 
     def validate(self, data):
         """Parametrlangan masala: har bir parametr [min, max, qadam], formula hisoblanadi, matnda {nom} bor."""
@@ -79,6 +81,8 @@ class ProblemSerializer(serializers.ModelSerializer):
         params = data.get("params", getattr(self.instance, "params", None))
         formula = data.get("formula", getattr(self.instance, "formula", ""))
         if not params:
+            if data.get("answer", getattr(self.instance, "answer", None)) is None:
+                raise serializers.ValidationError({"answer": ["Javobni kiriting (yoki parametr va formula bering)"]})
             return data
         if not isinstance(params, dict):
             raise serializers.ValidationError({"params": ['{"U": [2, 12, 0.5]} ko\'rinishida bo\'lishi kerak']})
@@ -92,13 +96,15 @@ class ProblemSerializer(serializers.ModelSerializer):
         if not formula:
             raise serializers.ValidationError({"formula": ["Parametrli masala uchun javob formulasi kerak"]})
         try:
-            safe_eval(formula, {**sample, "pi": math.pi})
+            sample_answer = safe_eval(formula, {**sample, "pi": math.pi})
         except (ValueError, ZeroDivisionError, SyntaxError) as e:
             raise serializers.ValidationError({"formula": [f"Formulani hisoblab bo'lmadi: {e}"]}) from e
         text = data.get("text_uz", getattr(self.instance, "text_uz", ""))
         missing = [k for k in params if "{" + k + "}" not in text]
         if missing:
             raise serializers.ValidationError({"text_uz": [f"Matnda {{{missing[0]}}} joyi yo'q"]})
+        if data.get("answer") is None and not getattr(self.instance, "pk", None):
+            data["answer"] = sample_answer  # namuna (minimal qiymatlar) — har o'quvchiga baribir qayta hisoblanadi
         return data
 
     def validate_tolerance_pct(self, v):

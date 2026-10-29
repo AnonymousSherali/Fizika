@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../img/icons/icon-192.png" type="image/png">
     <title>O'qituvchi paneli — Fizika 10–11</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101a">
-    <link rel="stylesheet" href="../app.css?v=20261101a">
+    <link rel="stylesheet" href="../styles.css?v=20261101b">
+    <link rel="stylesheet" href="../app.css?v=20261101b">
     <style>
         .cls-card { cursor: pointer; }
         .cls-card:hover { border-color: var(--a-blue); }
@@ -48,9 +48,9 @@
     </main>
     <div class="print-area" id="printArea"></div>
 
-    <script src="../theme.js?v=20261101a"></script>
-    <script src="../api.js?v=20261101a"></script>
-    <script src="../app.js?v=20261101a"></script>
+    <script src="../theme.js?v=20261101b"></script>
+    <script src="../api.js?v=20261101b"></script>
+    <script src="../app.js?v=20261101b"></script>
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); }, E = FA.esc;
@@ -547,9 +547,10 @@
 
         // ================= Savollarim =================
         function questions(_, tok) {
-            return Promise.all([api.get('quiz/questions/?mine=1&page_size=100'), api.get('quiz/topics/')]).then(function (res) {
+            return Promise.all([api.get('quiz/questions/?mine=1&page_size=100'), api.get('quiz/topics/'),
+                                api.get('quiz/problems/?mine=1&page_size=100')]).then(function (res) {
                 if (stale(tok)) return;
-                var list = res[0].results, topics = res[1];
+                var list = res[0].results, topics = res[1], probs = res[2].results;
                 var st = { draft: 'Qoralama', approved: 'Tasdiqlangan', archived: 'Arxiv' };
                 view.innerHTML = '<div class="panel"><h2>❓ Mening savollarim (' + list.length + ')</h2>' +
                     '<p class="muted small">Siz qo\'shgan savollar administrator tasdiqlaguncha faqat sizning topshiriqlaringizda ishlatiladi.</p>' +
@@ -568,7 +569,9 @@
                     }).join('') + '<div class="field"><label for="qEx">Izoh (nega to\'g\'ri)</label><input id="qEx"></div><button class="btn-a">Qo\'shish</button></form>' +
                     '<form class="panel" id="fX"><h2>📥 Excel\'dan import</h2><p class="muted small">Ustunlar: <b>Mavzu | Daraja | Savol | A | B | C | D | To\'g\'ri | Izoh</b>. ' +
                     'To\'g\'ri — A, B, C yoki D. Mavzu — masalan «Kepler», «Linza».</p><div class="field"><input type="file" id="xFile" accept=".xlsx" required></div>' +
-                    '<button class="btn-a">Yuklash</button><div id="xRes"></div></form></div>';
+                    '<button class="btn-a">Yuklash</button><div id="xRes"></div></form></div>' +
+                    problemsHtml(probs, topics, st);
+                bindProblemForm();
                 $('fQ').onsubmit = function (e) {
                     e.preventDefault();
                     api.post('quiz/questions/', {
@@ -590,6 +593,94 @@
                     });
                 };
             });
+        }
+
+        // ---------- Hisoblash masalalari (FT-6.2): oddiy yoki parametrlangan ----------
+        // Parametrlangan: matnda {m} kabi joylar, har parametr uchun [min, max, qadam]; javob formuladan.
+        // Har bir o'quvchiga boshqa sonlar tushadi — javobni ko'chirib olish foyda bermaydi.
+        function problemsHtml(probs, topics, st) {
+            return '<div class="panel" style="margin-top:var(--sp-4)"><h2>🧮 Mening masalalarim (' + probs.length + ')</h2>' +
+                (probs.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mavzu</th><th>Masala</th><th>Javob</th><th>Holat</th><th>Statistika</th></tr></thead><tbody>' +
+                    probs.map(function (p) {
+                        return '<tr><td>' + E(p.topic) + '</td><td>' + E(p.text_uz) + (p.params ? ' <span class="badge">🎲 parametrli</span>' : '') +
+                            '</td><td>' + (p.formula ? '<code>' + E(p.formula) + '</code>' : E(p.answer)) + ' ' + E(p.unit) + '</td><td>' + E(st[p.status] || p.status) +
+                            '</td><td>' + (p.stats_total ? Math.round(p.stats_correct / p.stats_total * 100) + '% to\'g\'ri (' + p.stats_total + ')' : '—') + '</td></tr>';
+                    }).join('') + '</tbody></table></div>' : '<p class="muted small">Hali masala qo\'shmagansiz.</p>') + '</div>' +
+                '<form class="panel" id="fP" style="margin-top:var(--sp-4)"><h2>➕ Masala qo\'shish</h2>' +
+                '<div class="row"><div class="field"><label for="pTopic">Mavzu</label><select id="pTopic">' + topics.map(function (t) {
+                    return '<option value="' + t.key + '">' + E(t.title) + '</option>'; }).join('') + '</select></div>' +
+                '<div class="field"><label for="pKind">Turi</label><select id="pKind"><option value="fixed">Oddiy (bitta javob)</option>' +
+                '<option value="param">Parametrli (har o\'quvchiga boshqa sonlar)</option></select></div></div>' +
+                '<div class="field"><label for="pText">Masala matni</label><textarea id="pText" required placeholder="Masalan: Massasi {m} kg jism {h} m balandlikdan tushdi. Yerga urilish tezligini toping."></textarea>' +
+                '<small class="muted" id="pTextHint" hidden>Sonlar o\'rniga <b>{nom}</b> yozing — masalan {m}, {h}. Har bir nom uchun pastda oraliq bering.</small></div>' +
+                '<div id="pParamBox" hidden><div class="field"><label>Parametrlar (min · max · qadam)</label><div id="pParams"></div>' +
+                '<button type="button" class="btn-a ghost small" id="pAdd" style="width:auto">+ parametr</button></div>' +
+                '<div class="field"><label for="pFormula">Javob formulasi</label><input id="pFormula" placeholder="Masalan: (2*9.8*h)**0.5" autocomplete="off">' +
+                '<small class="muted">Amallar: + − * / ** (daraja; ildiz — **0.5), qavslar, <b>pi</b>. Parametr nomlari matndagidek.</small></div></div>' +
+                '<div class="row"><div class="field" id="pAnsBox"><label for="pAns">To\'g\'ri javob</label><input id="pAns" inputmode="decimal" placeholder="45"></div>' +
+                '<div class="field"><label for="pUnit">Birlik</label><input id="pUnit" placeholder="m/s"></div>' +
+                '<div class="field"><label for="pTol">Ruxsat etilgan xatolik, %</label><input id="pTol" type="number" min="0.1" max="50" step="0.1" value="3"></div></div>' +
+                '<div class="field"><label for="pSol">Yechim (ixtiyoriy)</label><textarea id="pSol" placeholder="v = √(2gh) = {answer} m/s"></textarea>' +
+                '<small class="muted">Yechimda ham {nom} va <b>{answer}</b> (javob) ishlatish mumkin.</small></div>' +
+                '<div id="pPrev"></div>' +
+                '<div class="row" style="gap:8px"><button type="button" class="btn-a ghost" id="pPreview">👁 Namunani ko\'rish</button><button class="btn-a">Saqlash</button></div></form>';
+        }
+
+        function bindProblemForm() {
+            var box = $('pParams');
+            function addRow(name, lo, hi, step) {
+                var r = document.createElement('div');
+                r.className = 'prm';
+                r.style.cssText = 'display:grid;grid-template-columns:minmax(56px,80px) repeat(3,minmax(0,1fr)) auto;gap:6px;align-items:center;margin-bottom:6px';
+                r.innerHTML = '<input class="pn" placeholder="nom" value="' + E(name || '') + '" aria-label="Parametr nomi">' +
+                    '<input class="plo" inputmode="decimal" placeholder="min" value="' + E(lo == null ? '' : lo) + '" aria-label="Eng kichik qiymat">' +
+                    '<input class="phi" inputmode="decimal" placeholder="max" value="' + E(hi == null ? '' : hi) + '" aria-label="Eng katta qiymat">' +
+                    '<input class="pst" inputmode="decimal" placeholder="qadam" value="' + E(step == null ? '' : step) + '" aria-label="Qadam">' +
+                    '<button type="button" class="btn-a ghost small" aria-label="Parametrni o\'chirish">✕</button>';
+                r.querySelector('button').onclick = function () { r.remove(); };
+                box.appendChild(r);
+            }
+            function kind() {
+                var param = $('pKind').value === 'param';
+                $('pParamBox').hidden = !param;
+                $('pTextHint').hidden = !param;
+                $('pAnsBox').hidden = param;
+                if (param && !box.children.length) addRow('m', 1, 10, 1);
+            }
+            $('pKind').onchange = kind;
+            $('pAdd').onclick = function () { addRow(); };
+            kind();
+            function num(v) { return parseFloat(String(v).replace(',', '.')); }
+            function payload() {
+                var d = { topic: $('pTopic').value, text_uz: $('pText').value.trim(), unit: $('pUnit').value.trim(),
+                          tolerance_pct: num($('pTol').value) || 3, solution_uz: $('pSol').value.trim() };
+                if ($('pKind').value === 'param') {
+                    d.params = {};
+                    box.querySelectorAll('.prm').forEach(function (r) {
+                        var n = r.querySelector('.pn').value.trim();
+                        if (n) d.params[n] = [num(r.querySelector('.plo').value), num(r.querySelector('.phi').value), num(r.querySelector('.pst').value)];
+                    });
+                    d.formula = $('pFormula').value.trim();
+                } else {
+                    d.answer = num($('pAns').value);
+                    if (isNaN(d.answer)) d.answer = null;
+                }
+                return d;
+            }
+            function fmt(v) { return typeof v === 'number' ? (+v.toPrecision(6)).toString().replace('.', ',') : E(v); }
+            $('pPreview').onclick = function () {
+                api.post('quiz/problems/preview/', payload()).then(function (r) {
+                    $('pPrev').innerHTML = '<div class="panel" style="background:var(--a-soft)"><b>O\'quvchilar shunday ko\'radi:</b><ol>' +
+                        r.samples.map(function (x) {
+                            return '<li style="margin:6px 0">' + E(x.text) + '<br><span class="muted small">Javob: <b>' + fmt(x.answer) + ' ' + E(x.unit) + '</b>' +
+                                (x.solution ? ' · ' + E(x.solution) : '') + '</span></li>';
+                        }).join('') + '</ol></div>';
+                }, function (e2) { $('pPrev').innerHTML = ''; err(e2); });
+            };
+            $('fP').onsubmit = function (e) {
+                e.preventDefault();
+                api.post('quiz/problems/', payload()).then(function () { ok('Masala qo\'shildi'); questions(); }, err);
+            };
         }
     })();
     </script>

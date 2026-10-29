@@ -7,7 +7,7 @@
     <meta name="description" content="10-11-sinf fizikasi bo'yicha onlayn interaktiv test: 15 mavzu (mayatniklar, qiya tekislik, impuls, gaz qonunlari, Om qonuni, kondensator, induksiya, optika, fotoeffekt, radioaktivlik, Rezerford, Kepler) — mavzu tanlash va avtomatik baholash bilan.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101a">
+    <link rel="stylesheet" href="../styles.css?v=20261101b">
     <style>
         :root {
             --primary: #4f46e5;
@@ -319,7 +319,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101a"></script>
+    <script src="../theme.js?v=20261101b"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -766,14 +766,15 @@
                 });
                 box.appendChild(lab);
             });
-            document.getElementById('allTopics').addEventListener('change', function () {
+            // onchange (addEventListener emas): bank serverdan kelganda buildPicker qayta chaqiriladi
+            document.getElementById('allTopics').onchange = function () {
                 selTopics = this.checked ? new Set(TOPICS) : new Set();
                 box.querySelectorAll('input').forEach(i => { i.checked = this.checked; });
                 refreshStart();
-            });
+            };
             document.querySelectorAll('input[name="qcount"]').forEach(r => {
                 r.checked = r.value === qCount;
-                r.addEventListener('change', () => { if (r.checked) { qCount = r.value; refreshStart(); } });
+                r.onchange = () => { if (r.checked) { qCount = r.value; refreshStart(); } };
             });
             document.getElementById('topicTotal').textContent = TOPICS.length;
         }
@@ -1288,6 +1289,36 @@
         loadSelection();
         buildPicker();
         refreshStart();
+
+        // Backend bo'lsa: savollar banki serverdan olinadi — admin panelda qo'shilgan, tasdiqlangan,
+        // tahrirlangan yoki arxivlangan savollar saytda ham shunday ko'rinadi. Server bo'lmasa (oflayn,
+        // statik hosting) yuqoridagi o'rnatilgan bank ishlatiladi.
+        (function () {
+            function withApi(fn) {
+                if (window.FizikaAPI) fn(window.FizikaAPI);
+                else window.addEventListener('fizika:api', function (e) { fn(e.detail); }, { once: true });
+            }
+            withApi(function (api) {
+                api.available().then(function (ok) {
+                    if (!ok) return null;
+                    return api.get('quiz/bank/');
+                }).then(function (b) {
+                    if (!b || !b.questions || !b.questions.length) return;
+                    // Test boshlangan bo'lsa joriy savollar o'zgarmaydi
+                    if (quiz.length || calcSet.length) return;
+                    const had = new Set(TOPICS);
+                    TOPICS.splice(0, TOPICS.length, ...b.topics.filter(t => b.questions.some(q => topicOf(q.tag) === t)
+                        || b.problems.some(p => topicOf(p.tag) === t)));
+                    questions.splice(0, questions.length, ...b.questions);
+                    problems.splice(0, problems.length, ...b.problems);
+                    // Tanlov saqlanadi; admin qo'shgan yangi mavzu ham tanlangan bo'ladi
+                    selTopics = new Set(TOPICS.filter(t => selTopics.has(t) || !had.has(t)));
+                    buildPicker();
+                    refreshStart();
+                    document.body.dataset.bank = 'server';
+                }).catch(function () { /* server xatosi — o'rnatilgan bank qoladi */ });
+            });
+        })();
     </script>
 </body>
 </html>

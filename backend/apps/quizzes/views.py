@@ -77,6 +77,40 @@ class PracticeView(APIView):
         return Response(out)
 
 
+class BankView(APIView):
+    """
+    Mashq sahifasi (`testlar/testlar_online.html`) uchun butun tasdiqlangan bank — sahifadagi o'rnatilgan bank
+    bilan bir xil formatda. Admin panelda tasdiqlangan/tahrirlangan/arxivlangan savollar saytda shu orqali
+    ko'rinadi. Matnlar o'zbekcha (ruscha rejimda sahifa ularni `i18n-ru.js` lug'ati orqali tarjima qiladi).
+    Parametrlangan masalalar har so'rovda yangi sonlar bilan beriladi.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        import random
+
+        topics = list(Topic.objects.order_by("order", "id"))
+        questions = (Question.objects.filter(status=Status.APPROVED).select_related("topic")
+                     .order_by("topic__order", "level", "id"))
+        problems = Problem.objects.filter(status=Status.APPROVED).select_related("topic").order_by("topic__order", "id")
+        rng = random.SystemRandom()
+        out_p = []
+        for p in problems:
+            values, ans = services.generate_params(p, rng)
+            vals = {**(values or {}), "answer": ans if ans is not None else p.answer}
+            out_p.append({"id": p.id, "tag": f"{p.topic.title_uz} · Hisoblash", "q": p.text("uz", values),
+                          "ans": ans if ans is not None else p.answer, "unit": p.unit, "tol": p.tolerance_pct,
+                          "sol": p.solution("uz", vals)})
+        return Response({
+            "topics": [t.title_uz for t in topics],
+            "questions": [{"id": q.id, "tag": f"{q.topic.title_uz} · {q.get_level_display()}", "q": q.text_uz,
+                           "o": q.option_texts("uz"), "correct": q.correct_index, "ex": q.explanation_uz}
+                          for q in questions],
+            "problems": out_p,
+        })
+
+
 class AttemptViewSet(viewsets.GenericViewSet):
     """FT-6.4 – FT-6.6: nazorat testi. To'g'ri javoblar mijozga yuborilmaydi."""
 
@@ -228,3 +262,21 @@ class ProblemViewSet(_BankViewSet):
     model = Problem
     serializer_class = ProblemSerializer
     queryset = Problem.objects.none()
+
+    @extend_schema(request=ProblemSerializer, responses={200: dict})
+    @action(detail=False, methods=["post"])
+    def preview(self, request):
+        """Saqlashdan oldin tekshirish: o'quvchilar ko'radigan 3 ta namuna (sonlar, javob, yechim)."""
+        import random
+
+        ser = ProblemSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        p = Problem(**{k: v for k, v in ser.validated_data.items() if k != "status"})
+        rng = random.SystemRandom()
+        samples = []
+        for _ in range(3 if p.params else 1):
+            values, ans = services.generate_params(p, rng)
+            ans = ans if ans is not None else p.answer
+            samples.append({"text": p.text("uz", values), "answer": ans, "unit": p.unit,
+                            "solution": p.solution("uz", {**(values or {}), "answer": ans})})
+        return Response({"samples": samples})

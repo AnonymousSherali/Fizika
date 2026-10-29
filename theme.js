@@ -92,14 +92,27 @@
         if (getLang() !== 'ru' || !ROOT) return;
         var d = document.createElement('script');
         d.src = ROOT + 'i18n-ru.js?v=' + I18N_VER;
-        d.onload = function () {
+        function run() {
             var r = document.createElement('script');
             r.src = ROOT + 'i18n.js?v=' + I18N_VER;
             document.head.appendChild(r);
+        }
+        d.onload = function () {
+            // Backend ishlayotgani ma'lum bo'lsa (api.js shu sessiyada tekshirgan): admin panelda tahrirlangan
+            // tarjimalar serverdan olinib, fayldagilar ustiga yoziladi — export_i18n ni kutish shart emas
+            var api = null;
+            try { api = JSON.parse(sessionStorage.getItem('fizika-api-ok') || 'null'); } catch (e) {}
+            if (!api || !api.v || !api.base) return run();
+            var base = window.FIZIKA_RU || {};
+            var x = document.createElement('script');
+            x.src = api.base + 'i18n/ru.js';
+            x.onload = function () { window.FIZIKA_RU = Object.assign({}, base, window.FIZIKA_RU || {}); run(); };
+            x.onerror = function () { window.FIZIKA_RU = base; run(); };
+            document.head.appendChild(x);
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261101a';
+    var I18N_VER = '20261101b';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----
