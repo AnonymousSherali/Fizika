@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Impulsning saqlanish qonuni interaktiv modeli - aravachalarning elastik, noelastik va qisman elastik to'qnashuvi, impuls va kinetik energiya balansi. 10-sinf fizika.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎱%3C/text%3E%3C/svg%3E">
+    <title>Impulsning Saqlanish Qonuni - Interaktiv Model</title>
+    <link rel="stylesheet" href="../styles.css?v=20261029d">
+    <link rel="stylesheet" href="../model-tools.css?v=20261029d">
+    <style>
+        :root {
+            --primary: #b91c1c;
+            --primary-dark: #7f1d1d;
+            --accent: #ef4444;
+            --accent-2: #fca5a5;
+            --header-bg: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 55%, #f87171 100%);
+        }
+        /* To'qnashuv kanvasi och qizg'ish fon bilan ko'rsatiladi */
+        canvas { background: #fef2f2; }
+        html.dark canvas, body.dark canvas { background: #1c1012; }
+
+        .stat-value.highlight {
+            color: color-mix(in srgb, var(--primary) 55%, #7c2d12);
+            font-size: 1.05rem;
+        }
+        html.dark .stat-value.highlight, body.dark .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 45%, white);
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 700px) {
+            .canvas-section { padding: 10px; }
+            .control-group { padding: 12px; }
+            .info-panel { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="../index.html#modellar" class="back-link">← Bosh sahifa</a>
+            <h1>🎱 Impulsning Saqlanish Qonuni</h1>
+            <p>Aravachalar to'qnashuvi: m₁v₁ + m₂v₂ = m₁v₁′ + m₂v₂′</p>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-section">
+                <canvas id="collisionCanvas" role="img" aria-label="Impulsning saqlanish qonuni — interaktiv simulyatsiya: ishqalanishsiz yo'ldagi ikki aravacha, metrli shkala, tezlik va impuls vektorlari, to'qnashuvdan oldin va keyingi impuls hamda kinetik energiya ustunlari" width="800" height="600"></canvas>
+            </div>
+
+            <div class="controls">
+                <div class="task-card">
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
+                    <ol>
+                        <li><strong>«Elastik»</strong>, m₁ = m₂ = <strong>1.0 kg</strong>, v₁ = <strong>+2.0 m/s</strong>, v₂ = 0: «Boshlash»ni bosing — aravalar tezliklarini <strong>almashtirdimi</strong> (v₁′ ≈ 0, v₂′ ≈ 2 m/s)? Natijani jurnalga yozing (<kbd>S</kbd>)</li>
+                        <li>Xuddi shu sonlar bilan <strong>«Noelastik»</strong>: umumiy tezlik <strong>1 m/s</strong> chiqdimi? Q = 1 J — boshlang'ich Eₖ ning <strong>yarmi</strong> issiqlikka aylandimi?</li>
+                        <li>«Elastik», m₂ = <strong>4.0 kg</strong> (og'ir nishon): 1-arava <strong>orqaga qaytdimi</strong> (v₁′ ≈ −1.2 m/s, v₂′ ≈ +0.8 m/s)? p oldin va keyin tengmi?</li>
+                        <li>m₂ = 1.0 kg, <strong>«Qisman elastik»</strong>, k = <strong>0.50</strong>: v₁′ ≈ 0.5 m/s, v₂′ ≈ 1.5 m/s va Q = 0.75 J ekanini tekshiring</li>
+                        <li>«Noelastik», m₁ = m₂ = 1 kg, v₁ = <strong>+2</strong>, v₂ = <strong>−2 m/s</strong> (qarama-qarshi): aravalar to'xtadimi? Eₖ qancha qismi issiqlikka aylandi, p esa-chi?</li>
+                    </ol>
+                </div>
+
+                <h2>⚙️ Sozlamalar</h2>
+
+                <div class="control-group">
+                    <label>To'qnashuv turi:</label>
+                    <div class="mode-selector" role="radiogroup" aria-label="To'qnashuv turini tanlash">
+                        <button class="mode-btn active" id="modeElastic" role="radio" aria-checked="true" onclick="setMode('elastic')">Elastik<br>k = 1</button>
+                        <button class="mode-btn" id="modeInelastic" role="radio" aria-checked="false" onclick="setMode('inelastic')">Noelastik<br>k = 0</button>
+                        <button class="mode-btn" id="modePartial" role="radio" aria-checked="false" onclick="setMode('partial')">Qisman<br>elastik</button>
+                    </div>
+                    <p class="hint-note" id="modeNote"></p>
+                </div>
+
+                <div class="control-group" id="kGroup" hidden>
+                    <label for="kSlider">Tiklanish koeffitsiyenti (k):
+                        <span class="value-display" id="kValue">0.50</span>
+                    </label>
+                    <input type="range" id="kSlider" min="0" max="1" step="0.05" value="0.5" aria-label="Tiklanish koeffitsiyenti, noldan birgacha">
+                </div>
+
+                <div class="control-group">
+                    <label for="m1Slider">1-arava massasi (m₁):
+                        <span class="value-display" id="m1Value">1.0 kg</span>
+                    </label>
+                    <input type="range" id="m1Slider" min="0.5" max="5" step="0.1" value="1" aria-label="Birinchi arava massasi kilogrammda">
+                </div>
+
+                <div class="control-group">
+                    <label for="m2Slider">2-arava massasi (m₂):
+                        <span class="value-display" id="m2Value">1.0 kg</span>
+                    </label>
+                    <input type="range" id="m2Slider" min="0.5" max="5" step="0.1" value="1" aria-label="Ikkinchi arava massasi kilogrammda">
+                </div>
+
+                <div class="control-group">
+                    <label for="v1Slider">1-arava tezligi (v₁):
+                        <span class="value-display" id="v1Value">+2.0 m/s</span>
+                    </label>
+                    <input type="range" id="v1Slider" min="-5" max="5" step="0.1" value="2" aria-label="Birinchi arava boshlang'ich tezligi metr taqsim sekundda, musbat — o'ngga">
+                </div>
+
+                <div class="control-group">
+                    <label for="v2Slider">2-arava tezligi (v₂):
+                        <span class="value-display" id="v2Value">0.0 m/s</span>
+                    </label>
+                    <input type="range" id="v2Slider" min="-5" max="5" step="0.1" value="0" aria-label="Ikkinchi arava boshlang'ich tezligi metr taqsim sekundda, musbat — o'ngga">
+                    <p class="hint-note">Ishora — yo'nalish: <strong>+</strong> o'ngga, <strong>−</strong> chapga.</p>
+                    <p class="warn-note" id="noColWarn" hidden>⚠️ v₁ ≤ v₂ — aravalar bir-biriga <strong>yaqinlashmaydi</strong>, to'qnashuv bo'lmaydi. 1-arava 2-aravadan tezroq o'ngga harakatlanishi kerak (v₁ &gt; v₂).</p>
+                </div>
+
+                <div class="control-group">
+                    <label for="speedSlider">Animatsiya tezligi:
+                        <span class="value-display" id="speedValue">0.50×</span>
+                    </label>
+                    <input type="range" id="speedSlider" min="0.25" max="1" step="0.25" value="0.5" aria-label="Animatsiya tezligi, sekinlashtirish ko'paytuvchisi">
+                    <p class="hint-note">Faqat ko'rinishni sekinlashtiradi — o'lchovlar model vaqti t bo'yicha hisoblanadi.</p>
+                </div>
+
+                <button class="action btn-primary" onclick="startSim()">▶️ Boshlash</button>
+                <button class="action btn-secondary" onclick="pauseSim()">⏸️ Pauza</button>
+                <button class="action btn-secondary" onclick="resetSim()">🔄 Qayta</button>
+                <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
+
+                <div class="stats">
+                    <h3>📊 O'lchovlar</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Holat:</span>
+                        <span class="stat-value" id="statusValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Vaqt (t):</span>
+                        <span class="stat-value" id="timeValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">v₁′ (o'lchangan, Δx/Δt):</span>
+                        <span class="stat-value highlight" id="v1mValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">v₂′ (o'lchangan, Δx/Δt):</span>
+                        <span class="stat-value highlight" id="v2mValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">v₁′ / v₂′ (nazariy):</span>
+                        <span class="stat-value" id="vthValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Impuls oldin (p):</span>
+                        <span class="stat-value" id="pBeforeValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Impuls keyin (p′):</span>
+                        <span class="stat-value" id="pAfterValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Δp = p′ − p:</span>
+                        <span class="stat-value" id="dpValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Eₖ oldin:</span>
+                        <span class="stat-value" id="eBeforeValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Eₖ keyin:</span>
+                        <span class="stat-value" id="eAfterValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Q = Eₖ − Eₖ′ (issiqlikka aylangan):</span>
+                        <span class="stat-value highlight" id="qValue">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Q / Eₖ (yo'qotilgan ulush):</span>
+                        <span class="stat-value" id="qPctValue">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
+
+            <div class="info-panel">
+                <h3>📚 Nazariy Ma'lumot</h3>
+                <p>
+                    Jismning <strong>impulsi</strong> (harakat miqdori) — massasining tezligiga ko'paytmasi. Impuls vektor
+                    kattalik: uning yo'nalishi tezlik yo'nalishi bilan bir xil, bir o'lchovli harakatda esa ishora bilan beriladi.
+                </p>
+                <div class="formula">p = m·v &nbsp; [kg·m/s]</div>
+                <p>
+                    <strong>Impulsning saqlanish qonuni:</strong> berk (yopiq) sistemada, ya'ni tashqi kuchlar ta'sir qilmaganda
+                    yoki ularning teng ta'sir etuvchisi nolga teng bo'lganda, jismlar impulslarining vektor yig'indisi
+                    o'zaro ta'sirdan oldin va keyin bir xil bo'ladi. Ishqalanishsiz gorizontal yo'lda og'irlik kuchi va
+                    tayanch reaksiya kuchi bir-birini muvozanatlaydi, shuning uchun ikki aravacha berk sistema hisoblanadi:
+                </p>
+                <div class="formula">m₁v₁ + m₂v₂ = m₁v₁′ + m₂v₂′</div>
+                <p>
+                    💥 <strong>Mutlaq elastik to'qnashuv</strong> (prujinali bamper, po'lat sharlar): impuls bilan birga
+                    <strong>kinetik energiya ham saqlanadi</strong>. Ikki tenglamani birga yechsak:
+                </p>
+                <div class="formula">v₁′ = ((m₁ − m₂)·v₁ + 2m₂·v₂) / (m₁ + m₂)</div>
+                <div class="formula">v₂′ = ((m₂ − m₁)·v₂ + 2m₁·v₁) / (m₁ + m₂)</div>
+                <p>
+                    Massalar teng bo'lsa (m₁ = m₂) aravalar <strong>tezliklarini almashadi</strong>. Og'ir nishonga
+                    (m₂ &gt; m₁) urilgan yengil arava orqaga qaytadi: m₁ = 1 kg, m₂ = 4 kg, v₁ = 2 m/s, v₂ = 0 da
+                    v₁′ = −1.2 m/s, v₂′ = +0.8 m/s.
+                </p>
+                <p style="margin-top: 10px;">
+                    🧲 <strong>Mutlaq noelastik to'qnashuv</strong> (plastilin, «yopishqoq lenta»): jismlar yopishib, bitta
+                    umumiy tezlik bilan harakatlanadi. Impuls saqlanadi, kinetik energiyaning bir qismi esa deformatsiya
+                    va <strong>ichki energiyaga (issiqlikka)</strong> aylanadi:
+                </p>
+                <div class="formula">v′ = (m₁v₁ + m₂v₂) / (m₁ + m₂)</div>
+                <div class="formula">Q = Eₖ − Eₖ′ = m₁m₂·(v₁ − v₂)² / (2(m₁ + m₂))</div>
+                <p>
+                    Masalan, m₁ = m₂ = 1 kg, v₁ = 2 m/s, v₂ = 0 da v′ = 1 m/s, Eₖ = 2 J dan Eₖ′ = 1 J qoladi —
+                    energiyaning <strong>yarmi</strong> issiqlikka aylanadi. Qarama-qarshi tomondan bir xil tezlikda kelgan
+                    teng aravalar to'xtab qoladi: impuls nolga teng edi va nol bo'lib qoladi, lekin <strong>butun</strong>
+                    kinetik energiya issiqlikka aylanadi.
+                </p>
+                <p style="margin-top: 10px;">
+                    ⚖️ <strong>Qisman elastik to'qnashuv:</strong> real jismlar oraliq holatda bo'ladi. Uni
+                    <strong>tiklanish koeffitsiyenti</strong> k bilan tavsiflash qulay — ajralish tezligining yaqinlashish
+                    tezligiga nisbati (k = 1 — elastik, k = 0 — noelastik):
+                </p>
+                <div class="formula">k = (v₂′ − v₁′) / (v₁ − v₂), &nbsp; Q = (1 − k²)·m₁m₂·(v₁ − v₂)² / (2(m₁ + m₂))</div>
+                <p style="margin-top: 10px;">
+                    📏 <strong>O'lchash:</strong> modelda to'qnashuvdan keyingi tezliklar formuladan ko'chirilmaydi —
+                    aravaning to'qnashuv paytidagi va hozirgi koordinatalari bo'yicha v′ = Δx/Δt sifatida o'lchanadi.
+                    To'qnashuv paytining o'zi ham kadrlar orasida analitik aniqlanadi, shuning uchun aravalar bir-biridan
+                    «o'tib ketmaydi». Biror arava yo'l chetidagi to'xtatgichga yetganda tajriba tugaydi.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../theme.js?v=20261029d"></script>
+    <script src="../model-tools.js?v=20261029d"></script>
+    <script>
+        const canvas = document.getElementById('collisionCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
+        const LIGHT = { bg1: '#fef2f2', bg2: '#fee2e2', ink: '#450a0a', muted: '#8a5a5a', guide: '#c4a0a0',
+                        rail: '#64748b', railHi: '#cbd5e1', post: '#475569',
+                        ruler: '#fff7ed', rulerEdge: '#c2a07a', tick: '#5b4636',
+                        c1a: '#f87171', c1b: '#b91c1c', c1e: '#7f1d1d',
+                        c2a: '#93c5fd', c2b: '#1d4ed8', c2e: '#1e3a8a', cartText: '#ffffff',
+                        wheel: '#334155', hub: '#e2e8f0',
+                        bumper: '#475569', clay: '#84cc16', clayEdge: '#3f6212', rubber: '#1f2937',
+                        vel: '#0f766e', mom: '#7c3aed', flash: '#f59e0b',
+                        panel: 'rgba(255,255,255,0.72)', panelEdge: 'rgba(185,28,28,0.18)', grid: 'rgba(127,29,29,0.12)',
+                        before: 'rgba(100,116,139,0.45)', p1: '#dc2626', p2: '#2563eb', pt: '#7c3aed',
+                        e1: '#dc2626', e2: '#2563eb', et: '#7c3aed', q: '#ea580c' };
+        const DARK  = { bg1: '#1c1012', bg2: '#251417', ink: '#fee2e2', muted: '#c49a9a', guide: '#6b4a4a',
+                        rail: '#94a3b8', railHi: '#e2e8f0', post: '#94a3b8',
+                        ruler: '#2b2026', rulerEdge: '#8a6a52', tick: '#e7d3c0',
+                        c1a: '#f87171', c1b: '#991b1b', c1e: '#fecaca',
+                        c2a: '#60a5fa', c2b: '#1e40af', c2e: '#bfdbfe', cartText: '#ffffff',
+                        wheel: '#64748b', hub: '#e2e8f0',
+                        bumper: '#cbd5e1', clay: '#a3e635', clayEdge: '#d9f99d', rubber: '#9ca3af',
+                        vel: '#2dd4bf', mom: '#c4b5fd', flash: '#fbbf24',
+                        panel: 'rgba(255,255,255,0.05)', panelEdge: 'rgba(248,113,113,0.25)', grid: 'rgba(248,113,113,0.12)',
+                        before: 'rgba(203,213,225,0.35)', p1: '#f87171', p2: '#60a5fa', pt: '#a78bfa',
+                        e1: '#f87171', e2: '#60a5fa', et: '#a78bfa', q: '#fb923c' };
+        function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
+
+        // ===== Geometriya (metrlarda) =====
+        const L = 5.0;            // yo'l uzunligi, m
+        const W = 0.5;            // arava uzunligi (bamper bilan), m
+        const X1_0 = 1.0;         // 1-arava markazining boshlang'ich koordinatasi
+        const X2_0 = 2.6;         // 2-arava markazining boshlang'ich koordinatasi
+        const AFTER_LIMIT = 3.0;  // to'qnashuvdan keyin kuzatish vaqti, s
+        const NOCOL_LIMIT = 20;   // to'qnashuv bo'lmasa — eng uzoq kuzatish, s
+
+        const MODES = {
+            elastic:   { name: 'Mutlaq elastik',  note: 'Prujinali bamper: to\'qnashuvda <strong>impuls ham, kinetik energiya ham</strong> saqlanadi (k = 1).' },
+            inelastic: { name: 'Mutlaq noelastik', note: 'Plastilin: aravalar <strong>yopishib</strong>, umumiy tezlik bilan harakatlanadi. Impuls saqlanadi, Eₖ ning bir qismi <strong>issiqlikka</strong> aylanadi (k = 0).' },
+            partial:   { name: 'Qisman elastik',  note: 'Rezina bamper: aravalar ajraladi, lekin ajralish tezligi yaqinlashish tezligidan <strong>k marta</strong> kichik. Impuls saqlanadi, Q = (1 − k²)·Q<sub>noel.</sub>' }
+        };
+
+        let state = {
+            m1: 1, m2: 1, v10: 2, v20: 0,
+            mode: 'elastic', kPartial: 0.5,
+            speed: 0.5,
+            x1: X1_0, x2: X2_0, v1: 2, v2: 0,
+            time: 0,
+            running: false,
+            finished: false,
+            endReason: '',
+            collided: false,
+            tc: 0, x1c: 0, x2c: 0,   // to'qnashuv payti va o'sha paytdagi koordinatalar
+            stuck: false
+        };
+
+        let animationId = null;
+        let lastTimestamp = null;
+
+        function kRest() { return state.mode === 'elastic' ? 1 : (state.mode === 'inelastic' ? 0 : state.kPartial); }
+
+        // Aniq 1D to'qnashuv formulasi (tiklanish koeffitsiyenti k bilan)
+        function afterVelocities(m1, m2, v1, v2, k) {
+            const M = m1 + m2, p = m1 * v1 + m2 * v2, rel = v1 - v2;
+            return [(p - m2 * k * rel) / M, (p + m1 * k * rel) / M];
+        }
+        function willCollide() { return state.v10 - state.v20 > 1e-9; }
+        function pBefore() { return state.m1 * state.v10 + state.m2 * state.v20; }
+        function eBefore() { return 0.5 * state.m1 * state.v10 * state.v10 + 0.5 * state.m2 * state.v20 * state.v20; }
+        function theoryAfter() {
+            if (!willCollide()) return [state.v10, state.v20];
+            return afterVelocities(state.m1, state.m2, state.v10, state.v20, kRest());
+        }
+
+        // To'qnashuvdan keyingi tezliklar — simulyatsiyadagi koordinatalardan: v′ = Δx/Δt
+        function measuredAfter() {
+            if (!state.collided) return null;
+            const dt = state.time - state.tc;
+            if (dt < 1e-6) return null;
+            return [(state.x1 - state.x1c) / dt, (state.x2 - state.x2c) / dt];
+        }
+
+        // ===== Slayderlar =====
+        function fmtSigned(v, d) {
+            const s = v.toFixed(d);
+            if (parseFloat(s) === 0) return (0).toFixed(d);
+            return (v > 0 ? '+' : '') + s;
+        }
+
+        document.getElementById('m1Slider').oninput = function () {
+            state.m1 = parseFloat(this.value);
+            document.getElementById('m1Value').textContent = state.m1.toFixed(1) + ' kg';
+            relaunch();
+        };
+        document.getElementById('m2Slider').oninput = function () {
+            state.m2 = parseFloat(this.value);
+            document.getElementById('m2Value').textContent = state.m2.toFixed(1) + ' kg';
+            relaunch();
+        };
+        document.getElementById('v1Slider').oninput = function () {
+            state.v10 = parseFloat(this.value);
+            document.getElementById('v1Value').textContent = fmtSigned(state.v10, 1) + ' m/s';
+            relaunch();
+        };
+        document.getElementById('v2Slider').oninput = function () {
+            state.v20 = parseFloat(this.value);
+            document.getElementById('v2Value').textContent = fmtSigned(state.v20, 1) + ' m/s';
+            relaunch();
+        };
+        document.getElementById('kSlider').oninput = function () {
+            state.kPartial = parseFloat(this.value);
+            document.getElementById('kValue').textContent = state.kPartial.toFixed(2);
+            relaunch();
+        };
+        // Animatsiya tezligi fizikaga ta'sir qilmaydi — tajribani qayta boshlash shart emas
+        document.getElementById('speedSlider').oninput = function () {
+            state.speed = parseFloat(this.value);
+            document.getElementById('speedValue').textContent = state.speed.toFixed(2) + '×';
+        };
+
+        // Parametr o'zgarsa tajriba boshidan boshlanadi (aks holda "oldin" va "keyin"
+        // qiymatlari turli sozlamalarga tegishli bo'lib qolardi); ishlab turgan bo'lsa — davom etadi
+        function relaunch() {
+            const wasRunning = state.running;
+            resetSim();
+            if (wasRunning) startSim();
+        }
+
+        function setMode(m) {
+            state.mode = m;
+            const ids = { elastic: 'modeElastic', inelastic: 'modeInelastic', partial: 'modePartial' };
+            Object.keys(ids).forEach(function (key) {
+                const b = document.getElementById(ids[key]);
+                b.classList.toggle('active', key === m);
+                b.setAttribute('aria-checked', key === m ? 'true' : 'false');
+            });
+            document.getElementById('modeNote').innerHTML = MODES[m].note;
+            document.getElementById('kGroup').hidden = (m !== 'partial');
+            relaunch();
+        }
+
+        // ===== Fizika: hodisalarga asoslangan aniq qadam =====
+        // Kadr ichida to'qnashuv, yo'l chetiga yetish va kuzatish muddati tugashi vaqtlari
+        // analitik hisoblanadi — tezlik katta bo'lsa ham aravalar bir-biridan o'tib ketmaydi.
+        function advance(h) {
+            let guard = 0;
+            while (h > 1e-12 && !state.finished && guard++ < 10) {
+                let tEv = h, ev = null;
+                const rel = state.v1 - state.v2;
+                if (!state.collided && rel > 1e-12) {
+                    const gap = state.x2 - state.x1 - W;
+                    const tcol = Math.max(0, gap / rel);
+                    if (tcol <= tEv) { tEv = tcol; ev = 'col'; }
+                }
+                if (state.v1 < 0) {
+                    const te = Math.max(0, (state.x1 - W / 2) / -state.v1);
+                    if (te < tEv) { tEv = te; ev = 'end1'; }
+                }
+                if (state.v2 > 0) {
+                    const te = Math.max(0, (L - W / 2 - state.x2) / state.v2);
+                    if (te < tEv) { tEv = te; ev = 'end2'; }
+                }
+                const tLimit = state.collided ? state.tc + AFTER_LIMIT : (willCollide() ? NOCOL_LIMIT : 4);
+                if (state.time + tEv >= tLimit) { tEv = Math.max(0, tLimit - state.time); ev = 'timeout'; }
+
+                state.x1 += state.v1 * tEv;
+                state.x2 += state.v2 * tEv;
+                state.time += tEv;
+                h -= tEv;
+
+                if (ev === 'col') {
+                    state.x2 = state.x1 + W;          // aniq tegish nuqtasi
+                    const k = kRest();
+                    const nv = afterVelocities(state.m1, state.m2, state.v1, state.v2, k);
+                    state.v1 = nv[0];
+                    state.v2 = nv[1];
+                    if (k === 0) { state.v2 = state.v1; state.stuck = true; }
+                    state.collided = true;
+                    state.tc = state.time;
+                    state.x1c = state.x1;
+                    state.x2c = state.x2;
+                } else if (ev === 'end1') {
+                    state.x1 = W / 2;
+                    finish(state.stuck ? 'Aravalar yo\'lning chap chetiga yetdi' : '1-arava yo\'lning chap chetiga yetdi');
+                } else if (ev === 'end2') {
+                    state.x2 = L - W / 2;
+                    finish(state.stuck ? 'Aravalar yo\'lning o\'ng chetiga yetdi' : '2-arava yo\'lning o\'ng chetiga yetdi');
+                } else if (ev === 'timeout') {
+                    finish(state.collided ? 'Kuzatish tugadi' : 'To\'qnashuv bo\'lmadi');
+                }
+            }
+        }
+
+        function finish(reason) {
+            state.finished = true;
+            state.endReason = reason;
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+
+        // ===== Chizish =====
+        const X0 = 50, PXM = 140;           // 0 m → 50 px, 1 m = 140 px
+        const RAIL_Y = 318;                 // g'ildiraklar tegadigan relsning yuqori qirrasi
+        const WHEEL_R = 10;
+        const BUMP = 0.05;                  // bamper qalinligi, m
+
+        function sx(x) { return X0 + x * PXM; }
+
+        function roundRectPath(x, y, w, h, r) {
+            r = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function cartHeight(m) { return 30 + 8 * m; }
+
+        // Arava: side = +1 — bamper o'ng tomonda (1-arava), −1 — chap tomonda (2-arava)
+        function drawCart(p, xc, m, side, colA, colB, colE, name) {
+            const left = sx(xc - W / 2), right = sx(xc + W / 2);
+            const bw = BUMP * PXM;
+            const bodyL = side > 0 ? left : left + bw;
+            const bodyR = side > 0 ? right - bw : right;
+            const hb = cartHeight(m);
+            const bottom = RAIL_Y - 2 * WHEEL_R + 4;
+            const top = bottom - hb;
+
+            // G'ildiraklar
+            [bodyL + 16, bodyR - 16].forEach(function (wx) {
+                ctx.fillStyle = p.wheel;
+                ctx.beginPath();
+                ctx.arc(wx, RAIL_Y - WHEEL_R, WHEEL_R, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = p.hub;
+                ctx.beginPath();
+                ctx.arc(wx, RAIL_Y - WHEEL_R, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Korpus
+            const grad = ctx.createLinearGradient(bodyL, top, bodyR, bottom);
+            grad.addColorStop(0, colA);
+            grad.addColorStop(1, colB);
+            ctx.fillStyle = grad;
+            roundRectPath(bodyL, top, bodyR - bodyL, hb, 7);
+            ctx.fill();
+            ctx.strokeStyle = colE;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = p.cartText;
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(name, (bodyL + bodyR) / 2, top + hb / 2 - 2);
+            ctx.font = 'bold 13px Arial';
+            ctx.fillText(m.toFixed(1) + ' kg', (bodyL + bodyR) / 2, top + hb / 2 + 14);
+
+            // Bamper (to'qnashuv turiga qarab)
+            const face = side > 0 ? bodyR : bodyL;          // korpusning to'qnashuv tomoni
+            const tip = side > 0 ? right : left;            // bamper uchi
+            const cy = top + hb / 2;
+            if (state.mode === 'elastic') {
+                // Prujinali bamper: zig-zag va uchida plastinka
+                ctx.strokeStyle = p.bumper;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(face, cy);
+                const n = 6;
+                for (let i = 1; i < n; i++) {
+                    ctx.lineTo(face + (tip - face) * i / n, cy + (i % 2 ? -7 : 7));
+                }
+                ctx.lineTo(tip - side * 2, cy);
+                ctx.stroke();
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.moveTo(tip - side * 2, cy - 12);
+                ctx.lineTo(tip - side * 2, cy + 12);
+                ctx.stroke();
+            } else if (state.mode === 'inelastic') {
+                // Plastilin bo'lagi — to'qnashuvdan keyin yassilangan
+                const squash = state.stuck ? 1.35 : 1;
+                ctx.fillStyle = p.clay;
+                ctx.strokeStyle = p.clayEdge;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.ellipse(face + side * bw / 2, cy, bw / 2 + 0.5, 11 * squash, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                // Rezina bamper
+                ctx.fillStyle = p.rubber;
+                roundRectPath(Math.min(face, tip), cy - 13, bw, 26, 3.5);
+                ctx.fill();
+            }
+        }
+
+        function drawHArrow(p, color, x, y, len, label, minX, maxX) {
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 13px Arial';
+            ctx.textBaseline = 'middle';
+            if (Math.abs(len) < 4) {
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.textAlign = 'left';
+                const tw = ctx.measureText(label).width;
+                if (x + 10 + tw > maxX) { ctx.textAlign = 'right'; ctx.fillText(label, x - 10, y); }
+                else ctx.fillText(label, x + 10, y);
+                ctx.textBaseline = 'alphabetic';
+                return;
+            }
+            const dir = Math.sign(len);
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + len - dir * 9, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + len, y);
+            ctx.lineTo(x + len - dir * 11, y - 6);
+            ctx.lineTo(x + len - dir * 11, y + 6);
+            ctx.closePath();
+            ctx.fill();
+            // Yozuv uchidan keyin; sig'masa — dumi tomonida
+            const tw = ctx.measureText(label).width;
+            const tipX = x + len;
+            if (dir > 0) {
+                if (tipX + 6 + tw <= maxX) { ctx.textAlign = 'left'; ctx.fillText(label, tipX + 6, y); }
+                else { ctx.textAlign = 'right'; ctx.fillText(label, x - 8, y); }
+            } else {
+                if (tipX - 6 - tw >= minX) { ctx.textAlign = 'right'; ctx.fillText(label, tipX - 6, y); }
+                else { ctx.textAlign = 'left'; ctx.fillText(label, x + 8, y); }
+            }
+            ctx.textBaseline = 'alphabetic';
+        }
+
+        function niceMax(v) {
+            if (v <= 0) return 1;
+            const e = Math.pow(10, Math.floor(Math.log10(v)));
+            const f = v / e;
+            const n = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+            return n * e;
+        }
+
+        function draw() {
+            const p = P();
+            const Wc = canvas.width, Hc = canvas.height;
+            ctx.clearRect(0, 0, Wc, Hc);
+            const bg = ctx.createLinearGradient(0, 0, 0, Hc);
+            bg.addColorStop(0, p.bg1);
+            bg.addColorStop(1, p.bg2);
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, Wc, Hc);
+
+            const th = theoryAfter();
+            const meas = measuredAfter();
+
+            // ----- Yuqori: rejim va joriy kattaliklar -----
+            ctx.textAlign = 'left';
+            ctx.fillStyle = p.ink;
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(MODES[state.mode].name + ' to\'qnashuv   ·   k = ' + kRest().toFixed(2), 16, 28);
+            ctx.textAlign = 'right';
+            ctx.fillText('t = ' + state.time.toFixed(2) + ' s', Wc - 64, 28);
+            ctx.textAlign = 'left';
+            ctx.font = '14px Arial';
+            const pNow = state.m1 * state.v1 + state.m2 * state.v2;
+            const eNow = 0.5 * state.m1 * state.v1 * state.v1 + 0.5 * state.m2 * state.v2 * state.v2;
+            ctx.fillText('p = m₁v₁ + m₂v₂ = ' + fmtSigned(pNow, 2) + ' kg·m/s', 16, 52);
+            ctx.fillText('Eₖ = ' + eNow.toFixed(2) + ' J', 330, 52);
+            ctx.fillStyle = p.muted;
+            ctx.font = '13px Arial';
+            let status;
+            if (state.finished) status = state.endReason;
+            else if (state.collided) status = 'To\'qnashuv t = ' + state.tc.toFixed(3) + ' s da bo\'ldi';
+            else if (!willCollide()) status = 'v₁ ≤ v₂ — aravalar yaqinlashmaydi';
+            else status = state.time > 0 ? 'Aravalar yaqinlashmoqda…' : '«Boshlash»ni bosing';
+            ctx.fillText(status, 16, 74);
+
+            // Vektorlar legendasi (o'ng yuqori burchakdagi to'liq ekran tugmasidan pastroqda)
+            ctx.textAlign = 'right';
+            ctx.font = 'bold 13px Arial';
+            [[p.mom, 'impuls p', 56], [p.vel, 'tezlik v', 78]].forEach(function (it) {
+                ctx.fillStyle = it[0];
+                ctx.fillText(it[1], Wc - 16, it[2]);
+                ctx.strokeStyle = it[0];
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(Wc - 100, it[2] - 5);
+                ctx.lineTo(Wc - 80, it[2] - 5);
+                ctx.stroke();
+            });
+
+            // ----- Vektorlar -----
+            const VSC = 18;                              // 1 m/s = 18 px
+            const pRef = Math.max(Math.abs(state.m1 * state.v10), Math.abs(state.m2 * state.v20),
+                                  Math.abs(state.m1 * th[0]), Math.abs(state.m2 * th[1]), 0.5);
+            const PSC = Math.min(18, 130 / pRef);        // impuls masshtabi (avtomatik)
+            const c1 = sx(state.x1), c2 = sx(state.x2);
+            drawHArrow(p, p.mom, c1, 104, state.m1 * state.v1 * PSC, 'p₁ = ' + fmtSigned(state.m1 * state.v1, 2), 8, Wc - 8);
+            drawHArrow(p, p.mom, c2, 128, state.m2 * state.v2 * PSC, 'p₂ = ' + fmtSigned(state.m2 * state.v2, 2), 8, Wc - 8);
+            drawHArrow(p, p.vel, c1, 160, state.v1 * VSC, 'v₁ = ' + fmtSigned(state.v1, 2) + ' m/s', 8, Wc - 8);
+            drawHArrow(p, p.vel, c2, 184, state.v2 * VSC, 'v₂ = ' + fmtSigned(state.v2, 2) + ' m/s', 8, Wc - 8);
+            // Arava markazidan vektorlarga nozik yo'naltiruvchi
+            ctx.strokeStyle = p.guide;
+            ctx.setLineDash([2, 4]);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(c1, 96); ctx.lineTo(c1, RAIL_Y - 2 * WHEEL_R - cartHeight(state.m1) + 2);
+            ctx.moveTo(c2, 120); ctx.lineTo(c2, RAIL_Y - 2 * WHEEL_R - cartHeight(state.m2) + 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = p.muted;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('p masshtabi: 1 kg·m/s = ' + PSC.toFixed(1) + ' px   ·   v: 1 m/s = ' + VSC + ' px', Wc - 16, 212);
+
+            // ----- Yo'l (rels) va to'xtatgichlar -----
+            ctx.fillStyle = p.rail;
+            ctx.fillRect(sx(0) - 6, RAIL_Y, L * PXM + 12, 7);
+            ctx.fillStyle = p.railHi;
+            ctx.fillRect(sx(0) - 6, RAIL_Y, L * PXM + 12, 1.5);
+            ctx.fillStyle = p.post;
+            ctx.fillRect(sx(0) - 12, RAIL_Y - 46, 8, 53);
+            ctx.fillRect(sx(L) + 4, RAIL_Y - 46, 8, 53);
+
+            // ----- Metrli shkala -----
+            const rY = RAIL_Y + 14;
+            ctx.fillStyle = p.ruler;
+            ctx.strokeStyle = p.rulerEdge;
+            ctx.lineWidth = 1.5;
+            roundRectPath(sx(0) - 10, rY, L * PXM + 20, 34, 4);
+            ctx.fill();
+            ctx.stroke();
+            ctx.strokeStyle = p.tick;
+            ctx.fillStyle = p.tick;
+            ctx.textAlign = 'center';
+            ctx.font = '13px Arial';
+            for (let i = 0; i <= L * 10; i++) {
+                const x = sx(i / 10);
+                const big = i % 10 === 0, mid = i % 5 === 0;
+                ctx.lineWidth = big ? 1.6 : 0.9;
+                ctx.beginPath();
+                ctx.moveTo(x, rY);
+                ctx.lineTo(x, rY + (big ? 14 : mid ? 10 : 6));
+                ctx.stroke();
+                if (big) ctx.fillText(String(i / 10), x, rY + 28);
+            }
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 13px Arial';
+            ctx.fillText('x, m', sx(L) - 36, rY + 28);
+
+            // To'qnashuv nuqtasi belgisi
+            if (state.collided) {
+                const xc = sx(state.x1c + W / 2);
+                ctx.fillStyle = p.flash;
+                ctx.beginPath();
+                ctx.moveTo(xc, rY - 2);
+                ctx.lineTo(xc - 6, rY - 11);
+                ctx.lineTo(xc + 6, rY - 11);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // ----- Aravalar -----
+            drawCart(p, state.x1, state.m1, +1, p.c1a, p.c1b, p.c1e, '1');
+            drawCart(p, state.x2, state.m2, -1, p.c2a, p.c2b, p.c2e, '2');
+
+            // To'qnashuv chaqnashi (qisqa muddat)
+            if (state.collided && state.time - state.tc < 0.25 && !state.stuck) {
+                const a = 1 - (state.time - state.tc) / 0.25;
+                drawFlash(p, sx(state.x1c + W / 2), RAIL_Y - 50, 22 * a + 6);
+            } else if (state.collided && state.stuck && state.time - state.tc < 0.25) {
+                drawFlash(p, sx(state.x1 + W / 2), RAIL_Y - 50, 22 * (1 - (state.time - state.tc) / 0.25) + 6);
+            }
+
+            // ----- Pastki panellar: oldin / keyin ustunlari -----
+            const after = meas;     // "keyin" — o'lchangan tezliklardan
+            const pb = [state.m1 * state.v10, state.m2 * state.v20];
+            const pa = after ? [state.m1 * after[0], state.m2 * after[1]] : null;
+            const eb = [0.5 * state.m1 * state.v10 * state.v10, 0.5 * state.m2 * state.v20 * state.v20];
+            const ea = after ? [0.5 * state.m1 * after[0] * after[0], 0.5 * state.m2 * after[1] * after[1]] : null;
+
+            const pMax = niceMax(Math.max(Math.abs(pb[0]), Math.abs(pb[1]), Math.abs(pb[0] + pb[1]),
+                                 Math.abs(state.m1 * th[0]), Math.abs(state.m2 * th[1]), 0.1));
+            const eMax = niceMax(Math.max(eb[0] + eb[1], 0.1));
+
+            drawBarPanel(p, 16, 392, 'Impuls, kg·m/s', true, pMax, [
+                ['p₁', pb[0], pa ? pa[0] : null, p.p1],
+                ['p₂', pb[1], pa ? pa[1] : null, p.p2],
+                ['p = p₁ + p₂', pb[0] + pb[1], pa ? pa[0] + pa[1] : null, p.pt]
+            ]);
+            drawBarPanel(p, 408, 784, 'Kinetik energiya, J', false, eMax, [
+                ['Eₖ₁', eb[0], ea ? ea[0] : null, p.e1],
+                ['Eₖ₂', eb[1], ea ? ea[1] : null, p.e2],
+                ['Eₖ', eb[0] + eb[1], ea ? ea[0] + ea[1] : null, p.et],
+                ['Q', undefined, ea ? Math.max(0, eb[0] + eb[1] - ea[0] - ea[1]) : null, p.q]
+            ]);
+        }
+
+        function drawFlash(p, x, y, r) {
+            ctx.fillStyle = p.flash;
+            ctx.beginPath();
+            for (let i = 0; i < 16; i++) {
+                const ang = i * Math.PI / 8;
+                const rr = i % 2 ? r * 0.45 : r;
+                const px = x + Math.cos(ang) * rr, py = y + Math.sin(ang) * rr;
+                if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Ustunli diagramma: har bir kattalik uchun "oldin" (kulrang) va "keyin" (rangli) ustunlari
+        function drawBarPanel(p, xL, xR, title, signed, vMax, groups) {
+            const yT = 388, yB = 592;
+            ctx.fillStyle = p.panel;
+            ctx.strokeStyle = p.panelEdge;
+            ctx.lineWidth = 1;
+            roundRectPath(xL, yT, xR - xL, yB - yT, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = p.ink;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(title, xL + 12, yT + 22);
+            // Legenda
+            ctx.font = '12px Arial';
+            ctx.fillStyle = p.before;
+            ctx.fillRect(xR - 136, yT + 12, 12, 12);
+            ctx.fillStyle = p.muted;
+            ctx.fillText('oldin', xR - 120, yT + 22);
+            ctx.fillStyle = p.pt;
+            ctx.fillRect(xR - 76, yT + 12, 12, 12);
+            ctx.fillStyle = p.muted;
+            ctx.fillText('keyin', xR - 60, yT + 22);
+
+            const plotTop = yT + 48, plotBot = yB - (signed ? 42 : 30);
+            const zeroY = signed ? (plotTop + plotBot) / 2 : plotBot;
+            const half = signed ? (plotBot - plotTop) / 2 : (plotBot - plotTop);
+            const toH = function (v) { return Math.max(-half, Math.min(half, v / vMax * half)); };
+
+            // Shkala chiziqlari
+            ctx.strokeStyle = p.grid;
+            ctx.lineWidth = 1;
+            ctx.fillStyle = p.muted;
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'right';
+            const levels = signed ? [-1, -0.5, 0, 0.5, 1] : [0, 0.5, 1];
+            levels.forEach(function (f) {
+                const y = zeroY - f * half;
+                ctx.beginPath();
+                ctx.moveTo(xL + 40, y);
+                ctx.lineTo(xR - 10, y);
+                ctx.stroke();
+                const v = f * vMax;
+                ctx.fillText((Math.abs(v) < 1e-9 ? '0' : (Math.round(v * 100) / 100).toString()), xL + 36, y + 4);
+            });
+            ctx.strokeStyle = p.ink;
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(xL + 40, zeroY);
+            ctx.lineTo(xR - 10, zeroY);
+            ctx.stroke();
+
+            const n = groups.length;
+            const gw = (xR - 10 - (xL + 46)) / n;
+            const bw = Math.min(30, gw * 0.32);
+            groups.forEach(function (g, i) {
+                const gx = xL + 46 + gw * i + gw / 2;
+                const bars = [[g[1], p.before, gx - bw - 2], [g[2], g[3], gx + 2]];
+                bars.forEach(function (b) {
+                    const v = b[0];
+                    if (v === undefined) return;      // Q uchun "oldin" qiymati yo'q
+                    if (v === null) {
+                        // Hali o'lchanmagan: shtrixli bo'sh joy
+                        ctx.strokeStyle = p.guide;
+                        ctx.setLineDash([3, 3]);
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(b[2] + 0.5, zeroY - 14, bw - 1, 14);
+                        ctx.setLineDash([]);
+                        return;
+                    }
+                    const hpx = toH(v);
+                    ctx.fillStyle = b[1];
+                    if (Math.abs(hpx) >= 1) ctx.fillRect(b[2], hpx > 0 ? zeroY - hpx : zeroY, bw, Math.abs(hpx));
+                    else ctx.fillRect(b[2], zeroY - 1, bw, 2);
+                    ctx.fillStyle = p.ink;
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    const txt = signed ? fmtSigned(v, 2) : v.toFixed(2);
+                    const ty = hpx >= 0 ? zeroY - hpx - 5 : zeroY - hpx + 14;
+                    ctx.fillText(txt, b[2] + bw / 2, ty);
+                });
+                ctx.fillStyle = p.ink;
+                ctx.font = 'bold 13px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(g[0], gx, yB - 10);
+            });
+        }
+
+        // ===== Animatsiya sikli =====
+        function loop(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            let dt = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+            if (dt > 0.05) dt = 0.05;
+
+            if (state.running) {
+                advance(dt * state.speed);
+                updateStats();
+            }
+            draw();
+
+            if (state.running) {
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        function setText(id, t) { document.getElementById(id).textContent = t; }
+
+        function updateStats() {
+            const th = theoryAfter();
+            const meas = measuredAfter();
+            const p0 = pBefore(), e0 = eBefore();
+            document.getElementById('noColWarn').hidden = willCollide();
+
+            let status;
+            if (state.finished) status = state.endReason;
+            else if (state.collided) status = 'To\'qnashuvdan keyin';
+            else if (state.running) status = 'To\'qnashuvgacha';
+            else status = state.time > 0 ? 'Pauza' : 'Tayyor';
+            setText('statusValue', status);
+            setText('timeValue', state.time.toFixed(3) + ' s');
+            setText('vthValue', willCollide() ? fmtSigned(th[0], 2) + ' / ' + fmtSigned(th[1], 2) + ' m/s' : 'to\'qnashuv yo\'q');
+            setText('pBeforeValue', fmtSigned(p0, 3) + ' kg·m/s');
+            setText('eBeforeValue', e0.toFixed(3) + ' J');
+
+            if (meas) {
+                const pa = state.m1 * meas[0] + state.m2 * meas[1];
+                const ea = 0.5 * state.m1 * meas[0] * meas[0] + 0.5 * state.m2 * meas[1] * meas[1];
+                const q = e0 - ea;
+                setText('v1mValue', fmtSigned(meas[0], 3) + ' m/s');
+                setText('v2mValue', fmtSigned(meas[1], 3) + ' m/s');
+                setText('pAfterValue', fmtSigned(pa, 3) + ' kg·m/s');
+                setText('dpValue', fmtSigned(pa - p0, 3) + ' kg·m/s');
+                setText('eAfterValue', ea.toFixed(3) + ' J');
+                setText('qValue', (Math.abs(q) < 5e-4 ? 0 : q).toFixed(3) + ' J');
+                setText('qPctValue', e0 > 1e-9 ? (Math.abs(q) < 5e-4 ? 0 : q / e0 * 100).toFixed(1) + '%' : '-');
+            } else {
+                ['v1mValue', 'v2mValue', 'pAfterValue', 'dpValue', 'eAfterValue', 'qValue', 'qPctValue']
+                    .forEach(function (id) { setText(id, '-'); });
+            }
+        }
+
+        function startSim() {
+            if (state.running) return;
+            if (state.finished) resetSim();   // tugagan tajriba — boshidan
+            state.running = true;
+            lastTimestamp = null;
+            updateStats();
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function pauseSim() {
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            updateStats();
+        }
+
+        // Qayta: aravalar boshlang'ich joyiga qaytadi, sozlamalar (m, v, rejim, k) saqlanadi
+        function resetSim() {
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            state.x1 = X1_0;
+            state.x2 = X2_0;
+            state.v1 = state.v10;
+            state.v2 = state.v20;
+            state.time = 0;
+            state.finished = false;
+            state.endReason = '';
+            state.collided = false;
+            state.stuck = false;
+            state.tc = 0; state.x1c = 0; state.x2c = 0;
+            updateStats();
+            draw();
+        }
+
+        document.getElementById('modeNote').innerHTML = MODES[state.mode].note;
+        resetSim();
+
+        // Rejim almashganda kanvasni qayta chizamiz
+        window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startSim, pause: pauseSim, reset: resetSim };
+        window.modelIsRunning = function () { return state.running; };
+        window.labFields = [
+            { label: 'm₁ (kg)',            get: function () { return +state.m1.toFixed(1); } },
+            { label: 'm₂ (kg)',            get: function () { return +state.m2.toFixed(1); } },
+            { label: 'v₁ (m/s)',           get: function () { return +state.v10.toFixed(1); } },
+            { label: 'v₂ (m/s)',           get: function () { return +state.v20.toFixed(1); } },
+            { label: 'k',                  get: function () { return +kRest().toFixed(2); } },
+            { label: 'v₁′ o\'lch. (m/s)',  get: function () { return labNum('v1mValue'); } },
+            { label: 'v₂′ o\'lch. (m/s)',  get: function () { return labNum('v2mValue'); } },
+            { label: 'p (kg·m/s)',         get: function () { return labNum('pBeforeValue'); } },
+            { label: 'p′ (kg·m/s)',        get: function () { return labNum('pAfterValue'); } },
+            { label: 'Eₖ (J)',             get: function () { return labNum('eBeforeValue'); } },
+            { label: 'Eₖ′ (J)',            get: function () { return labNum('eAfterValue'); } },
+            { label: 'Q (J)',              get: function () { return labNum('qValue'); } }
+        ];
+    </script>
+</body>
+</html>

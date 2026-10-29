@@ -1,5 +1,5 @@
 # FIZIK JARAYONLARNI MODELLASHTIRISHNING DASTURIY TA'MINOTI
-## 10-11 SINFLAR UCHUN - 6 TA INTERAKTIV MODEL VA 13 TA DARS ISHLANMA
+## 10-11 SINFLAR UCHUN - 15 TA INTERAKTIV MODEL, 22 TA DARS ISHLANMA, 210+ TEST
 
 ---
 
@@ -15,6 +15,30 @@ O'quvchilarga fizik jarayonlarni visualizatsiya qilish va interaktiv tarzda o'rg
 4. **Qiya tekislik** - Foydali ish koeffitsiyenti
 5. **Om qonuni** - Zanjirning bir qismi uchun I = U/R
 6. **Elektromagnit induksiya** - Faradey qonuni va Lens qoidasi
+7. **Prujinali mayatnik** - T = 2π√(m/k), energiya almashinuvi
+8. **Burchak ostida otilgan jism** - Traektoriya, H va L
+9. **Ideal gaz qonunlari** - Izotermik, izobarik, izoxorik jarayonlar
+10. **Yassi kondensator** - C = εε₀S/d, manbaga ulangan/uzilgan holat
+11. **Impulsning saqlanish qonuni** - Elastik va noelastik to'qnashuvlar
+12. **Yorug'likning sinishi** - Snellius qonuni, to'liq ichki qaytish
+13. **Yupqa linza** - Tasvir yasash, 1/F = 1/d + 1/f
+14. **Fotoeffekt** - Eynshteyn tenglamasi, qizil chegara
+15. **Radioaktiv yemirilish** - N = N₀·2^(−t/T½)
+
+### Har bir modelda:
+- 🎯 Tayyor topshiriq va jonli o'lchovlar
+- 📋 Laboratoriya jurnali: jadval, **grafik va chiziqli tahlil** (eng kichik kvadratlar, R²),
+  CSV (Excel) va **PDF hisobot** (o'quvchi F.I.Sh., sinf, xulosa satrlari bilan)
+- ⛶ To'liq ekran (proyektor uchun), ⌨️ klaviatura: Space / R / S
+- 👩‍🏫 **O'qituvchi rejimi**: istalgan sahifa manziliga `?oqituvchi=1` qo'shing — modellarda
+  kutilgan natijalar ko'rinadi; `?oqituvchi=0` bilan o'chiriladi
+- 🌐 Interfeys tilini o'zgartirish: o'zbekcha / ruscha (suzuvchi «RU» tugmasi)
+
+### Oflayn ishlash (PWA):
+Sayt bir marta internet bilan ochilgach, barcha sahifalar, modellar va testlar brauzer
+xotirasiga saqlanadi va **internetsiz ham ochiladi**. Telefonda «Bosh ekranga qo'shish»
+orqali ilova sifatida o'rnatiladi. Fayllar o'zgartirilganda `sw.js` dagi `VERSION` ni
+yangilang. (Oflayn rejim faqat `http(s)://` orqali ishlaydi, `file://` da emas.)
 
 ### Texnologiyalar:
 - HTML5
@@ -444,21 +468,19 @@ J: Yo'q, brauzer yopilganda barcha ma'lumotlar o'chadi. Muhim natijalarni yozib 
 
 ## 🔄 YANGILANISHLAR VA RIVOJLANTIRISH
 
-### Joriy versiya: 1.0 (2024)
+### Joriy versiya: 2.0 (2026)
 
 **Mavjud:**
-- ✓ Rezerford tajribasi modeli
-- ✓ Kepler 3 ta qonuni modeli
-- ✓ O'zbek tilida interfeys
-- ✓ To'liq dars ishlanmalar
-- ✓ Testlar to'plami
+- ✓ 15 ta interaktiv model (mexanika, molekulyar fizika, elektr, optika, kvant va yadro fizikasi)
+- ✓ Laboratoriya jurnali: grafik, CSV, PDF hisobot; o'qituvchi rejimi
+- ✓ Onlayn test: 15 mavzu, 170 savol + 48 masala, mavzu tanlash, izohlar
+- ✓ 22 ta dars ishlanma (PDF + DOCX)
+- ✓ Oflayn ishlash (PWA), qorong'i rejim, o'zbek/rus interfeysi
 
 **Rejadagi yangilanishlar:**
-- 📋 Bor atomi modeli qo'shish
-- 📋 Nyuton gravitatsiya qonuni
-- 📋 Elektr maydon vizualizatsiyasi
-- 📋 3D modellar
-- 📋 VR/AR versiyalar
+- 📋 Bor atomi modeli, elektr maydon kuch chiziqlari
+- 📋 O'zgaruvchan tok va tebranish konturi modeli
+- 📋 Modellar ichidagi matnlarning to'liq rus tilidagi versiyasi
 
 ---
 
@@ -501,6 +523,10 @@ Ushbu dasturiy ta'minot ta'lim maqsadida bepul taqdim etiladi.
 ---
 
 ## 📝 O'ZGARTIRISHLAR TARIXI
+
+### Versiya 2.0 (2026)
+- 9 ta yangi model, jurnal grafigi va PDF hisobot, o'qituvchi rejimi, PWA
+- Testlar 15 mavzuga kengaytirildi, 9 ta yangi dars ishlanma
 
 ### Versiya 1.0 (2024)
 - Birinchi reliz

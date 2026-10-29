@@ -7,8 +7,8 @@
     <meta name="description" content="Prujinali mayatnik interaktiv modeli - Guk qonuni, garmonik tebranishlar, T = 2π√(m/k) va energiyaning aylanishi. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌀%3C/text%3E%3C/svg%3E">
     <title>Prujinali Mayatnik - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261029">
-    <link rel="stylesheet" href="../model-tools.css?v=20261029">
+    <link rel="stylesheet" href="../styles.css?v=20261029d">
+    <link rel="stylesheet" href="../model-tools.css?v=20261029d">
     <style>
         :root {
             --primary: #db2777;
@@ -53,11 +53,11 @@
                 <div class="task-card">
                     <h2 class="task-card__title">🎯 Topshiriq</h2>
                     <ol>
-                        <li><strong>m = 0.50 kg</strong>, <strong>k = 20 N/m</strong>, A = 0.10 m, so'nish b = 0 qilib «Boshlash»ni bosing va kamida <strong>5 ta tebranish</strong> kuting</li>
+                        <li><strong>m = 0.50 kg</strong>, <strong>k = 20 N/m</strong>, A = 0.05 m, so'nish b = 0 qilib «Boshlash»ni bosing va kamida <strong>5 ta tebranish</strong> kuting</li>
                         <li>O'lchangan davrni nazariy qiymat (≈ 0.993 s) bilan solishtiring va «O'lchovni yozish» bilan jurnalga qo'shing</li>
                         <li>Massani <strong>2 barobar</strong> oshiring (1.00 kg) — T necha marta ortdi? <strong>√2 ≈ 1.41</strong> chiqdimi?</li>
                         <li>m = 0.50 kg ga qaytib, bikrlikni <strong>4 barobar</strong> oshiring (80 N/m) — T 2 marta kamaydimi?</li>
-                        <li>Amplitudani 0.05 m va 0.20 m qilib ko'ring — davr o'zgaradimi? So'ng <strong>b = 0.20 kg/s</strong> qo'yib, to'liq energiya E ni kuzating</li>
+                        <li>Amplitudani 0.02 m va 0.10 m qilib ko'ring — davr o'zgaradimi? So'ng <strong>b = 0.20 kg/s</strong> qo'yib, to'liq energiya E ni kuzating</li>
                     </ol>
                 </div>
 
@@ -185,8 +185,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261029"></script>
-    <script src="../model-tools.js?v=20261029"></script>
+    <script src="../theme.js?v=20261029d"></script>
+    <script src="../model-tools.js?v=20261029d"></script>
     <script>
         const canvas = document.getElementById('springCanvas');
         const ctx = canvas.getContext('2d');
@@ -238,16 +238,24 @@
             state.m = parseFloat(this.value);
             document.getElementById('massValue').textContent = state.m.toFixed(2) + ' kg';
             updateWarn();
-            // Tebranish davom etadi, faqat o'lchov hisoblari qayta boshlanadi
-            restartMeasurement();
+            relaunch();
         };
 
         document.getElementById('kSlider').oninput = function () {
             state.k = parseFloat(this.value);
             document.getElementById('kValue').textContent = state.k.toFixed(0) + ' N/m';
             updateWarn();
-            restartMeasurement();
+            relaunch();
         };
+
+        // m yoki k o'zgarsa yuk A dan qaytadan qo'yib yuboriladi. Aks holda ω o'zgarib,
+        // x va v esa eskicha qolib, amplituda va energiya A ga mos kelmay qolardi
+        // (masalan muvozanatdan o'tayotganda m 4 barobar oshsa, amplituda 2 barobar o'sardi)
+        function relaunch() {
+            const wasRunning = state.running;
+            resetSpring();
+            if (wasRunning) startSpring();
+        }
 
         document.getElementById('dampSlider').oninput = function () {
             state.b = parseFloat(this.value);

@@ -15,6 +15,7 @@
     AddType application/javascript        .js
     AddType image/svg+xml                 .svg
     AddType font/woff2                    .woff2
+    AddType application/manifest+json     .webmanifest
     AddType application/pdf               .pdf
     AddType application/vnd.openxmlformats-officedocument.wordprocessingml.document .docx
     AddType text/html                     .html .htm
@@ -35,7 +36,8 @@
 # ---------- Kesh va xavfsizlik ----------
 <IfModule mod_headers.c>
     # HTML har safar yangidan tekshiriladi — yangi versiya darhol ko'rinadi
-    <FilesMatch "\.html?$">
+    # sw.js ham har safar tekshiriladi — aks holda oflayn kesh yangilanmay qoladi
+    <FilesMatch "(\.html?|sw\.js|\.webmanifest)$">
         Header set Cache-Control "no-cache"
     </FilesMatch>
     # CSS/JS havolalarida ?v=... versiya bor, shuning uchun keshlash xavfsiz

@@ -227,3 +227,94 @@ kbd {
     line-height: 1.5;
 }
 .hint-note strong { color: var(--text); }
+
+/* ===== Jurnal grafigi ===== */
+.lab-graph {
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-4);
+    border-top: 1px dashed var(--border);
+}
+.lab-graph__head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-3); }
+.lab-graph__head h4 { font-size: 0.95rem; color: var(--text); }
+.lab-graph__ctrl {
+    display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;
+    margin-bottom: var(--sp-3); font-size: 0.85rem; color: var(--text-muted); font-weight: 600;
+}
+.lab-graph__ctrl label { display: inline-flex; align-items: center; gap: 6px; }
+.lab-graph__ctrl select, .lab-who input {
+    padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--r-xs);
+    background: var(--card-bg); color: var(--text); font: inherit; font-size: 0.85rem; max-width: 100%;
+}
+.lab-graph__ctrl label + select { margin-right: var(--sp-3); }
+#labGraph {
+    width: 100%; height: auto; display: block;
+    border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--card-bg);
+    box-shadow: none;
+}
+.lab-graph__fit {
+    margin-top: var(--sp-2); font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;
+    font-variant-numeric: tabular-nums; min-height: 1.6em;
+}
+
+/* ===== O'quvchi ma'lumoti va hisobot ===== */
+.lab-who { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+.lab-who input { flex: 1 1 180px; min-width: 0; }
+.lab-who input:focus, .lab-graph__ctrl select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ===== O'qituvchi bloki ===== */
+.teacher-box {
+    margin: calc(-1 * var(--sp-2)) 0 var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px dashed color-mix(in srgb, #16a34a 55%, transparent);
+    background: color-mix(in srgb, #16a34a 8%, var(--card-bg));
+    border-radius: var(--r-md);
+    font-size: 0.85rem; color: var(--text);
+}
+.teacher-box__head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.teacher-box__head .lab-btn { padding: 4px 10px; font-size: 0.78rem; }
+.teacher-box ul { margin: 0 0 0 1.1em; display: grid; gap: 4px; line-height: 1.5; }
+
+/* ===== To'liq ekran ===== */
+.canvas-section { position: relative; }
+.canvas-section.is-sticky { position: sticky; }
+.fs-btn {
+    position: absolute; top: calc(var(--sp-4) + 8px); right: calc(var(--sp-4) + 8px);
+    width: 38px; height: 38px; border-radius: var(--r-sm);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(15, 23, 42, 0.55); color: #fff; font-size: 1.15rem; line-height: 1;
+    cursor: pointer; opacity: 0.75; transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index: 2;
+}
+.fs-btn:hover, .fs-btn:focus-visible { opacity: 1; transform: scale(1.06); }
+.canvas-section:fullscreen {
+    display: flex; align-items: center; justify-content: center;
+    background: #000; padding: 0; border: 0; border-radius: 0;
+}
+.canvas-section:fullscreen canvas {
+    width: auto; height: auto; max-width: 100vw; max-height: 100vh; border-radius: 0; border: 0;
+}
+.canvas-section:fullscreen > :not(canvas):not(.fs-btn) { display: none; }
+.canvas-section:fullscreen .fs-btn { top: 12px; right: 12px; }
+.canvas-section:-webkit-full-screen { display: flex; align-items: center; justify-content: center; background: #000; }
+.canvas-section:-webkit-full-screen canvas { width: auto; height: auto; max-width: 100vw; max-height: 100vh; }
+@media (max-width: 480px) { .fs-btn { top: calc(var(--sp-2) + 6px); right: calc(var(--sp-2) + 6px); } }
+
+/* ===== Chop etiladigan hisobot ===== */
+#printReport { display: none; }
+@media print {
+    body.print-report > :not(#printReport) { display: none !important; }
+    body.print-report { padding: 0 !important; background: #fff !important; }
+    body.print-report #printReport {
+        display: block; color: #000; font-size: 11pt; line-height: 1.45;
+    }
+    #printReport h1 { font-size: 18pt; margin-bottom: 2pt; }
+    #printReport .rep-sub { font-size: 13pt; margin-bottom: 10pt; }
+    #printReport h2 { font-size: 12.5pt; margin: 12pt 0 5pt; break-after: avoid; }
+    #printReport table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+    #printReport th, #printReport td { border: 1px solid #555; padding: 3pt 5pt; text-align: center; }
+    #printReport .rep-meta td { border: 0; text-align: left; padding: 0 0 6pt; font-size: 11pt; }
+    #printReport ol { margin-left: 16pt; }
+    #printReport img { width: 100%; max-width: 16cm; border: 1px solid #999; break-inside: avoid; }
+    #printReport .rep-lines { height: 3.2cm; background: repeating-linear-gradient(#fff 0 0.75cm, #999 0.75cm calc(0.75cm + 1px)); }
+    #printReport .rep-foot { margin-top: 14pt; }
+}

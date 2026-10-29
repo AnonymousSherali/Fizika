@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Yorug'likning sinishi va to'liq ichki qaytish interaktiv modeli - Snellius qonuni n₁·sinα = n₂·sinβ, chegaraviy burchak, yorug'lik tezligi v = c/n. 11-sinf fizika.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌈%3C/text%3E%3C/svg%3E">
+    <title>Yorug'likning Sinishi - Interaktiv Model</title>
+    <link rel="stylesheet" href="../styles.css?v=20261029d">
+    <link rel="stylesheet" href="../model-tools.css?v=20261029d">
+    <style>
+        :root {
+            --primary: #0369a1;
+            --primary-dark: #0c4a6e;
+            --accent: #0ea5e9;
+            --accent-2: #7dd3fc;
+            --header-bg: linear-gradient(135deg, #0c4a6e 0%, #0369a1 55%, #38bdf8 100%);
+        }
+        canvas { background: #f0f9ff; }
+        html.dark canvas, body.dark canvas { background: #08131f; }
+
+        .stat-value.highlight {
+            color: color-mix(in srgb, var(--primary) 55%, #7c2d12);
+            font-size: 1.05rem;
+        }
+        html.dark .stat-value.highlight, body.dark .stat-value.highlight {
+            color: color-mix(in srgb, var(--accent-2) 45%, white);
+        }
+
+        .medium-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .swap-btn { margin-top: 0; }
+
+        @media (max-width: 700px) {
+            .canvas-section { padding: 10px; }
+            .control-group { padding: 12px; }
+            .info-panel { padding: 16px; }
+            .medium-selector { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="../index.html#modellar" class="back-link">← Bosh sahifa</a>
+            <h1>🌈 Yorug'likning Sinishi</h1>
+            <p>Sinish qonuni n₁·sinα = n₂·sinβ va to'liq ichki qaytish</p>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-section">
+                <canvas id="refractionCanvas" role="img" aria-label="Yorug'likning sinishi — interaktiv simulyatsiya: ikki muhit chegarasi, tushuvchi, qaytgan va singan nurlar, burchak o'lchagich" width="800" height="600"></canvas>
+            </div>
+
+            <div class="controls">
+                <div class="task-card">
+                    <h2 class="task-card__title">🎯 Topshiriq</h2>
+                    <ol>
+                        <li>1-muhit <strong>havo (1.00)</strong>, 2-muhit <strong>shisha (1.50)</strong>. α = <strong>30°, 45°, 60°</strong> qo'yib, har safar β ni o'qing va jurnalga yozing (<kbd>S</kbd>)</li>
+                        <li>Har bir qatorda <strong>sinα / sinβ</strong> ni tekshiring: u α ga bog'liqmi yoki doim <strong>1.50</strong> mi?</li>
+                        <li>«Boshlash»ni bosib, yorug'lik impulsini kuzating: o'lchangan v₁ / v₂ nisbati n₂ / n₁ ga tengmi?</li>
+                        <li>«⇅ Muhitlarni almashtirish» bilan <strong>shisha → havo</strong> qiling. α ni 30° dan oshirib, singan nur yo'qoladigan burchakni toping — <strong>α<sub>kr</sub> ≈ 41.8°</strong> chiqdimi?</li>
+                        <li>1-muhitni <strong>olmos (2.42)</strong> qiling — α<sub>kr</sub> qanday o'zgardi? Olmos nega shunchalik yaltiraydi?</li>
+                    </ol>
+                </div>
+
+                <h2>⚙️ Sozlamalar</h2>
+
+                <div class="control-group">
+                    <label>1-muhit (yuqorida, n₁):</label>
+                    <div class="medium-selector" id="sel1" role="radiogroup" aria-label="Birinchi muhitni tanlash">
+                        <button class="planet-btn active" role="radio" aria-checked="true" data-n="1.00" onclick="selectMedium(1, 1.00)">Havo<br>1.00</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-n="1.33" onclick="selectMedium(1, 1.33)">Suv<br>1.33</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-n="1.50" onclick="selectMedium(1, 1.50)">Shisha<br>1.50</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-n="2.42" onclick="selectMedium(1, 2.42)">Olmos<br>2.42</button>
+                    </div>
+                    <label for="n1Slider">Sindirish ko'rsatkichi n₁:
+                        <span class="value-display" id="n1Value">1.00</span>
+                    </label>
+                    <input type="range" id="n1Slider" min="1" max="2.5" step="0.01" value="1" aria-label="Birinchi muhitning sindirish ko'rsatkichi">
+                </div>
+
+                <div class="control-group">
+                    <label>2-muhit (pastda, n₂):</label>
+                    <div class="medium-selector" id="sel2" role="radiogroup" aria-label="Ikkinchi muhitni tanlash">
+                        <button class="planet-btn" role="radio" aria-checked="false" data-n="1.00" onclick="selectMedium(2, 1.00)">Havo<br>1.00</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-n="1.33" onclick="selectMedium(2, 1.33)">Suv<br>1.33</button>
+                        <button class="planet-btn active" role="radio" aria-checked="true" data-n="1.50" onclick="selectMedium(2, 1.50)">Shisha<br>1.50</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-n="2.42" onclick="selectMedium(2, 2.42)">Olmos<br>2.42</button>
+                    </div>
+                    <label for="n2Slider">Sindirish ko'rsatkichi n₂:
+                        <span class="value-display" id="n2Value">1.50</span>
+                    </label>
+                    <input type="range" id="n2Slider" min="1" max="2.5" step="0.01" value="1.5" aria-label="Ikkinchi muhitning sindirish ko'rsatkichi">
+                    <button class="action btn-secondary swap-btn" onclick="swapMedia()">⇅ Muhitlarni almashtirish</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="alphaSlider">Tushish burchagi (α):
+                        <span class="value-display" id="alphaValue">30.0°</span>
+                    </label>
+                    <input type="range" id="alphaSlider" min="0" max="89" step="0.1" value="30" aria-label="Tushish burchagi gradusda">
+                    <p class="hint-note" id="modeNote"></p>
+                    <p class="warn-note" id="tirWarn" hidden>⚠️ <strong>To'liq ichki qaytish:</strong> α chegaraviy burchakdan katta — yorug'lik 2-muhitga o'tmaydi, to'liq qaytadi.</p>
+                </div>
+
+                <button class="action btn-primary" onclick="startPulse()">▶️ Boshlash</button>
+                <button class="action btn-secondary" onclick="pausePulse()">⏸️ Pauza</button>
+                <button class="action btn-secondary" onclick="resetPulse()">🔄 Qayta</button>
+                <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
+
+                <div class="stats">
+                    <h3>📊 O'lchovlar</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Tushish burchagi (α):</span>
+                        <span class="stat-value" id="alphaStat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Sinish burchagi (β):</span>
+                        <span class="stat-value highlight" id="betaStat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">sinα / sinβ:</span>
+                        <span class="stat-value highlight" id="ratioStat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Nisbiy ko'rsatkich (n₂ / n₁):</span>
+                        <span class="stat-value" id="nRatioStat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Chegaraviy burchak (α<sub>kr</sub>):</span>
+                        <span class="stat-value" id="critStat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Qaytgan / o'tgan ulush (R / T):</span>
+                        <span class="stat-value" id="rtStat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">v₁ (o'lchangan):</span>
+                        <span class="stat-value" id="v1Stat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">v₂ (o'lchangan):</span>
+                        <span class="stat-value" id="v2Stat">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">v₁ / v₂ (o'lchangan):</span>
+                        <span class="stat-value" id="vRatioStat">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lab-log"></div>
+
+            <nav class="model-nav" aria-label="Boshqa modellar"></nav>
+
+            <div class="info-panel">
+                <h3>📚 Nazariy Ma'lumot</h3>
+                <p>
+                    Yorug'lik bir muhitdan ikkinchisiga o'tganda chegarada yo'nalishini o'zgartiradi —
+                    <strong>sinadi</strong>. Bir qismi esa <strong>qaytadi</strong>. Burchaklar chegaraga
+                    o'tkazilgan <strong>normal</strong>dan (perpendikulyardan) o'lchanadi: α — tushish,
+                    γ — qaytish, β — sinish burchagi. Qaytish qonuni: γ = α. Sinish qonuni (Snellius qonuni):
+                </p>
+                <div class="formula">n₁ · sinα = n₂ · sinβ &nbsp;⇔&nbsp; sinα / sinβ = n₂ / n₁ = n₂₁</div>
+                <p>
+                    Tushuvchi nur, singan nur va normal bitta tekislikda yotadi. Muhitning absolyut
+                    sindirish ko'rsatkichi — yorug'likning vakuumdagi tezligi muhitdagi tezligidan necha
+                    marta katta ekanini bildiradi:
+                </p>
+                <div class="formula">n = c / v, &nbsp; c = 3·10⁸ m/s &nbsp;⇒&nbsp; n₂ / n₁ = v₁ / v₂</div>
+                <p style="margin-top: 10px;">
+                    🔦 <strong>To'liq ichki qaytish:</strong> yorug'lik optik zichroq muhitdan (n₁ &gt; n₂)
+                    optik siyrakroq muhitga o'tganda β &gt; α bo'ladi. α ortib borib β = 90° ga yetganda
+                    singan nur chegara bo'ylab sirpanadi. Bu tushish burchagi <strong>chegaraviy burchak</strong> deyiladi:
+                </p>
+                <div class="formula">sin α<sub>kr</sub> = n₂ / n₁ &nbsp; (shisha → havo: α<sub>kr</sub> ≈ 41.8°, suv → havo: ≈ 48.8°, olmos → havo: ≈ 24.4°)</div>
+                <p>
+                    α &gt; α<sub>kr</sub> da yorug'lik ikkinchi muhitga umuman o'tmaydi — energiyaning
+                    hammasi qaytadi. Bu hodisa optik tolalarda (shisha tola ichida yorug'lik minglab marta
+                    to'liq qaytib, kilometrlab yo'l bosadi), prizmali durbinlarda va olmosning
+                    yaltirashida qo'llaniladi.
+                </p>
+                <p style="margin-top: 10px;">
+                    💡 <strong>Nurlar ravshanligi:</strong> modelda nurlarning yorqinligi qaytgan (R) va o'tgan
+                    (T = 1 − R) energiya ulushiga mos (Frenel formulalari, qutblanmagan yorug'lik). Havo → shisha
+                    tik tushishda faqat ~4% qaytadi, α 90° ga yaqinlashganda esa qaytgan ulush keskin ortadi.
+                    α<sub>kr</sub> ga yaqinlashganda singan nur xiralashib, qaytgan nur yorqinlashib boradi.
+                </p>
+                <p style="margin-top: 10px;">
+                    ⏱️ <strong>Impuls:</strong> «Boshlash» yorug'lik impulsini nur bo'ylab yuboradi. Har bir muhitda
+                    u v = c/n tezlik bilan harakatlanadi (vaqt nanosekundlarda, ko'rinishi uchun
+                    <strong>sekinlashtirilgan</strong>). Nurning har bir kesmasi 25 cm ga teng — impuls uni
+                    bosib o'tgan vaqt bo'yicha tezlik o'lchanadi.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../theme.js?v=20261029d"></script>
+    <script src="../model-tools.js?v=20261029d"></script>
+    <script>
+        const canvas = document.getElementById('refractionCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
+        const LIGHT = { bg: '#f8fbff', medium: [3, 105, 161], mediumA: 0.10, ink: '#0c2a43', muted: '#5b7387',
+                        boundary: '#0c4a6e', normal: '#64748b', prot: 'rgba(12,74,110,0.45)', protText: '#47657c',
+                        ray: [220, 38, 38], glow: 'rgba(248,113,113,0.55)',
+                        aArc: '#c2410c', gArc: '#7c3aed', bArc: '#047857', crit: '#d97706',
+                        panel: 'rgba(255,255,255,0.88)', panelEdge: '#bae6fd', laser: '#334155', laserHi: '#94a3b8',
+                        pulse: '#fff7ed', tir: '#b45309' };
+        const DARK  = { bg: '#08131f', medium: [56, 189, 248], mediumA: 0.08, ink: '#e0f2fe', muted: '#8fb0c8',
+                        boundary: '#7dd3fc', normal: '#7b8fa3', prot: 'rgba(125,211,252,0.40)', protText: '#9cc3dd',
+                        ray: [248, 113, 113], glow: 'rgba(248,113,113,0.45)',
+                        aArc: '#fb923c', gArc: '#c4b5fd', bArc: '#34d399', crit: '#fbbf24',
+                        panel: 'rgba(8,26,43,0.9)', panelEdge: '#0c4a6e', laser: '#94a3b8', laserHi: '#e2e8f0',
+                        pulse: '#ffffff', tir: '#fbbf24' };
+        function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
+
+        const C_LIGHT = 3.00e8;          // m/s
+        const SEG_M = 0.25;              // har bir nur kesmasi 25 cm
+        const SLOW = 0.6e-9;             // 1 s real vaqtda 0.6 ns simulyatsiya vaqti o'tadi
+        const OX = 400, OY = 300;        // tushish nuqtasi
+        const RAY = 240;                 // nur kesmasi uzunligi (px) ≙ 25 cm
+        const RP = 196;                  // burchak o'lchagich radiusi (px)
+        const PRESETS = [[1.00, 'Havo'], [1.33, 'Suv'], [1.50, 'Shisha'], [2.42, 'Olmos']];
+        const D2R = Math.PI / 180;
+
+        let state = {
+            n1: 1.00,
+            n2: 1.50,
+            alpha: 30,        // gradus
+            running: false,
+            // impuls: phase 0 — 1-muhitda tushmoqda, 1 — chegaradan keyin, 2 — tugadi (kutish)
+            phase: 0,
+            t: 0,             // impuls yo'lga chiqqandan beri simulyatsiya vaqti, s
+            s1: 0,            // tushuvchi nur bo'ylab bosilgan yo'l, m
+            sR: 0, sT: 0,     // qaytgan va singan nur bo'ylab yo'l, m
+            tHit: 0,          // impuls chegaraga yetgan vaqt
+            wait: 0,          // keyingi impulsgacha real kutish, s
+            v1m: null, v2m: null   // impuls bo'yicha o'lchangan tezliklar, m/s
+        };
+
+        let animationId = null;
+        let lastTimestamp = null;
+
+        // ----- Fizika -----
+        function mediumName(n) {
+            for (const [v, name] of PRESETS) if (Math.abs(n - v) < 0.005) return name;
+            return 'Muhit';
+        }
+        function critAngle() { return state.n1 > state.n2 ? Math.asin(state.n2 / state.n1) / D2R : null; }
+        // Singan nurning yo'nalishi: chegara bo'ylab to'lqin vektorining tashkil etuvchisi
+        // saqlanadi, k₁·sinα = k₂·sinβ, k = n·k₀. Mavjud bo'lmasa — to'liq ichki qaytish
+        function refracted() {
+            const a = state.alpha * D2R;
+            const kt = state.n1 * Math.sin(a);           // tangensial tashkil etuvchi (k₀ birligida)
+            if (kt > state.n2) return null;
+            const kn = Math.sqrt(state.n2 * state.n2 - kt * kt);
+            return { dx: kt / state.n2, dy: kn / state.n2, beta: Math.atan2(kt, kn) / D2R };
+        }
+        // Frenel formulalari, qutblanmagan yorug'lik uchun qaytish koeffitsiyenti
+        function reflectance() {
+            const r = refracted();
+            if (!r) return 1;
+            const a = state.alpha * D2R, b = r.beta * D2R;
+            const ca = Math.cos(a), cb = Math.cos(b), n1 = state.n1, n2 = state.n2;
+            const rs = (n1 * ca - n2 * cb) / (n1 * ca + n2 * cb);
+            const rp = (n1 * cb - n2 * ca) / (n1 * cb + n2 * ca);
+            return Math.min(1, (rs * rs + rp * rp) / 2);
+        }
+        function v1() { return C_LIGHT / state.n1; }
+        function v2() { return C_LIGHT / state.n2; }
+
+        // ----- Boshqaruv -----
+        function syncPresets() {
+            [1, 2].forEach(k => {
+                const n = k === 1 ? state.n1 : state.n2;
+                document.querySelectorAll('#sel' + k + ' .planet-btn').forEach(b => {
+                    const on = Math.abs(parseFloat(b.dataset.n) - n) < 0.005;
+                    b.classList.toggle('active', on);
+                    b.setAttribute('aria-checked', on ? 'true' : 'false');
+                });
+            });
+            document.getElementById('n1Slider').value = state.n1;
+            document.getElementById('n2Slider').value = state.n2;
+            document.getElementById('n1Value').textContent = state.n1.toFixed(2);
+            document.getElementById('n2Value').textContent = state.n2.toFixed(2);
+        }
+
+        // Sozlama o'zgarsa impuls boshidan yuboriladi — eski yo'l bilan yangi
+        // geometriya aralashib ketmasin; o'lchangan tezliklar ham yangilanadi
+        function onSettingChanged() {
+            restartPulse();
+            state.v1m = null; state.v2m = null;
+            updateNote();
+            updateStats();
+            if (!state.running) draw();
+        }
+
+        function selectMedium(k, n) {
+            if (k === 1) state.n1 = n; else state.n2 = n;
+            syncPresets();
+            onSettingChanged();
+        }
+        function swapMedia() {
+            const t = state.n1; state.n1 = state.n2; state.n2 = t;
+            syncPresets();
+            onSettingChanged();
+        }
+        document.getElementById('n1Slider').oninput = function () {
+            state.n1 = parseFloat(this.value); syncPresets(); onSettingChanged();
+        };
+        document.getElementById('n2Slider').oninput = function () {
+            state.n2 = parseFloat(this.value); syncPresets(); onSettingChanged();
+        };
+        document.getElementById('alphaSlider').oninput = function () {
+            state.alpha = parseFloat(this.value);
+            document.getElementById('alphaValue').textContent = state.alpha.toFixed(1) + '°';
+            onSettingChanged();
+        };
+
+        function updateNote() {
+            const n1 = state.n1, n2 = state.n2;
+            let html;
+            if (Math.abs(n1 - n2) < 0.005) html = 'n₁ = n₂: optik zichliklar teng — nur <strong>sinmaydi</strong>, chegaradan to\'g\'ri o\'tadi.';
+            else if (n1 < n2) html = 'Yorug\'lik optik <strong>zichroq</strong> muhitga o\'tmoqda: β &lt; α, singan nur normalga yaqinlashadi.';
+            else html = 'Yorug\'lik optik <strong>siyrakroq</strong> muhitga o\'tmoqda: β &gt; α. α &gt; α<sub>kr</sub> = ' + critAngle().toFixed(1) + '° da to\'liq ichki qaytish bo\'ladi.';
+            document.getElementById('modeNote').innerHTML = html;
+            document.getElementById('tirWarn').hidden = !!refracted();
+        }
+
+        // ----- Impuls -----
+        function restartPulse() {
+            state.phase = 0; state.t = 0; state.s1 = 0; state.sR = 0; state.sT = 0;
+            state.tHit = 0; state.wait = 0;
+        }
+
+        function updatePhysics(dtReal) {
+            if (state.phase === 2) {
+                state.wait -= dtReal;
+                if (state.wait <= 0) restartPulse();
+                return;
+            }
+            const dt = dtReal * SLOW;           // simulyatsiya vaqti, s
+            state.t += dt;
+            if (state.phase === 0) {
+                state.s1 += v1() * dt;
+                if (state.s1 >= SEG_M) {
+                    // Chegaraga yetdi: ortiqcha vaqt keyingi muhitda davom etadi
+                    const over = (state.s1 - SEG_M) / v1();
+                    state.tHit = state.t - over;
+                    state.v1m = SEG_M / state.tHit;          // o'lchov: yo'l / vaqt
+                    state.s1 = SEG_M;
+                    state.phase = 1;
+                    state.sR = v1() * over;
+                    state.sT = v2() * over;
+                }
+            } else {
+                state.sR = Math.min(SEG_M, state.sR + v1() * dt);
+                const hasT = !!refracted();
+                if (hasT) {
+                    const prev = state.sT;
+                    state.sT += v2() * dt;
+                    if (prev < SEG_M && state.sT >= SEG_M) {
+                        const over = (state.sT - SEG_M) / v2();
+                        state.v2m = SEG_M / (state.t - over - state.tHit);
+                        state.sT = SEG_M;
+                    }
+                    state.sT = Math.min(SEG_M, state.sT);
+                }
+                if (state.sR >= SEG_M && (!hasT || state.sT >= SEG_M)) {
+                    state.phase = 2;
+                    state.wait = 0.6;
+                }
+            }
+        }
+
+        // ----- Formatlash -----
+        function fmtV(v) { return v == null ? '-' : (v / 1e8).toFixed(2) + '·10⁸ m/s'; }
+
+        function updateStats() {
+            const r = refracted();
+            const R = reflectance();
+            document.getElementById('alphaStat').textContent = state.alpha.toFixed(1) + '°';
+            document.getElementById('betaStat').textContent = r ? r.beta.toFixed(1) + '°' : 'yo\'q (to\'liq qaytish)';
+            const ratio = (r && state.alpha > 0.05) ? Math.sin(state.alpha * D2R) / (r.dx) : null;
+            document.getElementById('ratioStat').textContent = ratio == null ? '-' : ratio.toFixed(3);
+            document.getElementById('nRatioStat').textContent = (state.n2 / state.n1).toFixed(3);
+            const ac = critAngle();
+            document.getElementById('critStat').textContent = ac == null ? 'yo\'q (n₁ ≤ n₂)' : ac.toFixed(1) + '°';
+            document.getElementById('rtStat').textContent = (R * 100).toFixed(1) + '% / ' + ((1 - R) * 100).toFixed(1) + '%';
+            document.getElementById('v1Stat').textContent = fmtV(state.v1m);
+            document.getElementById('v2Stat').textContent = r ? fmtV(state.v2m) : '-';
+            document.getElementById('vRatioStat').textContent = (state.v1m && state.v2m && r) ? (state.v1m / state.v2m).toFixed(3) : '-';
+        }
+
+        // ----- Chizish -----
+        function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
+
+        function drawMedia(p) {
+            ctx.fillStyle = p.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Optik zichlik qancha katta bo'lsa, muhit shuncha to'q bo'yaladi
+            const a1 = p.mediumA + (state.n1 - 1) * 0.16, a2 = p.mediumA + (state.n2 - 1) * 0.16;
+            ctx.fillStyle = rgba(p.medium, a1);
+            ctx.fillRect(0, 0, canvas.width, OY);
+            ctx.fillStyle = rgba(p.medium, a2);
+            ctx.fillRect(0, OY, canvas.width, canvas.height - OY);
+            ctx.strokeStyle = p.boundary;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(0, OY); ctx.lineTo(canvas.width, OY); ctx.stroke();
+
+            // Muhit nomlari
+            ctx.textAlign = 'left';
+            ctx.fillStyle = p.ink;
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('1-muhit: ' + mediumName(state.n1), 16, 28);
+            ctx.fillText('2-muhit: ' + mediumName(state.n2), 16, canvas.height - 36);
+            ctx.font = '14px Arial';
+            ctx.fillStyle = p.muted;
+            ctx.fillText('n₁ = ' + state.n1.toFixed(2) + ',  v₁ = c/n₁ = ' + (v1() / 1e8).toFixed(2) + '·10⁸ m/s', 16, 48);
+            ctx.fillText('n₂ = ' + state.n2.toFixed(2) + ',  v₂ = c/n₂ = ' + (v2() / 1e8).toFixed(2) + '·10⁸ m/s', 16, canvas.height - 16);
+        }
+
+        function drawProtractor(p) {
+            ctx.strokeStyle = p.prot;
+            ctx.lineWidth = 1.2;
+            ctx.beginPath(); ctx.arc(OX, OY, RP, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = p.protText;
+            ctx.font = '13px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            // Gradus normaldan o'lchanadi: 0° — normal, 90° — chegara
+            for (let q = 0; q < 4; q++) {
+                for (let g = 0; g <= 90; g += 5) {
+                    if (q % 2 === 1 && (g === 0 || g === 90)) continue;   // takror chizilmasin
+                    const sx = (q === 0 || q === 3) ? -1 : 1, sy = (q < 2) ? -1 : 1;
+                    const ang = g * D2R;
+                    const ux = sx * Math.sin(ang), uy = sy * Math.cos(ang);
+                    const len = g % 10 === 0 ? 11 : 6;
+                    ctx.strokeStyle = p.prot;
+                    ctx.beginPath();
+                    ctx.moveTo(OX + ux * RP, OY + uy * RP);
+                    ctx.lineTo(OX + ux * (RP - len), OY + uy * (RP - len));
+                    ctx.stroke();
+                    if (g % 10 === 0 && g !== 90) {
+                        ctx.fillText(String(g), OX + ux * (RP - 22), OY + uy * (RP - 22));
+                    }
+                }
+            }
+            ctx.textBaseline = 'alphabetic';
+            // Chegaraviy burchak belgisi
+            const ac = critAngle();
+            if (ac != null) {
+                const a = ac * D2R;
+                ctx.strokeStyle = p.crit;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(OX - Math.sin(a) * (RP - 14), OY - Math.cos(a) * (RP - 14));
+                ctx.lineTo(OX - Math.sin(a) * (RP + 10), OY - Math.cos(a) * (RP + 10));
+                ctx.stroke();
+                ctx.fillStyle = p.crit;
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText('α_kr', OX - Math.sin(a) * (RP + 14), OY - Math.cos(a) * (RP + 14) + 4);
+            }
+        }
+
+        function drawArrowHead(x, y, dx, dy, color, size) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x + dx * size, y + dy * size);
+            ctx.lineTo(x - dx * size * 0.6 - dy * size * 0.55, y - dy * size * 0.6 + dx * size * 0.55);
+            ctx.lineTo(x - dx * size * 0.6 + dy * size * 0.55, y - dy * size * 0.6 - dx * size * 0.55);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Nur: (x0,y0) → (x1,y1), I — nisbiy intensivlik (0..1)
+        function drawRay(p, x0, y0, x1, y1, I) {
+            const a = 0.18 + 0.82 * Math.sqrt(I);
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = p.glow;
+            ctx.globalAlpha = a * 0.5;
+            ctx.lineWidth = 3 + 7 * I;
+            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = rgba(p.ray, a);
+            ctx.lineWidth = 1.6 + 2.2 * I;
+            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+            ctx.restore();
+            const L = Math.hypot(x1 - x0, y1 - y0);
+            const dx = (x1 - x0) / L, dy = (y1 - y0) / L;
+            drawArrowHead(x0 + dx * L * 0.55, y0 + dy * L * 0.55, dx, dy, rgba(p.ray, Math.min(1, a + 0.1)), 9);
+        }
+
+        function drawArc(r, a0, a1, color, label, lr) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.arc(OX, OY, r, Math.min(a0, a1), Math.max(a0, a1));
+            ctx.stroke();
+            if (Math.abs(a1 - a0) < 0.02) return;
+            const m = (a0 + a1) / 2;
+            ctx.fillStyle = color;
+            ctx.font = 'italic bold 17px Georgia, serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, OX + Math.cos(m) * lr, OY + Math.sin(m) * lr);
+            ctx.textBaseline = 'alphabetic';
+        }
+
+        function drawLaser(p, x, y, dx, dy) {
+            // dx, dy — nur yo'nalishi (manbadan O ga)
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(Math.atan2(dy, dx));
+            const g = ctx.createLinearGradient(0, -9, 0, 9);
+            g.addColorStop(0, p.laserHi);
+            g.addColorStop(1, p.laser);
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(-46, -9, 46, 18, 4); else ctx.rect(-46, -9, 46, 18);
+            ctx.fill();
+            ctx.fillStyle = rgba(p.ray, 1);
+            ctx.fillRect(-4, -4, 4, 8);
+            ctx.restore();
+        }
+
+        function drawPulse(p, x, y, I) {
+            if (I <= 0.003) return;
+            const a = 0.25 + 0.75 * Math.sqrt(I);
+            const r = 5 + 6 * Math.sqrt(I);
+            const g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.4);
+            g.addColorStop(0, 'rgba(255,255,255,' + a + ')');
+            g.addColorStop(0.35, rgba(P().ray, a));
+            g.addColorStop(1, rgba(P().ray, 0));
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(x, y, r * 2.4, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function drawReadout(p, r) {
+            const x = 588, y = 446, w = 200, h = 142;
+            ctx.fillStyle = p.panel;
+            ctx.strokeStyle = p.panelEdge;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(x, y, w, h, 10); else ctx.rect(x, y, w, h);
+            ctx.fill(); ctx.stroke();
+            const rows = [
+                ['α', state.alpha.toFixed(1) + '°', p.aArc],
+                ['β', r ? r.beta.toFixed(1) + '°' : '—', p.bArc],
+                ['sinα/sinβ', (r && state.alpha > 0.05) ? (Math.sin(state.alpha * D2R) / r.dx).toFixed(3) : '—', p.ink],
+                ['n₂/n₁', (state.n2 / state.n1).toFixed(3), p.ink],
+                ['α_kr', critAngle() == null ? '—' : critAngle().toFixed(1) + '°', p.crit],
+                ['t', (state.t * 1e9).toFixed(2) + ' ns', p.muted]
+            ];
+            rows.forEach((row, i) => {
+                const yy = y + 24 + i * 22;
+                ctx.fillStyle = row[2];
+                ctx.font = 'italic bold 16px Georgia, serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(row[0] + ' =', x + 12, yy);
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillStyle = p.ink;
+                ctx.fillText(row[1], x + w - 12, yy);
+            });
+        }
+
+        function draw() {
+            const p = P();
+            drawMedia(p);
+            drawProtractor(p);
+
+            const a = state.alpha * D2R;
+            const sa = Math.sin(a), ca = Math.cos(a);
+            const r = refracted();
+            const R = reflectance(), T = 1 - R;
+
+            // Normal
+            ctx.strokeStyle = p.normal;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([7, 6]);
+            ctx.beginPath(); ctx.moveTo(OX, OY - RP - 26); ctx.lineTo(OX, OY + RP + 26); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = p.muted;
+            ctx.font = '13px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('normal', OX + 6, OY - RP - 14);
+
+            // Nurlar: tushuvchi, qaytgan, singan
+            const sx = OX - sa * RAY, sy = OY - ca * RAY;
+            drawRay(p, sx, sy, OX, OY, 1);
+            const rx = OX + sa * RAY, ry = OY - ca * RAY;
+            drawRay(p, OX, OY, rx, ry, R);
+            let tx = 0, ty = 0;
+            if (r) {
+                tx = OX + r.dx * RAY; ty = OY + r.dy * RAY;
+                drawRay(p, OX, OY, tx, ty, T);
+            }
+            drawLaser(p, sx, sy, sa, ca);
+
+            // Burchak yoylari
+            const up = -Math.PI / 2, down = Math.PI / 2;
+            drawArc(58, up - a, up, p.aArc, 'α', 76);
+            drawArc(46, up, up + a, p.gArc, 'γ', 64);
+            if (r) drawArc(58, down - r.beta * D2R, down, p.bArc, 'β', 76);
+
+            // Nur nomlari — nurning yon tomonida, nurni kesib o'tmasligi uchun
+            ctx.font = 'bold 13px Arial';
+            ctx.fillStyle = p.ink;
+            ctx.textBaseline = 'middle';
+            const L1 = RP + 20;     // o'lchagich raqamlaridan tashqarida
+            ctx.textAlign = 'right';
+            ctx.fillText('tushuvchi', OX - sa * L1 - ca * 12, OY - ca * L1 + sa * 12);
+            ctx.textAlign = 'left';
+            ctx.fillText('qaytgan ' + (R * 100).toFixed(1) + '%', OX + sa * L1 + ca * 12, OY - ca * L1 + sa * 12);
+            if (r) {
+                ctx.fillText('singan ' + (T * 100).toFixed(1) + '%', OX + r.dx * L1 + r.dy * 12, OY + r.dy * L1 - r.dx * 12);
+                ctx.textBaseline = 'alphabetic';
+            } else {
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillStyle = p.tir;
+                ctx.font = 'bold 17px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('To\'liq ichki qaytish!', 16, 486);
+                ctx.font = '14px Arial';
+                ctx.fillText('α = ' + state.alpha.toFixed(1) + '° > α_kr = ' + critAngle().toFixed(1) + '°', 16, 508);
+                ctx.fillText('singan nur yo\'q, R = 100%', 16, 528);
+            }
+
+            // Impuls
+            if (state.phase === 0 && (state.running || state.s1 > 0)) {
+                const f = state.s1 / SEG_M;
+                drawPulse(p, sx + (OX - sx) * f, sy + (OY - sy) * f, 1);
+            } else if (state.phase === 1) {
+                const fr = state.sR / SEG_M;
+                if (fr < 1) drawPulse(p, OX + sa * RAY * fr, OY - ca * RAY * fr, R);
+                if (r) {
+                    const ft = state.sT / SEG_M;
+                    if (ft < 1) drawPulse(p, OX + r.dx * RAY * ft, OY + r.dy * RAY * ft, T);
+                }
+            }
+            // Tushish nuqtasi
+            ctx.fillStyle = p.boundary;
+            ctx.beginPath(); ctx.arc(OX, OY, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = p.ink;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('O', OX - 8, OY + 18);
+
+            drawReadout(p, r);
+        }
+
+        function loop(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            let dt = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+            if (dt > 0.05) dt = 0.05;
+
+            if (state.running && dt > 0) {
+                updatePhysics(dt);
+                updateStats();
+            }
+            draw();
+
+            if (state.running) {
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        function startPulse() {
+            if (!state.running) {
+                state.running = true;
+                lastTimestamp = null;
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        function pausePulse() {
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            updateStats();
+            draw();
+        }
+
+        function resetPulse() {
+            state.running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            restartPulse();
+            state.v1m = null; state.v2m = null;
+            updateNote();
+            updateStats();
+            draw();
+        }
+
+        syncPresets();
+        resetPulse();
+
+        // Rejim almashganda kanvasni qayta chizamiz
+        window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
+
+        // ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+        window.modelControls = { start: startPulse, pause: pausePulse, reset: resetPulse };
+        window.modelIsRunning = function () { return state.running; };
+        window.labFields = [
+            { label: 'n₁',            get: function () { return +state.n1.toFixed(2); } },
+            { label: 'n₂',            get: function () { return +state.n2.toFixed(2); } },
+            { label: 'α (°)',         get: function () { return +state.alpha.toFixed(1); } },
+            { label: 'β (°)',         get: function () { return labNum('betaStat'); } },
+            { label: 'sinα',          get: function () { return +Math.sin(state.alpha * D2R).toFixed(4); } },
+            { label: 'sinβ',          get: function () { const r = refracted(); return r ? +r.dx.toFixed(4) : '—'; } },
+            { label: 'sinα/sinβ',     get: function () { return labNum('ratioStat'); } },
+            { label: 'n₂/n₁',         get: function () { return +(state.n2 / state.n1).toFixed(3); } },
+            { label: 'α_kr (°)',      get: function () { return labNum('critStat'); } },
+            { label: 'R (%)',         get: function () { return +(reflectance() * 100).toFixed(1); } },
+            { label: 'v₁ (10⁸ m/s)',  get: function () { return labNum('v1Stat'); } },
+            { label: 'v₂ (10⁸ m/s)',  get: function () { return labNum('v2Stat'); } }
+        ];
+    </script>
+</body>
+</html>
