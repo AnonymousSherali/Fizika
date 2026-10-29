@@ -17,6 +17,11 @@ python manage.py admin_2fa_setup <login>          # QR-kod chiqadi — ilovada s
 ```
 Telefon yo'qolsa: `python manage.py admin_2fa_setup <login> --reset` va qaytadan skanerlash.
 
+Kirgach **bosh sahifada**: o'quvchilar, o'qituvchilar, maktablar, faol foydalanuvchilar soni, so'nggi 30 kun
+faolligi grafigi, **«Ko'rib chiqish kutilmoqda»** ro'yxati (qoralama savollar, moderatsiyadagi ishlanmalar,
+tasdiqlanmagan maktab va o'qituvchilar — bosilsa kerakli ro'yxat ochiladi), hududlar va so'nggi amallar.
+Chap menyudagi qizil raqamlar — ko'rib chiqilishi kerak bo'lgan yozuvlar soni. Yuqori o'ng burchakda yorug'/qorong'i rejim.
+
 > Admin parolini va telefonni hech kimga bermang. Har bir administratorga alohida hisob oching.
 
 ## 2. Foydalanuvchilar

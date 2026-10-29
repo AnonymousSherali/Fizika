@@ -2,6 +2,19 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db import models
 
+# Amallarning o'zbekcha nomlari (admin panel uchun; jurnalda kod saqlanadi)
+ACTION_LABELS = {
+    "auth.login": "Kirish", "auth.login_failed": "Kirish (xato parol)",
+    "auth.password_change": "Parol o'zgartirildi", "auth.password_reset": "Parol tiklandi",
+    "account.delete_requested": "Hisobni o'chirish so'raldi",
+    "user.created_by_admin": "Admin foydalanuvchi yaratdi", "user.permissions_changed": "Rol/huquq o'zgardi",
+    "student.password_reset_by_teacher": "O'qituvchi o'quvchi parolini tikladi",
+    "classroom.archive": "Sinf arxivlandi", "classroom.remove_student": "O'quvchi sinfdan chiqarildi",
+    "assignment.delete": "Topshiriq o'chirildi", "grade.set": "Baho qo'yildi", "submission.return": "Ish qaytarildi",
+    "lesson_plan.upload": "Ishlanma yuklandi", "lesson_plan.publish": "Ishlanma nashr etildi",
+    "lesson_plan.reject": "Ishlanma rad etildi", "lesson_plan.delete": "Ishlanma o'chirildi",
+}
+
 
 class AuditLog(models.Model):
     """Muhim amallar jurnali (FT-11.1 – FT-11.3). Yozuvlar tahrirlanmaydi; faqat muddati o'tganda o'chiriladi."""
@@ -30,3 +43,7 @@ class AuditLog(models.Model):
         if self.pk is not None:
             raise PermissionDenied("Audit yozuvini o'zgartirib bo'lmaydi")
         super().save(*args, **kwargs)
+
+    @property
+    def action_label(self):
+        return ACTION_LABELS.get(self.action, self.action)

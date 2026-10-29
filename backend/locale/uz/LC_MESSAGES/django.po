@@ -1,0 +1,402 @@
+# Admin panel (Unfold) va Django admin matnlarining o'zbekcha tarjimasi.
+# O'zgartirgach: python scripts/compile_po.py
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: uz\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Action"
+msgstr "Amal"
+
+msgid "Add row"
+msgstr "Qator qo'shish"
+
+msgid "After you've created a user, you’ll be able to edit more user options."
+msgstr "Foydalanuvchi yaratilgach, qolgan ma'lumotlarini tahrirlash mumkin bo'ladi."
+
+msgid "All applications"
+msgstr "Barcha bo'limlar"
+
+msgid "Apply Filters"
+msgstr "Filtrlash"
+
+msgid "Cancel"
+msgstr "Bekor qilish"
+
+msgid "Choose file to upload"
+msgstr "Yuklash uchun fayl tanlang"
+
+msgid "Clear all filters"
+msgstr "Barcha filtrlarni tozalash"
+
+msgid "Clear selection"
+msgstr "Tanlovni bekor qilish"
+
+msgid "Click here to select the objects across all pages"
+msgstr "Barcha sahifalardagi yozuvlarni tanlash"
+
+msgid "Click to cancel"
+msgstr "Bekor qilish uchun bosing"
+
+msgid "Click to download"
+msgstr "Yuklab olish uchun bosing"
+
+msgid "Close"
+msgstr "Yopish"
+
+msgid "Dark"
+msgstr "Qorong'i"
+
+msgid "Dataset not found. No action performed."
+msgstr "Ma'lumotlar topilmadi. Hech narsa bajarilmadi."
+
+msgid "Date"
+msgstr "Sana"
+
+msgid "Date/time"
+msgstr "Sana/vaqt"
+
+msgid "Django administration"
+msgstr "Fizika 10–11 boshqaruvi"
+
+msgid "Django site admin"
+msgstr "Fizika 10–11"
+
+msgid "Expand row"
+msgstr "Qatorni ochish"
+
+msgid "False"
+msgstr "Yo'q"
+
+msgid "Filter navigation items"
+msgstr "Menyudan qidirish"
+
+msgid "Filters"
+msgstr "Filtrlar"
+
+msgid "Forgotten your password or username?"
+msgstr "Parol yoki loginni unutdingizmi?"
+
+msgid "General"
+msgstr "Asosiy"
+
+msgid "Go back"
+msgstr "Orqaga"
+
+msgid "Hide counts"
+msgstr "Sonlarni yashirish"
+
+msgid "History"
+msgstr "Tarix"
+
+msgid "Home"
+msgstr "Bosh sahifa"
+
+msgid "Image preview"
+msgstr "Rasmni ko'rish"
+
+msgid "Items must be selected in order to perform actions on them. No items have been changed."
+msgstr "Amal bajarish uchun avval yozuvlarni tanlang. Hech narsa o'zgartirilmadi."
+
+msgid "Light"
+msgstr "Yorug'"
+
+msgid "Loading more results..."
+msgstr "Yana yuklanmoqda..."
+
+msgid "Log in"
+msgstr "Kirish"
+
+msgid "Log in again"
+msgstr "Qayta kirish"
+
+msgid "More actions"
+msgstr "Boshqa amallar"
+
+msgid "Next"
+msgstr "Keyingi"
+
+msgid "No data"
+msgstr "Ma'lumot yo'q"
+
+msgid "No recent searches"
+msgstr "Yaqinda qidiruv bo'lmagan"
+
+msgid "No results found"
+msgstr "Hech narsa topilmadi"
+
+msgid "No results matching your query"
+msgstr "So'rovingizga mos natija yo'q"
+
+msgid "No, take me back"
+msgstr "Yo'q, orqaga qaytish"
+
+msgid "Objects"
+msgstr "Yozuvlar"
+
+msgid "Please enter your old password, for security’s sake, and then enter your new password twice so we can verify you typed it in correctly."
+msgstr "Xavfsizlik uchun avval eski parolni, keyin yangi parolni ikki marta kiriting."
+
+msgid "Previous"
+msgstr "Oldingi"
+
+msgid "Recent searches"
+msgstr "Yaqindagi qidiruvlar"
+
+msgid "Record picture"
+msgstr "Rasm"
+
+msgid "Reset filters"
+msgstr "Filtrlarni tozalash"
+
+msgid "Return to site"
+msgstr "Saytga qaytish"
+
+msgid "Run"
+msgstr "Bajarish"
+
+msgid "Save and add another"
+msgstr "Saqlash va yana qo'shish"
+
+msgid "Save and continue editing"
+msgstr "Saqlash va tahrirni davom ettirish"
+
+msgid "Save and view"
+msgstr "Saqlash va ko'rish"
+
+msgid "Save as new"
+msgstr "Yangi sifatida saqlash"
+
+msgid "Search apps and models..."
+msgstr "Bo'lim yoki jadvalni qidirish..."
+
+msgid "Select action"
+msgstr "Amalni tanlang"
+
+msgid "Select action to run"
+msgstr "Bajariladigan amalni tanlang"
+
+msgid "Select all objects on this page for an action"
+msgstr "Sahifadagi barcha yozuvlarni tanlash"
+
+msgid "Select all rows"
+msgstr "Barcha qatorlarni tanlash"
+
+msgid "Select currency"
+msgstr "Valyutani tanlang"
+
+msgid "Select record"
+msgstr "Yozuvni tanlash"
+
+msgid "Select value"
+msgstr "Qiymatni tanlang"
+
+msgid "Show all"
+msgstr "Hammasini ko'rsatish"
+
+msgid "Show counts"
+msgstr "Sonlarni ko'rsatish"
+
+msgid "Submit"
+msgstr "Yuborish"
+
+msgid "System"
+msgstr "Tizim"
+
+msgid "Thanks for spending some quality time with the web site today."
+msgstr "Platformada ishlaganingiz uchun rahmat."
+
+msgid "This item will be deleted."
+msgstr "Bu yozuv o'chiriladi."
+
+msgid "This object doesn’t have a change history. It probably wasn’t added via this admin site."
+msgstr "Bu yozuvning o'zgarishlar tarixi yo'q. Ehtimol, u admin panel orqali qo'shilmagan."
+
+msgid "This page yielded into no results. Create a new item or reset your filters."
+msgstr "Hech narsa topilmadi. Yangi yozuv qo'shing yoki filtrlarni tozalang."
+
+msgid "Toggle password visibility"
+msgstr "Parolni ko'rsatish/yashirish"
+
+msgid "Toggle sorting"
+msgstr "Saralashni almashtirish"
+
+msgid "True"
+msgstr "Ha"
+
+msgid "Type to search"
+msgstr "Qidirish uchun yozing"
+
+msgid "Unknown content"
+msgstr "Noma'lum tarkib"
+
+msgid "User"
+msgstr "Foydalanuvchi"
+
+msgid "Welcome"
+msgstr "Xush kelibsiz"
+
+msgid "Welcome back to"
+msgstr "Xush kelibsiz!"
+
+msgid "Yes, I’m sure"
+msgstr "Ha, ishonchim komil"
+
+msgid "You can not create nested object without parent"
+msgstr "Asosiy yozuvsiz ichki yozuv yaratib bo'lmaydi"
+
+msgid "You don’t have permission to view or edit anything."
+msgstr "Sizda hech narsani ko'rish yoki tahrirlash huquqi yo'q."
+
+msgid "You have been successfully logged out from the administration"
+msgstr "Siz boshqaruv panelidan chiqdingiz"
+
+msgid "Your password was changed."
+msgstr "Parolingiz o'zgartirildi."
+
+msgid "Raw passwords are not stored, so there is no way to see this user’s password, but you can change the password using <a href=\"{}\" class=\"text-primary-600 dark:text-primary-500\">this form</a>."
+msgstr "Parollar ochiq holda saqlanmaydi, shuning uchun foydalanuvchi parolini ko'rib bo'lmaydi. Uni <a href=\"{}\" class=\"text-primary-600 dark:text-primary-500\">bu forma</a> orqali o'zgartirish mumkin."
+
+msgid "Add %(name)s"
+msgstr "%(name)s qo'shish"
+
+msgid "By %(filter_title)s"
+msgstr "%(filter_title)s bo'yicha"
+
+msgid "%(full_result_count)s total"
+msgstr "jami %(full_result_count)s"
+
+msgid "Select all %(total_count)s %(module_name)s"
+msgstr "Barcha %(total_count)s ta yozuvni tanlash"
+
+msgid "Change password"
+msgstr "Parolni o'zgartirish"
+
+msgid "Log out"
+msgstr "Chiqish"
+
+msgid "View site"
+msgstr "Saytni ochish"
+
+msgid "Recent actions"
+msgstr "So'nggi amallar"
+
+msgid "Save"
+msgstr "Saqlash"
+
+msgid "Delete"
+msgstr "O'chirish"
+
+msgid "Add"
+msgstr "Qo'shish"
+
+msgid "Change"
+msgstr "O'zgartirish"
+
+msgid "View"
+msgstr "Ko'rish"
+
+msgid "Remove"
+msgstr "Olib tashlash"
+
+msgid "Search"
+msgstr "Qidirish"
+
+msgid "Go"
+msgstr "Bajarish"
+
+msgid "Summary"
+msgstr "Xulosa"
+
+msgid "Time"
+msgstr "Vaqt"
+
+msgid "Unknown"
+msgstr "Noma'lum"
+
+msgid "View on site"
+msgstr "Saytda ko'rish"
+
+msgid "Remove from sorting"
+msgstr "Saralashdan olib tashlash"
+
+msgid "%(counter)s result"
+msgid_plural "%(counter)s results"
+msgstr[0] "%(counter)s ta natija"
+
+msgid "entry"
+msgid_plural "entries"
+msgstr[0] "ta yozuv"
+
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Quyidagi xatolarni tuzating."
+
+# Django auth (uz katalogida yo'q)
+msgid "username"
+msgstr "login"
+
+msgid "first name"
+msgstr "ism"
+
+msgid "last name"
+msgstr "familiya"
+
+msgid "active"
+msgstr "faol"
+
+msgid "staff status"
+msgstr "admin panelga kira oladi"
+
+msgid "superuser status"
+msgstr "superadmin"
+
+msgid "date joined"
+msgstr "ro'yxatdan o'tgan sana"
+
+msgid "groups"
+msgstr "guruhlar"
+
+msgid "user permissions"
+msgstr "alohida huquqlar"
+
+msgid "permissions"
+msgstr "huquqlar"
+
+msgid "name"
+msgstr "nomi"
+
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr "Majburiy. 150 belgigacha: harflar, raqamlar va @/./+/-/_ belgilari."
+
+msgid "Designates that this user has all permissions without explicitly assigning them."
+msgstr "Foydalanuvchiga barcha huquqlar avtomatik beriladi."
+
+msgid "Designates whether the user can log into this admin site."
+msgstr "Foydalanuvchi admin panelga kira oladimi."
+
+msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+msgstr "Hisob faolmi. Hisobni o'chirish o'rniga shu belgini olib tashlang."
+
+msgid "The groups this user belongs to. A user will get all permissions granted to each of their groups."
+msgstr "Foydalanuvchi a'zo bo'lgan guruhlar: har bir guruh huquqlari unga ham beriladi."
+
+msgid "Specific permissions for this user."
+msgstr "Faqat shu foydalanuvchiga berilgan huquqlar."
+
+msgid "Enter a new password for the user <strong>%(username)s</strong>."
+msgstr "<strong>%(username)s</strong> uchun yangi parol kiriting."
+
+msgid "Password-based authentication"
+msgstr "Parol bilan kirish"
+
+msgid "Enabled"
+msgstr "Yoqilgan"
+
+msgid "Disabled"
+msgstr "O'chirilgan"
+
+msgid "Permissions"
+msgstr "Huquqlar"
+

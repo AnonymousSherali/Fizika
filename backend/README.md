@@ -133,6 +133,10 @@ docker compose exec api python manage.py admin_2fa_setup admin --reset   # telef
 ```
 O'chirish (tavsiya etilmaydi): `.env` da `ADMIN_2FA=false`.
 
+**Admin panel ko'rinishi:** [Unfold](https://unfoldadmin.com) — menyu va ranglar `config/settings/base.py` dagi
+`UNFOLD`, bosh sahifa `apps/core/admin_ui.py` + `templates/admin/index.html`. O'zbekcha matnlar `locale/uz/LC_MESSAGES/django.po`;
+o'zgartirgach `python scripts/compile_po.py` (gettext o'rnatilmagan bo'lsa ham ishlaydi).
+
 **Xatolar monitoringi:** `.env` da `SENTRY_DSN=...` — server xatolari Sentry'ga yuboriladi (shaxsiy ma'lumotlarsiz).
 
 **Zaxira nusxa (har kecha):**

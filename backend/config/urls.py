@@ -4,15 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-if settings.ADMIN_2FA:
-    from django_otp.admin import OTPAdminSite
-
-    admin.site.__class__ = OTPAdminSite  # login sahifasida TOTP kodi so'raladi
-
-admin.site.site_header = "Fizika 10–11 — boshqaruv paneli"
-admin.site.site_title = "Fizika 10–11"
-admin.site.index_title = "Boshqaruv"
-
+# admin.site — apps.core.admin_site.FizikaAdminSite (Unfold ko'rinishi + ADMIN_2FA bo'lsa TOTP kodi)
 api_v1 = [
     path("", include("apps.core.urls")),
     path("", include("apps.accounts.urls")),

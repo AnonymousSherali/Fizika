@@ -1,4 +1,6 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
+from unfold.decorators import display
 
 from apps.audit import services as audit
 
@@ -6,12 +8,17 @@ from .models import LessonPlan, Translation
 
 
 @admin.register(LessonPlan)
-class LessonPlanAdmin(admin.ModelAdmin):
-    list_display = ["title_uz", "grade", "status", "author", "downloads", "created_at"]
+class LessonPlanAdmin(ModelAdmin):
+    list_display = ["title_uz", "grade", "status_label", "author", "downloads", "created_at"]
     list_filter = ["status", "grade"]
     search_fields = ["title_uz", "title_ru"]
     raw_id_fields = ["author"]
     actions = ["publish", "reject"]
+
+    @display(description="holat", ordering="status",
+             label={"draft": "info", "review": "warning", "published": "success", "rejected": "danger"})
+    def status_label(self, obj):
+        return obj.status, obj.get_status_display()
 
     @admin.action(description="Nashr etish")
     def publish(self, request, queryset):
@@ -27,7 +34,7 @@ class LessonPlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(Translation)
-class TranslationAdmin(admin.ModelAdmin):
+class TranslationAdmin(ModelAdmin):
     list_display = ["key_short", "ru", "updated_at"]
     search_fields = ["key", "ru"]
     list_per_page = 50

@@ -1,0 +1,83 @@
+{% extends 'admin/base.html' %}
+{# Admin bosh sahifasi: platforma ko'rsatkichlari (apps/core/admin_ui.py → dashboard_callback) #}
+{% load i18n unfold %}
+
+{% block title %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+
+    {# Ko'rsatkichlar #}
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {% for k in kpi %}
+            {% component "unfold/components/card.html" with href=k.href %}
+                <div class="flex flex-row items-center gap-3">
+                    <span class="material-symbols-outlined text-primary-600 dark:text-primary-500">{{ k.icon }}</span>
+                    {% component "unfold/components/text.html" %}{{ k.title }}{% endcomponent %}
+                </div>
+                {% component "unfold/components/title.html" with class="mt-2" %}{{ k.value }}{% endcomponent %}
+                {% if k.note %}<p class="text-xs mt-1">{{ k.note }}</p>{% endif %}
+            {% endcomponent %}
+        {% endfor %}
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {# Faollik grafigi #}
+        <div class="lg:col-span-2 flex flex-col">
+            {% component "unfold/components/card.html" with title="So'nggi 30 kun faolligi" %}
+                {% component "unfold/components/chart/bar.html" with data=activity height=280 %}{% endcomponent %}
+            {% endcomponent %}
+        </div>
+
+        {# Moderatsiya #}
+        <div class="flex flex-col">
+            {% component "unfold/components/card.html" with title="Ko'rib chiqish kutilmoqda" %}
+                <ul class="flex flex-col gap-1 -mx-2">
+                    {% for m in moderation %}
+                        <li>
+                            <a href="{{ m.href }}" class="flex flex-row items-center gap-3 px-2 py-2 rounded-default hover:bg-base-100 dark:hover:bg-base-800">
+                                <span class="material-symbols-outlined text-base-400">{{ m.icon }}</span>
+                                <span class="grow text-sm">{{ m.title }}</span>
+                                <strong class="{% if m.value %}text-primary-600 dark:text-primary-500{% else %}text-base-400{% endif %}">{{ m.value }}</strong>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endcomponent %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {% component "unfold/components/card.html" with title="Hududlar bo'yicha foydalanuvchilar" %}
+            <div class="flex flex-col gap-4">
+                {% for r in regions %}
+                    {% component "unfold/components/progress.html" with title=r.title description=r.count value=r.percent %}{% endcomponent %}
+                {% empty %}
+                    <p class="text-sm">Hali maktabga bog'langan foydalanuvchi yo'q.</p>
+                {% endfor %}
+            </div>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Eng ko'p ishlatilgan modellar" %}
+            {% if sims.rows %}
+                {% component "unfold/components/table.html" with table=sims card_included=1 striped=1 %}{% endcomponent %}
+            {% else %}
+                <p class="text-sm">Hali laboratoriya jurnallari yo'q.</p>
+            {% endif %}
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="So'nggi amallar (audit)" %}
+            {% if audit.rows %}
+                {% component "unfold/components/table.html" with table=audit card_included=1 striped=1 %}{% endcomponent %}
+                <a class="block mt-10 text-sm text-primary-600 dark:text-primary-500" href="{% url 'admin:audit_auditlog_changelist' %}">Butun jurnal →</a>
+            {% else %}
+                <p class="text-sm">Audit jurnali bo'sh.</p>
+            {% endif %}
+        {% endcomponent %}
+    </div>
+</div>
+{% endblock %}

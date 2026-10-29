@@ -76,6 +76,10 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 |---|---|---|
 | FT-10.1 Django Admin (o'zbekcha) | ✅ | foydalanuvchi, maktab, sinf, model, jurnal |
 | FT-10.4 Admin uchun 2FA (TOTP) | ✅ | django-otp, `manage.py admin_2fa_setup` |
+| Zamonaviy admin ko'rinishi (Unfold): sayt ranglari, yorug'/qorong'i, telefonda qulay, o'zbekcha menyu | ✅ | `apps/core/admin_site.py`, `UNFOLD` (settings) |
+| Admin bosh sahifasi: ko'rsatkichlar, 30 kunlik faollik grafigi, moderatsiya navbati, hududlar, modellar, audit | ✅ | `apps/core/admin_ui.py`, `templates/admin/index.html` |
+| Yon menyuda moderatsiya kutayotganlar soni (savollar, masalalar, ishlanmalar, maktablar) | ✅ | |
+| Admin matnlarining o'zbekcha tarjimasi (Unfold + Django'da yo'q satrlar) | ✅ | `locale/uz/`, `scripts/compile_po.py` |
 
 ---
 
