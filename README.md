@@ -36,6 +36,8 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 ├── model-tools.js                 # Jurnal, navigatsiya, klaviatura
 ├── tekshiruv.html                 # 🔍 Deploy tekshiruvi (fayllar yuklanyaptimi)
 ├── .htaccess                      # Apache sozlamalari (MIME, kesh)
+├── fonts/                         # Inter shrifti (internetsiz ham ishlaydi)
+├── img/                           # Bosh sahifadagi model rasmlari
 │
 ├── modellar/                      # 🎮 Interaktiv modellar
 │   ├── rezerford_model.html       #   Rezerford tajribasi
@@ -43,7 +45,11 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │   ├── mayatnik_model.html        #   Matematik mayatnik
 │   ├── qiya_tekislik_model.html   #   Qiya tekislik (FIK)
 │   ├── om_qonuni_model.html       #   Om qonuni (I = U/R)
-│   └── induksiya_model.html       #   Elektromagnit induksiya
+│   ├── induksiya_model.html       #   Elektromagnit induksiya
+│   ├── prujinali_mayatnik_model.html # Prujinali mayatnik
+│   ├── otilgan_jism_model.html    #   Burchak ostida otilgan jism
+│   ├── gaz_qonunlari_model.html   #   Ideal gaz qonunlari
+│   └── kondensator_model.html     #   Yassi kondensator
 │
 ├── dars_ishlanmalar/              # 📚 Dars ishlanmalar
 │   ├── index.html                 #   Sahifa (/dars_ishlanmalar/)

@@ -17,7 +17,11 @@
         { file: 'mayatnik_model.html',      icon: '🕰️', name: 'Mayatnik' },
         { file: 'qiya_tekislik_model.html', icon: '📐', name: 'Qiya tekislik' },
         { file: 'om_qonuni_model.html',     icon: '🔌', name: 'Om qonuni' },
-        { file: 'induksiya_model.html',     icon: '🧲', name: 'Induksiya' }
+        { file: 'induksiya_model.html',     icon: '🧲', name: 'Induksiya' },
+        { file: 'prujinali_mayatnik_model.html', icon: '🌀', name: 'Prujinali mayatnik' },
+        { file: 'otilgan_jism_model.html',  icon: '🎯', name: 'Otilgan jism' },
+        { file: 'gaz_qonunlari_model.html', icon: '🎈', name: 'Gaz qonunlari' },
+        { file: 'kondensator_model.html',   icon: '🔋', name: 'Kondensator' }
     ];
 
     function currentFile() {
