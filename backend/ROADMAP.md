@@ -125,12 +125,21 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-5.8 Muddatga 24 soat / 1 soat qolganda eslatma (har 15 daqiqada, takrorlanmaydi) | ✅ | Celery Beat |
 | FT-4.4 Jurnal PDF eksporti | 🟡 | model sahifasidagi «Hisobot (PDF)» (brauzer) |
 
-## 4-bosqich — Kontent va tarjimalar ⬜
-- ⬜ FT-7.1–7.4 Dars ishlanmalar: yuklash, moderatsiya, fayl tekshiruvi, yuklab olishlar soni
-- ⬜ FT-7.5 `dars_ishlanmalar/index.html` API'dan
-- ⬜ FT-7.6 Tarjimalar bazada, `GET /i18n/ru.js`
-- ⬜ FT-6.2 Parametrlangan masalalar
-- ⬜ FT-11.1–11.3 Audit jurnali (o'zgarmas, 1 yil)
+## 4-bosqich — Kontent, tarjimalar, audit ✅
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-7.1 Dars ishlanmalar bazada (22 ta import qilindi, fayllar saytda qoladi) | ✅ | `manage.py import_lesson_plans` |
+| FT-7.2 O'qituvchi yuklaydi → moderatsiya → nashr / rad (izoh bilan) | ✅ | admin panel yoki `lesson-plans/{id}/moderate/` |
+| FT-7.3 Fayl tekshiruvi: kengaytma, hajm (PDF 15 MB, DOCX 10 MB), ichki tuzilma, makrosli DOCX rad | ✅ | ClamAV — ixtiyoriy, 5-bosqich |
+| FT-7.4 Yuklab olishlar soni | ✅ | statik havolalar ham API orqali hisoblanadi |
+| FT-7.5 `dars_ishlanmalar/index.html` API bilan (yangi ishlanmalar qo'shiladi, statik zaxira) | ✅ | |
+| O'qituvchi panelida «Ishlanmalarim» (yuklash, holat, moderator izohi) | ✅ | |
+| FT-7.6 Tarjimalar bazada, admin panelda tahrirlanadi, `GET /i18n/ru.js` | ✅ | `import_i18n` / `export_i18n` |
+| FT-6.2 Parametrlangan masalalar (har o'quvchiga boshqa sonlar, javob formuladan) | ✅ | admin/API orqali; paneldagi forma — ⬜ |
+| FT-11.1 Audit: kirish, parol, hisob o'chirish, rol o'zgarishi, baho (oldin/keyin), qaytarish, o'chirishlar, moderatsiya | ✅ | |
+| FT-11.2 Kim, qachon, IP, amal, obyekt, oldingi/yangi qiymat | ✅ | |
+| FT-11.3 O'zgarmas (tahrir/o'chirish taqiqlangan), 1 yil saqlanadi | ✅ | haftalik tozalash (Celery Beat) |
+| Savollarning ruscha tarjimasi (170 + 48) | ⬜ | maydonlar tayyor; matnlarni tarjima qilish kerak |
 
 ## 5-bosqich — Sifat va ishga tushirish ⬜
 - ⬜ Yuklama testi (k6/Locust): 500 foydalanuvchi, p95 ≤ 300 ms (NF-1, NF-2)

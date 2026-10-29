@@ -13,6 +13,7 @@ from apps.accounts.backends import find_user
 from apps.accounts.models import Role, User
 from apps.accounts.services import blacklist_all_tokens
 from apps.accounts.utils import slug_login, temp_password
+from apps.audit import services as audit
 from apps.core.exceptions import Conflict
 from apps.core.permissions import IsStudent, IsTeacher
 
@@ -139,6 +140,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         classroom.is_archived = True
         classroom.join_code = None
         classroom.save(update_fields=["is_archived", "join_code", "updated_at"])
+        audit.log(request, "classroom.archive", classroom)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(request=JoinCodeSerializer, responses={200: ClassroomSerializer})
@@ -209,6 +211,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         student.must_change_password = True
         student.save(update_fields=["password", "must_change_password"])
         blacklist_all_tokens(student)
+        audit.log(request, "student.password_reset_by_teacher", student, after={"classroom": classroom.pk})
         return Response({"username": student.username, "password": pwd})
 
     @extend_schema(request=MoveSerializer, responses={200: dict})
@@ -233,6 +236,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         classroom = staff_classroom(request.user, pk)
         student = self._student(classroom, uid)
         ClassroomMember.objects.filter(classroom=classroom, user=student).delete()
+        audit.log(request, "classroom.remove_student", student, after={"classroom": classroom.pk})
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(request=AddTeacherSerializer, responses={201: dict})

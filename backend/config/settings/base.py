@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "apps.assignments",
     "apps.analytics",
     "apps.notifications",
+    "apps.content",
+    "apps.audit",
 ]
 
 MIDDLEWARE = [
@@ -178,6 +180,9 @@ ACCOUNT_DELETION_GRACE_DAYS = 30
 
 # ---------- Statistika va bildirishnomalar (3-bosqich) ----------
 ANALYTICS_CACHE_SECONDS = 600            # FT-8.5: 10 daqiqa
+AUDIT_RETENTION_DAYS = 365            # FT-11.3
+LESSON_PDF_MAX_MB = 15                # FT-7.3
+LESSON_DOCX_MAX_MB = 10
 SITE_URL = env("SITE_URL", default="http://localhost:8000/")   # emaildagi havolalar uchun
 
 # ---------- Celery ----------

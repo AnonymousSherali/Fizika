@@ -8,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
+from apps.audit import services as audit
 from apps.labs.models import LabJournal
 from apps.notifications import services as notifications
 
@@ -71,6 +72,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         self._require_owner(instance)
+        audit.log(self.request, "assignment.delete", instance, before={"title": instance.title,
+                                                                        "submissions": instance.submissions.count()})
         instance.delete()
 
     # ----- O'qituvchi: sinf ro'yxati bo'yicha holat -----
@@ -153,12 +156,14 @@ class SubmissionViewSet(viewsets.GenericViewSet):
             raise ValidationError("O'quvchi hali topshirmagan")
         s = GradeSerializer(data=request.data, context={"assignment": sub.assignment})
         s.is_valid(raise_exception=True)
+        before = {"grade": sub.grade, "status": sub.status}
         sub.grade = s.validated_data["grade"]
         sub.teacher_comment = s.validated_data["comment"]
         sub.status = Submission.Status.GRADED
         sub.graded_by = request.user
         sub.graded_at = timezone.now()
         sub.save()
+        audit.log(request, "grade.set", sub, before=before, after={"grade": sub.grade, "status": sub.status})
         notifications.on_graded(sub)
         return Response(SubmissionSerializer(sub, context={"request": request}).data)
 
@@ -177,5 +182,6 @@ class SubmissionViewSet(viewsets.GenericViewSet):
         sub.graded_by = request.user
         sub.graded_at = timezone.now()
         sub.save()
+        audit.log(request, "submission.return", sub, after={"comment": sub.teacher_comment})
         notifications.on_returned(sub)
         return Response(SubmissionSerializer(sub, context={"request": request}).data)

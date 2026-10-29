@@ -8,6 +8,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.audit import services as audit
 from apps.core.permissions import IsTeacher
 from apps.simulations.serializers import lang
 
@@ -191,6 +192,7 @@ class _BankViewSet(viewsets.ModelViewSet):
                         if u.is_platform_admin else Status.DRAFT)
 
     def perform_destroy(self, instance):
+        audit.log(self.request, f"{self.model._meta.model_name}.delete", instance, before={"text": instance.text_uz[:200]})
         # Urinishda ishlatilgan savol o'chirilmaydi — arxivlanadi
         if AttemptItem.objects.filter(**{self.model._meta.model_name: instance}).exists():
             instance.status = Status.ARCHIVED

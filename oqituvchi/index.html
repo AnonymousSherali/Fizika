@@ -40,6 +40,7 @@
                 <button type="button" role="tab" data-route="topshiriqlar">📋 Topshiriqlar</button>
                 <button type="button" role="tab" data-route="statistika">📊 Statistika</button>
                 <button type="button" role="tab" data-route="savollar">❓ Savollarim</button>
+                <button type="button" role="tab" data-route="ishlanmalar">📚 Ishlanmalarim</button>
             </div>
             <div class="msg" id="msg" role="status" aria-live="polite"></div>
             <div id="view"></div>
@@ -72,7 +73,7 @@
             view.innerHTML = '<p class="muted">⏳ Yuklanmoqda…</p>';
             var r = { sinflar: classes, sinf: classroom, topshiriqlar: assignments, yangi: newAssignment,
                       topshiriq: assignment, javob: submission, savollar: questions, statistika: stats,
-                      oquvchi: studentCard }[h[0]] || classes;
+                      oquvchi: studentCard, ishlanmalar: lessonPlans }[h[0]] || classes;
             var tok = ++seq;
             Promise.resolve(r(h[1], tok)).catch(err);
         }
@@ -497,6 +498,50 @@
                             ' · ' + t.percent + '%</span></div><div style="height:8px;border-radius:999px;background:var(--a-line);overflow:hidden"><i style="display:block;height:100%;width:' +
                             t.percent + '%;background:' + c + '"></i></div></div>';
                     }).join('') + '</div></div>' : '');
+            });
+        }
+
+        // ================= Dars ishlanmalarim (FT-7.1 – FT-7.3) =================
+        function lessonPlans(_, tok) {
+            return Promise.all([api.get('lesson-plans/?mine=1&page_size=100'), api.get('simulations/')]).then(function (res) {
+                if (stale(tok)) return;
+                var list = res[0].results, sims = res[1];
+                var st = { draft: 'Qoralama', review: '⏳ Moderatsiyada', published: '✅ Nashr etilgan', rejected: '❌ Rad etilgan' };
+                view.innerHTML = '<div class="panel"><h2>📚 Mening dars ishlanmalarim (' + list.length + ')</h2>' +
+                    '<p class="muted small">Yuklangan ishlanma administrator tekshirgach «Dars ishlanmalar» sahifasida hammaga ko\'rinadi.</p>' +
+                    (list.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Sarlavha</th><th>Sinf</th><th>Holat</th><th>Yuklab olingan</th><th></th></tr></thead><tbody>' +
+                        list.map(function (p) {
+                            return '<tr><td>' + E(p.title) + (p.moderator_comment ? '<br><span class="muted small">💬 ' + E(p.moderator_comment) + '</span>' : '') +
+                                '</td><td>' + p.grade + '</td><td>' + (st[p.status] || p.status) + '</td><td>' + p.downloads + '</td><td>' +
+                                (p.status !== 'published' ? '<button class="btn-a ghost small" data-del="' + p.id + '">✕</button>' : '') + '</td></tr>';
+                        }).join('') + '</tbody></table></div>' : '') + '</div>' +
+                    '<form class="panel" id="fLP"><h2>➕ Ishlanma yuklash</h2><div class="row">' +
+                    '<div class="field" style="flex:2 1 300px"><label for="lpTitle">Mavzu</label><input id="lpTitle" required placeholder="Arximed kuchi"></div>' +
+                    '<div class="field"><label for="lpGrade">Sinf</label><select id="lpGrade"><option value="10">10-sinf</option><option value="11">11-sinf</option></select></div></div>' +
+                    '<div class="row"><div class="field"><label for="lpType">Dars turi</label><input id="lpType" placeholder="Laboratoriya ishi"></div>' +
+                    '<div class="field"><label for="lpSim">Interaktiv model (ixtiyoriy)</label><select id="lpSim"><option value="">—</option>' +
+                    sims.map(function (x) { return '<option value="' + x.slug + '">' + E(x.title) + '</option>'; }).join('') + '</select></div></div>' +
+                    '<div class="row"><div class="field"><label for="lpPdf">PDF (≤ 15 MB, majburiy)</label><input id="lpPdf" type="file" accept=".pdf" required></div>' +
+                    '<div class="field"><label for="lpDocx">DOCX (≤ 10 MB, ixtiyoriy)</label><input id="lpDocx" type="file" accept=".docx"></div></div>' +
+                    '<button class="btn-a">Yuklash</button></form>';
+                document.querySelectorAll('[data-del]').forEach(function (b) {
+                    b.onclick = function () {
+                        if (confirm('Ishlanma o\'chirilsinmi?')) api.del('lesson-plans/' + b.dataset.del + '/').then(function () { lessonPlans(); }, err);
+                    };
+                });
+                $('fLP').onsubmit = function (e) {
+                    e.preventDefault();
+                    var fd = new FormData();
+                    fd.append('title_uz', $('lpTitle').value.trim());
+                    fd.append('grade', $('lpGrade').value);
+                    fd.append('lesson_type', $('lpType').value.trim());
+                    if ($('lpSim').value) fd.append('simulation', $('lpSim').value);
+                    if ($('lpPdf').files[0]) fd.append('pdf', $('lpPdf').files[0]);
+                    if ($('lpDocx').files[0]) fd.append('docx', $('lpDocx').files[0]);
+                    var btn = this.querySelector('button'); btn.disabled = true;
+                    api.post('lesson-plans/', fd).then(function () { ok('Yuklandi — moderatsiyaga yuborildi'); lessonPlans(); },
+                        err).then(function () { btn.disabled = false; });
+                };
             });
         }
 

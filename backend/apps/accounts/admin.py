@@ -20,6 +20,19 @@ class UserAdmin(BaseUserAdmin):
         ("Huquqlar", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         ("Sanalar", {"fields": ("last_login", "date_joined")}),
     )
+    def save_model(self, request, obj, form, change):
+        from apps.audit import services as audit
+
+        before = None
+        if change and obj.pk:
+            old = User.objects.filter(pk=obj.pk).values("role", "is_active", "is_superuser", "is_staff").first()
+            before = old
+        super().save_model(request, obj, form, change)
+        after = {"role": obj.role, "is_active": obj.is_active, "is_superuser": obj.is_superuser, "is_staff": obj.is_staff}
+        if before != after:
+            audit.log(request, "user.permissions_changed" if change else "user.created_by_admin", obj,
+                      before=before, after=after)
+
     add_fieldsets = (
         (None, {"classes": ("wide",), "fields": ("username", "role", "password1", "password2")}),
     )

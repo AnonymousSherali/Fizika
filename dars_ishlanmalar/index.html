@@ -471,6 +471,47 @@
                     apply();
                 });
             });
+            // Backend bo'lsa: o'qituvchilar yuklagan (tasdiqlangan) ishlanmalar qo'shiladi va
+            // yuklab olishlar hisoblanadi (FT-7.4, FT-7.5). Backend bo'lmasa — statik ro'yxat o'zgarmaydi.
+            function withApi(fn) {
+                if (window.FizikaAPI) fn(window.FizikaAPI);
+                else window.addEventListener('fizika:api', function (e) { fn(e.detail); }, { once: true });
+            }
+            withApi(function (api) {
+                api.available().then(function (ok) {
+                    if (!ok) return;
+                    api.get('lesson-plans/?page_size=100').then(function (r) {
+                        var byPath = {};
+                        r.results.forEach(function (p) { if (p.static_pdf) byPath[p.static_pdf] = p; });
+                        document.querySelectorAll('.card a[href$=".pdf"], .card a[href$=".docx"]').forEach(function (a) {
+                            var path = 'dars_ishlanmalar/' + a.getAttribute('href');
+                            var p = byPath[path] || byPath[path.replace(/\.docx$/, '.pdf')];
+                            if (!p) return;
+                            var kind = /\.docx$/.test(path) ? 'docx' : 'pdf';
+                            a.href = api.base() + 'lesson-plans/' + p.id + '/download/?type=' + kind;
+                            a.removeAttribute('download');
+                        });
+                        var esc = function (t) { return String(t || '').replace(/[&<>"]/g, function (c) {
+                            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+                        r.results.filter(function (p) { return !p.static_pdf; }).forEach(function (p) {
+                            var sec = document.querySelector('#sinf' + p.grade + ' .cards');
+                            if (!sec) return;
+                            var d = document.createElement('div');
+                            d.className = 'card';
+                            d.innerHTML = '<div class="card-icon" aria-hidden="true">' + esc(p.icon || '📄') + '</div>' +
+                                '<h3>' + esc(p.title) + '</h3><p class="meta"><span class="type-tag">' + esc(p.lesson_type || 'Dars ishlanma') +
+                                '</span>' + (p.simulation_page ? ' <a href="../' + esc(p.simulation_page) + '" class="model-badge">🎮 Interaktiv model bor</a>' : '') +
+                                '</p><p class="meta" style="margin-top:-8px">✍️ ' + esc(p.author_name || '') + '</p><div class="card-links">' +
+                                (p.has_pdf ? '<a href="' + api.base() + 'lesson-plans/' + p.id + '/download/?type=pdf" class="btn">📄 PDF</a>' : '') +
+                                (p.has_docx ? '<a href="' + api.base() + 'lesson-plans/' + p.id + '/download/?type=docx" class="docx-link">✏️ DOCX</a>' : '') +
+                                '</div>';
+                            sec.appendChild(d);
+                        });
+                        apply();
+                    }, function () {});
+                });
+            });
+
             // Sarlavhadagi "10-sinf / 11-sinf" havolalari yashirin bo'limga olib bormasin
             document.querySelectorAll('.grade-nav a').forEach(function (a) {
                 a.addEventListener('click', function () {

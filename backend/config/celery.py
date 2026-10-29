@@ -21,4 +21,9 @@ app.conf.beat_schedule = {
         "task": "apps.notifications.tasks.send_deadline_reminders",
         "schedule": crontab(minute="*/15"),
     },
+    # FT-11.3: audit yozuvlari 1 yil saqlanadi
+    "purge-old-audit": {
+        "task": "apps.audit.tasks.purge_old_audit",
+        "schedule": crontab(hour=4, minute=7, day_of_week=1),
+    },
 }

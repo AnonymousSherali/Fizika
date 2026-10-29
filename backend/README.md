@@ -21,6 +21,8 @@ export DATABASE_URL=postgres://fizika:fizika@localhost:5432/fizika
 python manage.py migrate
 python manage.py import_simulations       # 15 ta modelni statik saytdan bazaga ko'chiradi
 python manage.py import_quiz_bank         # 170 savol + 48 masalani onlayn testdan ko'chiradi
+python manage.py import_lesson_plans      # 22 ta dars ishlanmani (fayllar saytda qoladi)
+python manage.py import_i18n              # i18n-ru.js tarjimalarini bazaga (admin panelda tahrirlash uchun)
 python manage.py createsuperuser          # admin panel uchun
 python manage.py runserver                # http://127.0.0.1:8000/api/docs/
 ```
@@ -39,6 +41,8 @@ docker compose up -d --build
 docker compose exec api python manage.py migrate
 docker compose exec api python manage.py import_simulations
 docker compose exec api python manage.py import_quiz_bank
+docker compose exec api python manage.py import_lesson_plans
+docker compose exec api python manage.py import_i18n
 docker compose exec api python manage.py createsuperuser
 ```
 Nginx `http://localhost/` da statik saytni, `/api/` va `/admin/` da backendni beradi (bitta domen — CORS kerak emas).
@@ -71,7 +75,11 @@ backend/
 │   ├── simulations/   modellar katalogi, topshiriqlar, kutilgan natijalar, jurnal sxemasi
 │   ├── labs/          laboratoriya jurnali, serverda grafik tahlili, CSV eksport
 │   ├── quizzes/       savollar banki, masalalar, test urinishlari, javob tekshiruvi, mashq rejimi
-│   └── assignments/   topshiriqlar, topshirish, avtomatik baho, baholash/qaytarish
+│   ├── assignments/   topshiriqlar, topshirish, avtomatik baho, baholash/qaytarish
+│   ├── analytics/     sinf statistikasi, issiqlik xaritasi, o'quvchi kartasi, Excel/CSV eksport
+│   ├── notifications/ sayt ichida va email bildirishnomalar, muddat eslatmalari
+│   ├── content/       dars ishlanmalar (yuklash, moderatsiya), tarjimalar
+│   └── audit/         o'zgarmas audit jurnali
 ├── tests/             pytest
 ├── deploy/nginx.conf
 ├── Dockerfile, docker-compose.yml, .env.example
@@ -96,6 +104,11 @@ backend/
 | CRUD | `/api/v1/quiz/questions/` (+ `import/`), `/api/v1/quiz/problems/` | o'qituvchi |
 | CRUD | `/api/v1/assignments/` (+ `{id}/submissions/`, `{id}/submit/`, `{id}/my-submission/`) | o'qituvchi / o'quvchi |
 | GET/POST | `/api/v1/submissions/{id}/` (+ `grade/`, `return/`) | o'qituvchi / egasi |
+| GET | `/api/v1/analytics/classrooms/{id}/` (+ `heatmap/`, `export.xlsx`), `/api/v1/analytics/students/{id}/` | o'qituvchi |
+| GET/POST | `/api/v1/notifications/` (+ `unread-count/`, `read-all/`, `{id}/read/`) | kirgan |
+| GET/POST | `/api/v1/lesson-plans/` (+ `{id}/download/`, `{id}/moderate/`) · GET `/api/v1/i18n/ru.js` | hamma / o'qituvchi / admin |
+
+Tarjimani admin panelda o'zgartirgandan keyin: `python manage.py export_i18n` — saytdagi `i18n-ru.js` yangilanadi.
 
 To'liq ro'yxat va namunalar — Swagger'da (`/api/docs/`).
 

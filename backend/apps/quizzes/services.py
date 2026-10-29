@@ -7,6 +7,8 @@ from django.db import transaction
 from django.db.models import F, Q
 from django.utils import timezone
 
+from apps.labs.analysis import safe_eval
+
 from .answers import is_close, parse_answer
 from .models import Attempt, AttemptItem, Problem, Question, Status, Topic
 
@@ -79,11 +81,28 @@ def create_attempt(user, *, topics, count=20, problems=0, time_limit_min=None, a
         items.append(AttemptItem(attempt=attempt, order=i, question=q, option_order=order))
     base = len(items)
     for j, p in enumerate(probs):
-        items.append(AttemptItem(attempt=attempt, order=base + j, problem=p))
+        values, ans = generate_params(p, rng)
+        items.append(AttemptItem(attempt=attempt, order=base + j, problem=p, params=values, answer_value=ans))
     AttemptItem.objects.bulk_create(items)
     attempt.max_score = sum(it.points for it in items)
     attempt.save(update_fields=["max_score"])
     return attempt
+
+
+def generate_params(problem: Problem, rng):
+    """FT-6.2: params = {"U": [min, max, qadam], ...}, formula — javob (masalan "U/R").
+    Har o'quvchiga boshqa sonlar — ko'chirib olish foydasiz."""
+    if not problem.params or not problem.formula:
+        return None, None
+    import math
+
+    values = {}
+    for name, (lo, hi, step) in problem.params.items():
+        n = int(round((hi - lo) / step))
+        v = lo + step * rng.randint(0, max(n, 0))
+        values[name] = round(v, 10)
+    ans = safe_eval(problem.formula, {**values, "pi": math.pi})
+    return values, ans
 
 
 def is_expired(attempt: Attempt) -> bool:
@@ -118,7 +137,8 @@ def answer_item(attempt: Attempt, item: AttemptItem, answer) -> bool:
         if value is None:
             raise AnswerError("Avval raqamli javobni kiriting")
         item.given_answer = str(answer)[:60]
-        item.is_correct = is_close(value, item.problem.answer, item.problem.tolerance_pct)
+        correct = item.answer_value if item.answer_value is not None else item.problem.answer
+        item.is_correct = is_close(value, correct, item.problem.tolerance_pct)
     item.answered_at = timezone.now()
     item.save(update_fields=["given_answer", "is_correct", "answered_at"])
     return item.is_correct

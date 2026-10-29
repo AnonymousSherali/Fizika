@@ -1,9 +1,25 @@
+import re
 import uuid
 
 from django.conf import settings
 from django.db import models
 
 from apps.core.models import TimeStampedModel
+
+_PLACEHOLDER = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+
+def fmt_num(v) -> str:
+    """Matnda son: 12.5 → "12,5" (o'zbek yozuvi), keraksiz nollarsiz."""
+    return f"{v:.6g}".replace(".", ",") if isinstance(v, int | float) else str(v)
+
+
+def render(text: str, values: dict | None) -> str:
+    """{U} kabi joylarni parametr qiymatlari bilan almashtiradi; noma'lumlari o'zgarmaydi."""
+    if not values:
+        return text
+    return _PLACEHOLDER.sub(lambda m: fmt_num(values[m.group(1)]) if m.group(1) in values else m.group(0), text)
+
 
 # Ballar (testlar.md: A — 1 ball, B — 2 ball, C — 5 ball)
 POINTS = {"asosiy": 1, "chuqur": 2, "calc": 5}
@@ -115,11 +131,13 @@ class Problem(TimeStampedModel):
 
     points = POINTS["calc"]
 
-    def text(self, lang):
-        return self.text_ru if lang == "ru" and self.text_ru else self.text_uz
+    def text(self, lang, values=None):
+        t = self.text_ru if lang == "ru" and self.text_ru else self.text_uz
+        return render(t, values)
 
-    def solution(self, lang):
-        return self.solution_ru if lang == "ru" and self.solution_ru else self.solution_uz
+    def solution(self, lang, values=None):
+        t = self.solution_ru if lang == "ru" and self.solution_ru else self.solution_uz
+        return render(t, values)
 
 
 class Attempt(TimeStampedModel):
@@ -168,6 +186,9 @@ class AttemptItem(models.Model):
     problem = models.ForeignKey(Problem, null=True, blank=True, on_delete=models.PROTECT)
     # Variantlar o'quvchiga shu tartibda ko'rsatiladi: option_order[ko'rsatilgan] = asl indeks
     option_order = models.JSONField(default=list, blank=True)
+    # Parametrlangan masala (FT-6.2): shu o'quvchi uchun tanlangan sonlar va hisoblangan javob
+    params = models.JSONField(null=True, blank=True)
+    answer_value = models.FloatField(null=True, blank=True)
     given_answer = models.CharField(max_length=60, blank=True)
     is_correct = models.BooleanField(null=True)
     answered_at = models.DateTimeField(null=True, blank=True)
