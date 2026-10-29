@@ -79,23 +79,35 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 
 ---
 
-## 2-bosqich — Topshiriqlar va testlar ⬜
-- ⬜ FT-5.1 Topshiriq yaratish (lab / test, sinflar, muddat, kech topshirish jarimasi)
-- ⬜ FT-5.2 Lab topshiriq: model, qadamlar (tahrirlanadigan), min. qatorlar, grafik/xulosa talabi
-- ⬜ FT-5.3 Test topshiriq: mavzular, soni, vaqt, urinishlar, javoblarni ko'rsatish rejimi
-- ⬜ FT-5.4 «Mening topshiriqlarim» va holatlar
-- ⬜ FT-5.5 Topshirish (jurnal + grafik + xulosa + PNG ≤ 500 KB)
-- ⬜ FT-5.6 Baholash (2–5 / 100 ball), izoh, qayta topshirishga qaytarish
-- ⬜ FT-5.7 Avtomatik dastlabki baho
-- ⬜ FT-6.1 Savollar banki (uz/ru, mavzu, daraja, qiyinlik, holat)
-- ⬜ FT-6.2 Hisoblash masalalari (+ 3-bosqichda parametrlangan)
-- ⬜ FT-6.3 170 savol + 48 masalani import qilish; Excel import
-- ⬜ FT-6.4 Serverda tekshiriladigan test sessiyasi, vaqt nazorati
-- ⬜ FT-6.5 Javob tekshiruvi frontend bilan bir xil (≥ 30 umumiy test holati)
-- ⬜ FT-6.6 Natija, mavzular tahlili, izohlar
-- ⬜ FT-6.7 Mashq rejimi API (`/quiz/practice/`)
-- ⬜ FT-6.8 Savollar statistikasi
-- ⬜ FT-1.7 davomi: o'chirilgan foydalanuvchi natijalarini anonimlashtirish
+## 2-bosqich — Topshiriqlar va testlar ✅
+### Topshiriqlar (assignments)
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-5.1 Topshiriq: lab / test, sinflar, boshlanish va muddat, kech topshirish, jarima % | ✅ | faqat o'z sinflariga |
+| FT-5.2 Lab: model, qadamlar (o'qituvchi o'zgartira oladi), min. qatorlar, grafik/xulosa talabi | ✅ | |
+| FT-5.3 Test: mavzular, savollar/masalalar soni, vaqt, urinishlar (1–3), javoblarni ko'rsatish rejimi | ✅ | |
+| FT-5.4 «Mening topshiriqlarim» va holatlar (yangi/bajarilmoqda/topshirildi/baholandi/qaytarildi/muddati o'tdi) | ✅ | |
+| FT-5.5 Lab topshirish: jurnal nusxasi, grafik tahlili, xulosa, PNG ≤ 500 KB | ✅ | |
+| FT-5.6 Baholash (2–5 / 100), izoh, qayta topshirishga qaytarish | ✅ | |
+| FT-5.7 Avtomatik dastlabki baho (qatorlar, R² ≥ 0,98, xatolik ≤ 5%, xulosa) | ✅ | |
+| O'qituvchi uchun sinf ro'yxati bo'yicha holat (topshirmaganlar ham) | ✅ | `assignments/{id}/submissions/` |
+| Test topshirig'i avtomatik baholanadi (eng yaxshi urinish, kechikish jarimasi) | ✅ | o'qituvchi bahoni o'zgartira oladi |
+| FT-5.8 Muddat eslatmasi | ⬜ | 3-bosqich (bildirishnomalar) |
+
+### Testlar (quizzes)
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-6.1 Savollar banki (uz/ru, mavzu, daraja, qiyinlik, holat, muallif) | ✅ | ishlatilgan savol o'chirilmaydi — arxivlanadi |
+| FT-6.2 Hisoblash masalalari | ✅ | parametrlangan — ⬜ 4-bosqich |
+| FT-6.3 170 savol + 48 masala import; Excel import | ✅ | `manage.py import_quiz_bank`, `quiz/questions/import/` |
+| FT-6.4 Serverda tekshiriladigan sessiya, javoblar mijozga yuborilmaydi, vaqt nazorati | ✅ | vaqt tugasa avtomatik yakunlanadi |
+| FT-6.5 Javob tekshiruvi frontend bilan bir xil (46 ta umumiy holat, JS'dan olingan) | ✅ | `tests/test_answers.py` |
+| FT-6.6 Natija, mavzular tahlili, xato javoblar va izohlar | ✅ | |
+| FT-6.7 Mashq rejimi `/quiz/practice/` | ✅ | mavzular navbat bilan |
+| FT-6.8 Savollar statistikasi (har variant necha marta tanlangan) | ✅ | admin panelda «to'g'ri %» |
+| O'qituvchi o'z savollarini qo'shadi (qoralama), admin tasdiqlaydi | ✅ | o'z topshiriqlarida qoralamasi ham ishlatiladi |
+| FT-1.7 davomi: o'chirilgan foydalanuvchi test natijalari anonim saqlanadi | ✅ | |
+| Savollarning ruscha tarjimasi | ⬜ | bazada maydon bor, matnlar hali tarjima qilinmagan (4-bosqich) |
 
 ## 3-bosqich — Statistika va bildirishnomalar ⬜
 - ⬜ FT-8.1 O'qituvchi paneli, mavzular issiqlik xaritasi
@@ -126,10 +138,15 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 - ⬜ O'qituvchi va administrator qo'llanmasi (uz/ru), maxfiylik siyosati
 - ⬜ Production (O'zbekistondagi server, TZ 11.1)
 
-## Frontend integratsiyasi (TZ 9) ⬜
-- ⬜ `api.js`: login/refresh, oflayn navbat (IndexedDB), xatosiz ishlash
-- ⬜ `theme.js`: «Kirish» / profil tugmasi, til va mavzu sinxroni
-- ⬜ `model-tools.js`: jurnalni saqlash, «Topshirish», o'qituvchi rejimi rol bo'yicha
-- ⬜ Katalog, testlar, dars ishlanmalar — API'dan (zaxira: statik)
-- ⬜ Yangi sahifalar: kirish, profil, o'qituvchi paneli, o'quvchi topshiriqlari
+## F-bosqich — Frontendni ulash (TZ 9) ⬜ — keyingi navbat
+Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shiladi,
+yangi sahifalar shu PhET uslubidagi statik HTML bo'ladi. Backend ishlamasa sayt hozirgidek (oflayn) ishlaydi.
+- ⬜ `api.js`: login/refresh, token saqlash, oflayn navbat (IndexedDB), xatosiz ishlash
+- ⬜ `kirish.html` (kirish / ro'yxat: o'qituvchi, o'quvchi sinf kodi bilan), `profil.html`
+- ⬜ `theme.js`: yuqori menyuda «Kirish» / profil tugmasi, til va mavzu sinxroni
+- ⬜ `model-tools.js`: jurnalni avtomatik saqlash (FT-4.2), faol topshiriq bo'lsa «Topshirish», o'qituvchi rejimi rol bo'yicha
+- ⬜ `oquvchi/topshiriqlar.html`: mening topshiriqlarim, holat, baho
+- ⬜ `oqituvchi/`: sinflar (kod, o'quvchilar, Excel import, login kartochkalari PDF), topshiriq berish, baholash
+- ⬜ `testlar/testlar_online.html`: savollar API'dan (zaxira — o'rnatilgan bank), nazorat testi `/quiz/attempts/`
+- ⬜ Katalog va dars ishlanmalar API'dan (zaxira — statik)
 - ✅ `sw.js`: `/api/`, `/admin/`, `/media/` keshlanmaydi

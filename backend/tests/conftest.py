@@ -13,6 +13,7 @@ def django_db_setup(django_db_setup, django_db_blocker):
     """Modellar katalogi barcha testlar uchun bir marta statik saytdan import qilinadi."""
     with django_db_blocker.unblock():
         call_command("import_simulations", verbosity=0)
+        call_command("import_quiz_bank", verbosity=0)
 
 
 @pytest.fixture

@@ -20,6 +20,7 @@ export DATABASE_URL=postgres://fizika:fizika@localhost:5432/fizika
 
 python manage.py migrate
 python manage.py import_simulations       # 15 ta modelni statik saytdan bazaga ko'chiradi
+python manage.py import_quiz_bank         # 170 savol + 48 masalani onlayn testdan ko'chiradi
 python manage.py createsuperuser          # admin panel uchun
 python manage.py runserver                # http://127.0.0.1:8000/api/docs/
 ```
@@ -37,6 +38,7 @@ cp .env.example .env          # DJANGO_SECRET_KEY va parollarni to'ldiring
 docker compose up -d --build
 docker compose exec api python manage.py migrate
 docker compose exec api python manage.py import_simulations
+docker compose exec api python manage.py import_quiz_bank
 docker compose exec api python manage.py createsuperuser
 ```
 Nginx `http://localhost/` da statik saytni, `/api/` va `/admin/` da backendni beradi (bitta domen — CORS kerak emas).
@@ -61,14 +63,16 @@ backend/
 │   ├── accounts/      foydalanuvchi, ro'yxat, JWT, kod (SMS/email), profil, o'chirish
 │   ├── schools/       maktab, sinf, qo'shilish kodi, o'quvchilarni import qilish
 │   ├── simulations/   modellar katalogi, topshiriqlar, kutilgan natijalar, jurnal sxemasi
-│   └── labs/          laboratoriya jurnali, serverda grafik tahlili, CSV eksport
+│   ├── labs/          laboratoriya jurnali, serverda grafik tahlili, CSV eksport
+│   ├── quizzes/       savollar banki, masalalar, test urinishlari, javob tekshiruvi, mashq rejimi
+│   └── assignments/   topshiriqlar, topshirish, avtomatik baho, baholash/qaytarish
 ├── tests/             pytest
 ├── deploy/nginx.conf
 ├── Dockerfile, docker-compose.yml, .env.example
 └── ROADMAP.md         TZ bandlari bo'yicha holat
 ```
 
-## Asosiy endpointlar (1-bosqich)
+## Asosiy endpointlar
 
 | Metod | Yo'l | Kim |
 |---|---|---|
@@ -81,6 +85,11 @@ backend/
 | POST | `/api/v1/classrooms/join/` | o'quvchi |
 | GET | `/api/v1/simulations/` · `{slug}/` · `{slug}/expected/` | hamma / o'qituvchi |
 | CRUD | `/api/v1/labs/` (+ `analyze/`, `export/`) | kirgan |
+| GET | `/api/v1/quiz/topics/` · `/api/v1/quiz/practice/?topics=kepler,linza&count=20` | hamma |
+| POST/GET | `/api/v1/quiz/attempts/` (+ `{id}/answer/`, `{id}/finish/`, `{id}/result/`) | kirgan |
+| CRUD | `/api/v1/quiz/questions/` (+ `import/`), `/api/v1/quiz/problems/` | o'qituvchi |
+| CRUD | `/api/v1/assignments/` (+ `{id}/submissions/`, `{id}/submit/`, `{id}/my-submission/`) | o'qituvchi / o'quvchi |
+| GET/POST | `/api/v1/submissions/{id}/` (+ `grade/`, `return/`) | o'qituvchi / egasi |
 
 To'liq ro'yxat va namunalar — Swagger'da (`/api/docs/`).
 

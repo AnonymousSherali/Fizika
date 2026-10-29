@@ -3,9 +3,9 @@ name: backend
 
 on:
   push:
-    paths: ["backend/**", ".github/workflows/backend.yml", "index.html", "modellar/**", "model-tools.js", "i18n-ru.js"]
+    paths: ["backend/**", ".github/workflows/backend.yml", "index.html", "modellar/**", "model-tools.js", "i18n-ru.js", "testlar/testlar_online.html"]
   pull_request:
-    paths: ["backend/**", ".github/workflows/backend.yml", "index.html", "modellar/**", "model-tools.js", "i18n-ru.js"]
+    paths: ["backend/**", ".github/workflows/backend.yml", "index.html", "modellar/**", "model-tools.js", "i18n-ru.js", "testlar/testlar_online.html"]
 
 jobs:
   test:
