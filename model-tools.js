@@ -29,6 +29,31 @@
         { file: 'radioaktiv_yemirilish_model.html', icon: '☢️', name: 'Radioaktiv yemirilish' }
     ];
 
+    // Simulyatsiya sahifasi uslubi — darhol (sahifa chizilishidan oldin) qo'llanadi
+    if (document.body && document.querySelector('.canvas-section')) document.body.classList.add('sim-page');
+
+    // ---------- Pastki navigatsiya paneli ----------
+    function buildSimBar() {
+        if (!document.body.classList.contains('sim-page') || document.querySelector('.sim-bar')) return;
+        var cur = currentFile();
+        var idx = -1;
+        MODELS.forEach(function (m, i) { if (m.file === cur) idx = i; });
+        var h1 = document.querySelector('.header h1');
+        var title = h1 ? h1.textContent.trim() : document.title;
+        var prev = idx > -1 ? MODELS[(idx - 1 + MODELS.length) % MODELS.length] : null;
+        var next = idx > -1 ? MODELS[(idx + 1) % MODELS.length] : null;
+        var bar = document.createElement('nav');
+        bar.className = 'sim-bar';
+        bar.setAttribute('aria-label', 'Simulyatsiya navigatsiyasi');
+        bar.innerHTML =
+            '<a class="sim-bar__home" href="../index.html#modellar" title="Bosh sahifa" aria-label="Bosh sahifa">🏠</a>' +
+            '<span class="sim-bar__title">' + title + '</span>' +
+            (prev ? '<a href="' + prev.file + '" title="' + prev.name + '" aria-label="Oldingi model">‹ <span class="sim-bar__txt">Oldingi</span></a>' : '') +
+            (next ? '<a href="' + next.file + '" title="' + next.name + '" aria-label="Keyingi model"><span class="sim-bar__txt">Keyingi</span> ›</a>' : '') +
+            '<span class="sim-bar__brand"><img src="../img/icons/icon-192.png" alt="" width="26" height="26">Fizika 10–11</span>';
+        document.body.appendChild(bar);
+    }
+
     function currentFile() {
         var p = location.pathname.split('/').pop();
         return p || '';
@@ -727,6 +752,7 @@
     // ---------- Ishga tushirish ----------
     function boot() {
         buildNav();
+        buildSimBar();
         initKeyboard();
         initLabLog();
         addKbdHint();

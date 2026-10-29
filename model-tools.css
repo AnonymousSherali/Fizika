@@ -318,3 +318,92 @@ kbd {
     #printReport .rep-lines { height: 3.2cm; background: repeating-linear-gradient(#fff 0 0.75cm, #999 0.75cm calc(0.75cm + 1px)); }
     #printReport .rep-foot { margin-top: 14pt; }
 }
+
+/* ============================================================
+   Simulyatsiya sahifasi uslubi (model sahifalari)
+   Toza, yorug' ish maydoni: ixcham sarlavha, pastda qora navigatsiya
+   paneli, och rangli boshqaruv panellari. model-tools.js body ga
+   .sim-page sinfini qo'shadi.
+   ============================================================ */
+.sim-page { padding: 0 0 56px; background: #eef3f8; }
+html.dark .sim-page, body.dark.sim-page { background: #0b111a; }
+.sim-page::before { display: none; }
+.sim-page .container {
+    max-width: 1440px; border-radius: 0; border: 0; box-shadow: none; background: transparent;
+    overflow: visible;
+}
+/* Ixcham sarlavha-chiziq */
+.sim-page .header {
+    display: flex; align-items: center; gap: var(--sp-3) var(--sp-5); flex-wrap: wrap;
+    text-align: left; padding: var(--sp-3) var(--sp-6);
+}
+.sim-page .header::after { background: radial-gradient(30rem 8rem at 20% -60%, rgba(255,255,255,0.25), transparent 70%); }
+.sim-page .header h1 { font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem); margin: 0; letter-spacing: -0.02em; }
+.sim-page .header p { font-size: 0.9rem; opacity: 0.85; margin: 0; }
+.sim-page .back-link { position: static; padding: 6px 12px; font-size: 0.82rem; margin: 0; }
+.sim-page .back-link:hover { transform: none; }
+/* Ish maydoni */
+.sim-page .main-content { padding: var(--sp-4) var(--sp-6) var(--sp-6); gap: var(--sp-4); }
+.sim-page .canvas-section {
+    background: #fff; border: 1px solid #d5dee8; border-radius: var(--r-lg); padding: var(--sp-3);
+    box-shadow: 0 1px 3px rgba(15, 30, 50, 0.08);
+}
+html.dark .sim-page .canvas-section, body.dark.sim-page .canvas-section { background: #121b27; border-color: #223246; }
+.sim-page canvas { box-shadow: none; border-color: #dbe3ec; }
+.sim-page .fs-btn { top: calc(var(--sp-3) + 8px); right: calc(var(--sp-3) + 8px); }
+/* Boshqaruv paneli: och rangli, yumaloq "simulyatsiya" panellari */
+.sim-page .controls {
+    background: #fff; border: 1px solid #d5dee8; border-radius: var(--r-lg); padding: var(--sp-4);
+    box-shadow: 0 1px 3px rgba(15, 30, 50, 0.08);
+}
+html.dark .sim-page .controls, body.dark.sim-page .controls { background: #121b27; border-color: #223246; }
+.sim-page .control-group {
+    background: color-mix(in srgb, var(--primary) 6%, var(--card-bg));
+    border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+    border-radius: 12px; padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-3);
+}
+.sim-page .control-group:hover { box-shadow: none; border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
+.sim-page .controls h2 { font-size: 1rem; margin-bottom: var(--sp-3); }
+/* Asosiy tugma — katta, yumaloq (pill) */
+.sim-page button.action { border-radius: var(--r-pill); padding: 11px var(--sp-4); margin: 6px 0; }
+.sim-page .stats { background: transparent; border: 0; padding: 0; margin-top: var(--sp-4); }
+.sim-page .stats h3 { border-bottom: 0; padding-bottom: 0; }
+.sim-page .stat-item { background: color-mix(in srgb, var(--primary) 5%, var(--card-bg)); border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent); }
+.sim-page .info-panel, .sim-page .lab-log, .sim-page .model-nav { background: #fff; border-color: #d5dee8; }
+html.dark .sim-page .info-panel, html.dark .sim-page .lab-log, html.dark .sim-page .model-nav,
+body.dark.sim-page .info-panel, body.dark.sim-page .lab-log, body.dark.sim-page .model-nav { background: #121b27; border-color: #223246; }
+
+/* Pastki navigatsiya paneli */
+.sim-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; height: 56px;
+    display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-4);
+    background: #1b1e24; color: #e8edf3; box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.25);
+}
+.sim-bar a, .sim-bar button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 40px; min-width: 40px; padding: 0 12px; border-radius: 10px; border: 0;
+    background: transparent; color: #e8edf3; text-decoration: none; font: inherit; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; transition: background 0.15s var(--ease);
+}
+.sim-bar a:hover, .sim-bar button:hover, .sim-bar a:focus-visible, .sim-bar button:focus-visible { background: rgba(255, 255, 255, 0.12); }
+.sim-bar__home { font-size: 1.15rem !important; }
+.sim-bar__title {
+    font-weight: 700; font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-right: auto; padding-left: var(--sp-2); border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+.sim-bar__brand { display: inline-flex; align-items: center; gap: 8px; color: #9fb3c8; font-size: 0.8rem; font-weight: 700; padding-left: var(--sp-2); }
+.sim-bar__brand img { width: 26px; height: 26px; border-radius: 6px; }
+/* Suzuvchi tugmalar panel ustida tursin */
+.sim-page #themeToggle { bottom: calc(56px + var(--sp-4)); }
+.sim-page #langToggle { bottom: calc(56px + var(--sp-4)); }
+.sim-page #scrollTop { bottom: calc(56px + var(--sp-4) + 60px); }
+@media (max-width: 768px) {
+    .sim-page { padding: 0 0 56px; }
+    .sim-page .header { padding: var(--sp-3) var(--sp-4); }
+    .sim-page .main-content { padding: var(--sp-3); }
+    .sim-page .header p { display: none; }
+    .sim-bar__brand, .sim-bar__txt { display: none !important; }
+    .sim-page #themeToggle, .sim-page #langToggle { bottom: calc(56px + var(--sp-3)); }
+    .sim-page #scrollTop { bottom: calc(56px + var(--sp-3) + 50px); }
+}
+@media print { .sim-bar { display: none !important; } .sim-page { padding: 0; } }
