@@ -30,7 +30,11 @@
     ];
 
     // Simulyatsiya sahifasi uslubi — darhol (sahifa chizilishidan oldin) qo'llanadi
-    if (document.body && document.querySelector('.canvas-section')) document.body.classList.add('sim-page');
+    if (document.body && document.querySelector('.canvas-section')) {
+        document.body.classList.add('sim-page');
+        // Pastki panel (56px) ostida element qolmasin: scrollIntoView / fokus shu chegarani hisobga oladi
+        document.documentElement.style.scrollPaddingBottom = '72px';
+    }
 
     // ---------- Pastki navigatsiya paneli ----------
     function buildSimBar() {
@@ -50,6 +54,7 @@
             '<span class="sim-bar__title">' + title + '</span>' +
             (prev ? '<a href="' + prev.file + '" title="' + prev.name + '" aria-label="Oldingi model">‹ <span class="sim-bar__txt">Oldingi</span></a>' : '') +
             (next ? '<a href="' + next.file + '" title="' + next.name + '" aria-label="Keyingi model"><span class="sim-bar__txt">Keyingi</span> ›</a>' : '') +
+            '<a class="sim-bar__account" href="../kirish.html" data-account hidden>👤 Kirish</a>' +
             '<span class="sim-bar__brand"><img src="../img/icons/icon-192.png" alt="" width="26" height="26">Fizika 10–11</span>';
         document.body.appendChild(bar);
     }
@@ -337,25 +342,24 @@
         // Chromium grid elementida sticky chegarasini grid qatori emas, butun grid
         // bo'yicha oladi — kanvas pastdagi jurnal ustiga chiqib qolardi. Shuning uchun
         // "top" ni qo'lda cheklaymiz: kanvas qator (boshqaruv paneli) oxiridan pastga tushmasin.
-        var ticking = false;
         function clamp() {
-            ticking = false;
             sections.forEach(function (sec) {
                 if (!sec.classList.contains('is-sticky')) { sec.style.top = ''; return; }
-                var rowEnd = 0;
+                // -Infinity: panel ekrandan yuqorida bo'lsa pastki cheti manfiy — 0 dan boshlash xato edi
+                var rowEnd = -Infinity;
                 Array.prototype.forEach.call(sec.parentNode.children, function (el) {
                     var cs = getComputedStyle(el);
                     if (el !== sec && cs.gridColumnStart !== '1' && el.offsetHeight) {
                         rowEnd = Math.max(rowEnd, el.getBoundingClientRect().bottom);
                     }
                 });
-                if (!rowEnd) return;
+                if (!isFinite(rowEnd)) return;
                 sec.style.top = Math.min(16, rowEnd - sec.offsetHeight) + 'px';
             });
         }
-        window.addEventListener('scroll', function () {
-            if (!ticking) { ticking = true; requestAnimationFrame(clamp); }
-        }, { passive: true });
+        // Sinxron chaqiramiz: rAF kutilsa, aylantirish to'xtagan zahoti bosilgan tugma ustida
+        // kanvas bir kadr qolib ketardi (bosish kanvasga tushardi)
+        window.addEventListener('scroll', function () { clamp(); }, { passive: true });
         window.addEventListener('resize', sync);
         if ('ResizeObserver' in window) {
             var ro = new ResizeObserver(sync);
@@ -547,6 +551,9 @@
         log.onChange(redraw);
         window.addEventListener('fizika:theme', redraw);
         log.graph = {
+            params: function () {
+                return { x: +sx.value, y: +sy.value, xp: +sxp.value, yp: +syp.value };
+            },
             image: function () {
                 var c = document.createElement('canvas');
                 c.width = 720; c.height = 300;
@@ -710,9 +717,12 @@
             if (q === '0') localStorage.removeItem('fizika-teacher');
             on = localStorage.getItem('fizika-teacher') === '1';
         } catch (e) {}
-        var list = TEACHER[currentFile()];
+        if (on) showTeacherBox(TEACHER[currentFile()]);
+    }
+
+    function showTeacherBox(list) {
         var card = document.querySelector('.task-card');
-        if (!on || !list || !card) return;
+        if (!list || !list.length || !card || document.querySelector('.teacher-box')) return;
         var box = document.createElement('div');
         box.className = 'teacher-box';
         box.innerHTML = '<div class="teacher-box__head"><strong>👩‍🏫 O\'qituvchi uchun: kutilgan natijalar</strong>' +
@@ -749,6 +759,199 @@
         });
     }
 
+    // ---------- Backend: jurnalni saqlash, topshiriq, o'qituvchi rejimi (TZ 9.2) ----------
+    function initCloud(api) {
+        if (!api || initCloud.done) return;
+        initCloud.done = true;
+        var slug = currentFile().replace(/_model\.html$/, '');
+        var params = new URLSearchParams(location.search);
+        var assignmentId = params.get('topshiriq');
+        var log = window.labLog;
+
+        // O'qituvchi kirgan bo'lsa — kutilgan natijalar serverdan (o'qituvchi rejimi rol bo'yicha)
+        if (api.isLoggedIn() && api.isTeacher()) {
+            api.get('simulations/' + slug + '/expected/').then(function (rows) {
+                showTeacherBox(rows.map(function (r) { return r.text; }));
+            }, function () { showTeacherBox(TEACHER[currentFile()]); });
+        }
+        if (!log) return;
+
+        var host = document.querySelector('.lab-log');
+        var head = host.querySelector('.lab-log__head');
+        var status = document.createElement('span');
+        status.className = 'cloud-status';
+        status.setAttribute('aria-live', 'polite');
+        head.appendChild(status);
+        function setStatus(text, kind) {
+            status.textContent = text;
+            status.className = 'cloud-status' + (kind ? ' cloud-status--' + kind : '');
+        }
+
+        var clientId = api.uuid();
+        var journalId = null;
+        var timer = null;
+        var lastSaved = '';
+
+        function payload() {
+            var body = { client_id: clientId, simulation: slug, rows: log.rows(), device: api.device() };
+            if (log.graph && log.graph.params) body.graph = log.graph.params();
+            return body;
+        }
+        // FT-4.2: har bir o'zgarishdan 2 s keyin saqlanadi
+        function save() {
+            clearTimeout(timer);
+            if (!api.isLoggedIn() || !log.rows().length) return Promise.resolve(null);
+            var body = payload();
+            var snap = JSON.stringify(body);
+            if (snap === lastSaved && journalId) return Promise.resolve(journalId);
+            setStatus('⏳ Saqlanmoqda…');
+            return api.sendOrQueue('lab:' + clientId, 'POST', 'labs/', body).then(function (r) {
+                if (r.sent) {
+                    journalId = r.result.id;
+                    lastSaved = snap;
+                    var d = new Date();
+                    setStatus('☁️ Saqlandi ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2), 'ok');
+                    return journalId;
+                }
+                setStatus('📴 Internet yo\'q — navbatda, ulanganda yuboriladi', 'warn');
+                return null;
+            }, function (e) {
+                setStatus('⚠️ Saqlanmadi: ' + (e.text ? e.text() : e.message), 'err');
+                return null;
+            });
+        }
+        log.onChange(function () {
+            clearTimeout(timer);
+            if (api.isLoggedIn() && log.rows().length) {
+                setStatus('✎ O\'zgarishlar bor');
+                timer = setTimeout(save, 2000);
+            }
+        });
+        document.querySelectorAll('#gX, #gY, #gXp, #gYp').forEach(function (el) {
+            el.addEventListener('change', function () { if (journalId) { timer = setTimeout(save, 2000); } });
+        });
+        window.addEventListener('fizika:synced', function (e) {
+            if (e.detail && e.detail.key === 'lab:' + clientId && e.detail.result) {
+                journalId = e.detail.result.id;
+                setStatus('☁️ Saqlandi (navbatdan)', 'ok');
+            }
+        });
+        window.addEventListener('beforeunload', function () { if (timer) save(); });
+
+        function refreshLoginHint() {
+            if (api.isLoggedIn()) {
+                if (!status.textContent) setStatus('☁️ O\'lchovlar hisobingizga saqlanadi', 'ok');
+                return;
+            }
+            api.available().then(function (ok) {
+                if (!ok) return;
+                status.innerHTML = '🔒 Natijalar saqlanmaydi — <a href="' + api.loginUrl(location.pathname + location.search) +
+                    '">kiring</a>';
+                status.className = 'cloud-status';
+            });
+        }
+        refreshLoginHint();
+
+        if (assignmentId) initAssignment(api, assignmentId, save, function () { return journalId; });
+    }
+
+    function initAssignment(api, id, save, getJournalId) {
+        if (!api.isLoggedIn()) {
+            location.replace(api.loginUrl(location.pathname + location.search));
+            return;
+        }
+        var esc = escapeHtml;
+        api.get('assignments/' + id + '/').then(function (a) {
+            var card = document.querySelector('.task-card');
+            // Topshiriq banneri va o'qituvchi bergan qadamlar
+            var banner = document.createElement('div');
+            banner.className = 'assign-banner';
+            banner.innerHTML = '<div class="assign-banner__top"><strong>📌 Topshiriq: ' + esc(a.title) + '</strong>' +
+                '<span class="assign-banner__due">' + (a.due_at ? 'Muddat: ' + new Date(a.due_at).toLocaleString() : 'Muddatsiz') +
+                '</span></div>' + (a.instructions ? '<p>' + esc(a.instructions) + '</p>' : '') +
+                '<p class="hint-note">Talab: kamida ' + a.min_rows + ' ta o\'lchov' + (a.require_graph ? ', grafik' : '') +
+                (a.require_conclusion ? ', xulosa' : '') + ' · O\'qituvchi: ' + esc(a.teacher_name) + '</p>';
+            if (card) {
+                card.parentNode.insertBefore(banner, card);
+                if (a.steps && a.steps.length) {
+                    var ol = card.querySelector('ol');
+                    if (ol) ol.innerHTML = a.steps.map(function (st) { return '<li>' + safeInline(st) + '</li>'; }).join('');
+                }
+            }
+            // Topshirish bloki — jurnal ostida
+            var box = document.createElement('div');
+            box.className = 'submit-box';
+            document.querySelector('.lab-log').appendChild(box);
+            renderSubmit(api, a, box, save, getJournalId);
+        }, function (e) {
+            alert('Topshiriq ochilmadi: ' + (e.text ? e.text() : e.message));
+        });
+    }
+
+    function renderSubmit(api, a, box, save, getJournalId) {
+        api.get('assignments/' + a.id + '/my-submission/').then(function (sub) { draw(sub); },
+            function () { draw(null); });
+        function draw(sub) {
+            var st = a.my_status;
+            if (sub && (sub.status === 'submitted' || sub.status === 'graded')) {
+                box.innerHTML = '<h4>📤 Topshirildi</h4><p>' + (sub.status === 'graded'
+                    ? 'Baho: <b class="submit-grade">' + sub.grade + '</b>' + (sub.teacher_comment ? ' — 💬 ' + escapeHtml(sub.teacher_comment) : '')
+                    : 'O\'qituvchi tekshirmoqda. Tavsiya etilgan baho: <b>' + (sub.suggested_grade || '—') + '</b>') +
+                    '</p>' + autoChecks(sub.auto_score);
+                return;
+            }
+            if (st === 'overdue') {
+                box.innerHTML = '<h4>⏰ Muddat o\'tgan</h4><p class="hint-note">Bu topshiriqni endi topshirib bo\'lmaydi.</p>';
+                return;
+            }
+            box.innerHTML = '<h4>📤 Topshirish</h4>' +
+                (sub && sub.status === 'returned' ? '<p class="warn-note">↩️ O\'qituvchi qaytardi: ' +
+                    escapeHtml(sub.teacher_comment) + '</p>' : '') +
+                '<label for="subConclusion" class="submit-label">Xulosa (kamida 20 belgi)</label>' +
+                '<textarea id="subConclusion" rows="4" placeholder="Tajriba natijasi: ... Grafikdan ... chiqdi. Nazariy qiymat bilan farq ...">' +
+                (sub && sub.conclusion ? escapeHtml(sub.conclusion) : '') + '</textarea>' +
+                '<div class="lab-log__actions"><button type="button" class="lab-btn lab-btn--main" id="subBtn">📤 Topshirish</button></div>' +
+                '<p class="submit-msg" id="subMsg" role="status"></p>';
+            var btn = box.querySelector('#subBtn');
+            var out = box.querySelector('#subMsg');
+            btn.onclick = function () {
+                if (!window.labLog.rows().length) { out.textContent = '⚠️ Avval o\'lchovlarni yozing (S tugmasi)'; return; }
+                btn.disabled = true;
+                out.textContent = '⏳ Yuborilmoqda…';
+                save().then(function () {
+                    var jid = getJournalId();
+                    if (!jid) throw { text: function () { return 'Jurnal saqlanmadi (internetni tekshiring)'; } };
+                    return api.post('assignments/' + a.id + '/submit/', {
+                        lab_journal_id: jid, conclusion: box.querySelector('#subConclusion').value
+                    });
+                }).then(function (s) {
+                    a.my_status = 'submitted';
+                    draw(s);
+                }, function (e) {
+                    out.textContent = '⚠️ ' + (e.text ? e.text() : e.message);
+                    btn.disabled = false;
+                });
+            };
+        }
+        function autoChecks(score) {
+            if (!score || !score.checks) return '';
+            return '<ul class="auto-checks">' + score.checks.map(function (c) {
+                return '<li>' + (c.ok ? '✅' : '❌') + ' ' + escapeHtml(c.text) + '</li>';
+            }).join('') + '</ul>';
+        }
+    }
+
+    // O'qituvchi yozgan matn: hammasi ekranlanadi, faqat oddiy belgilash teglari qoladi (XSS'dan himoya)
+    function safeInline(t) {
+        return escapeHtml(t).replace(/&lt;(\/?)(strong|b|em|i|sub|sup|kbd)&gt;/g, '<$1$2>');
+    }
+
+    function escapeHtml(t) {
+        return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
     // ---------- Ishga tushirish ----------
     function boot() {
         buildNav();
@@ -762,6 +965,9 @@
         initReport();
         initTeacherMode();
         initFullscreen();
+        // Backend bilan aloqa: api.js theme.js orqali asinxron yuklanadi
+        if (window.FizikaAPI) initCloud(window.FizikaAPI);
+        else window.addEventListener('fizika:api', function (e) { initCloud(e.detail); }, { once: true });
     }
 
     if (document.readyState === 'loading') {

@@ -100,6 +100,9 @@ def answer_item(attempt: Attempt, item: AttemptItem, answer) -> bool:
         raise AnswerError("Test yakunlangan")
     if is_expired(attempt):
         raise AnswerError("Vaqt tugagan")
+    # Javob darhol ko'rsatiladigan rejimda qayta javob berib bo'lmaydi (aks holda to'g'risini topib olish oson)
+    if attempt.show_answers == Attempt.ShowAnswers.IMMEDIATELY and item.answered_at is not None:
+        raise AnswerError("Bu savolga javob berilgan")
     if item.question_id:
         try:
             shown = int(answer)

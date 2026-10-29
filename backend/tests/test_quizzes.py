@@ -204,3 +204,11 @@ def test_import_bank_idempotent(db):
     call_command("import_quiz_bank", verbosity=0)
     assert Question.objects.filter(status=Status.APPROVED).count() == 170
     assert Problem.objects.count() == 48 and Topic.objects.count() == 15
+
+
+def test_no_reanswer_in_immediate_mode(api, auth, student):
+    auth(api, student)
+    aid = api.post("/api/v1/quiz/attempts/", {"topics": ["kepler"], "count": 1}, format="json").data["id"]
+    assert api.post(f"/api/v1/quiz/attempts/{aid}/answer/", {"item_id": 0, "answer": "0"}, format="json").status_code == 200
+    r = api.post(f"/api/v1/quiz/attempts/{aid}/answer/", {"item_id": 0, "answer": "1"}, format="json")
+    assert r.status_code == 400

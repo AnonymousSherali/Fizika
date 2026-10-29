@@ -138,8 +138,8 @@ class AttemptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Attempt
-        fields = ["id", "assignment", "config", "started_at", "deadline_at", "remaining_seconds", "finished_at",
-                  "max_score", "items"]
+        fields = ["id", "assignment", "config", "show_answers", "started_at", "deadline_at", "remaining_seconds",
+                  "finished_at", "max_score", "items"]
 
     def get_items(self, obj) -> list[dict]:
         qs = obj.items.select_related("question__topic", "problem__topic")

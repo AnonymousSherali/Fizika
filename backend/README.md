@@ -53,6 +53,12 @@ python manage.py makemigrations --check --dry-run
 ```
 GitHub Actions har bir push/PR'da shularni PostgreSQL bilan bajaradi (`.github/workflows/backend.yml`).
 
+**E2E (brauzerda to'liq ssenariy):** backend va statik sayt ishlab turganda, tasdiqlangan o'qituvchi hisobi bilan:
+```bash
+SITE=http://localhost:8080/ API=http://127.0.0.1:8000/api/v1/ TEACHER=+998901234500 TEACHER_PW=... node e2e/flow.js
+```
+(Playwright kerak: `npm i -D playwright && npx playwright install chromium`.)
+
 ## Tuzilma
 
 ```
@@ -92,6 +98,18 @@ backend/
 | GET/POST | `/api/v1/submissions/{id}/` (+ `grade/`, `return/`) | o'qituvchi / egasi |
 
 To'liq ro'yxat va namunalar — Swagger'da (`/api/docs/`).
+
+## Saytni backendga ulash
+
+Sayt (statik HTML) API'ga `api.js` orqali murojaat qiladi:
+- **Bir domen (tavsiya):** Nginx `/api/` ni backendga yo'naltiradi (`deploy/nginx.conf`) — hech narsa sozlash kerak emas.
+- **Backend boshqa domenda:** `api.js` dagi `API_BASE` ga yozing, masalan `'https://api.maktab.uz/api/v1/'`,
+  va backend `.env` da `CORS_ALLOWED_ORIGINS=https://maktab.uz`.
+- **Lokal sinov:** sayt `python3 -m http.server 8080`, backend `runserver 8000`; brauzer konsolida bir marta:
+  `localStorage.setItem('fizika-api', 'http://127.0.0.1:8000/api/v1/')`.
+
+Yangi sahifalar: `kirish.html`, `profil.html`, `oquvchi/`, `oqituvchi/`, `testlar/nazorat.html`.
+Backend ishlamasa ular «Server bilan aloqa yo'q» deydi, qolgan sayt esa odatdagidek ishlaydi.
 
 ## Muhim kelishuvlar
 - **Bolalar ma'lumotlari:** o'quvchidan faqat ism, familiya va login olinadi. Production server **O'zbekistonda**

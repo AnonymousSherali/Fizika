@@ -138,15 +138,27 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 - ⬜ O'qituvchi va administrator qo'llanmasi (uz/ru), maxfiylik siyosati
 - ⬜ Production (O'zbekistondagi server, TZ 11.1)
 
-## F-bosqich — Frontendni ulash (TZ 9) ⬜ — keyingi navbat
-Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shiladi,
-yangi sahifalar shu PhET uslubidagi statik HTML bo'ladi. Backend ishlamasa sayt hozirgidek (oflayn) ishlaydi.
-- ⬜ `api.js`: login/refresh, token saqlash, oflayn navbat (IndexedDB), xatosiz ishlash
-- ⬜ `kirish.html` (kirish / ro'yxat: o'qituvchi, o'quvchi sinf kodi bilan), `profil.html`
-- ⬜ `theme.js`: yuqori menyuda «Kirish» / profil tugmasi, til va mavzu sinxroni
-- ⬜ `model-tools.js`: jurnalni avtomatik saqlash (FT-4.2), faol topshiriq bo'lsa «Topshirish», o'qituvchi rejimi rol bo'yicha
-- ⬜ `oquvchi/topshiriqlar.html`: mening topshiriqlarim, holat, baho
-- ⬜ `oqituvchi/`: sinflar (kod, o'quvchilar, Excel import, login kartochkalari PDF), topshiriq berish, baholash
-- ⬜ `testlar/testlar_online.html`: savollar API'dan (zaxira — o'rnatilgan bank), nazorat testi `/quiz/attempts/`
-- ⬜ Katalog va dars ishlanmalar API'dan (zaxira — statik)
-- ✅ `sw.js`: `/api/`, `/admin/`, `/media/` keshlanmaydi
+## F-bosqich — Frontendni ulash (TZ 9) ✅
+Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shildi,
+yangi sahifalar shu uslubdagi statik HTML. Backend ishlamasa sayt hozirgidek (oflayn) ishlaydi, «Kirish» tugmasi chiqmaydi.
+| Band | Holat | Izoh |
+|---|---|---|
+| `api.js`: token, avtomatik refresh, xatolar, oflayn navbat (IndexedDB) | ✅ | `API_BASE` — backend boshqa domenda bo'lsa |
+| `kirish.html`: kirish, o'quvchi (sinf kodi, `?kod=` havolasi), o'qituvchi (kod bilan tasdiqlash), parol tiklash | ✅ | |
+| `profil.html`: ism, til/mavzu sinxroni, parol (vaqtinchalik parolni majburiy almashtirish), kirish tarixi, hisobni o'chirish | ✅ | |
+| Hisob tugmasi: bosh sahifa menyusi, model sahifasidagi pastki panel, boshqa sahifalarda burchakda | ✅ | |
+| FT-4.2 Model jurnali avtomatik saqlanadi (2 s), holat ko'rsatiladi | ✅ | |
+| FT-4.3 Internet yo'q — navbatga, ulanganda yuboriladi | ✅ | |
+| Modelda topshiriq rejimi (`?topshiriq=`): banner, o'qituvchi qadamlari, «Topshirish», avto-tekshiruv natijasi, qaytarilgan izoh | ✅ | |
+| O'qituvchi rejimi rol bo'yicha (kutilgan natijalar serverdan) | ✅ | `?oqituvchi=1` ham ishlaydi |
+| `oquvchi/index.html`: topshiriqlar (holat, baho, izoh), jurnallar (CSV), test natijalari, sinfga qo'shilish | ✅ | |
+| `testlar/nazorat.html`: nazorat testi (taymer, navigatsiya, davom ettirish, natija va xatolar tahlili) | ✅ | |
+| `oqituvchi/index.html`: sinflar, kod/havola, o'quvchilar (import, parol, ko'chirish), **login kartochkalari (chop etish/PDF)** | ✅ | FT-1.2 kartochkalar |
+| `oqituvchi/index.html`: topshiriq berish (lab/test), sinf bo'yicha holat, ishni ko'rish va baholash, qaytarish | ✅ | |
+| `oqituvchi/index.html`: savollarim (qo'shish, Excel import, statistika) | ✅ | |
+| E2E: o'qituvchi → sinf → o'quvchilar → topshiriq → o'quvchi bajaradi → baho | ✅ | Playwright (qo'lda ishga tushiriladi) |
+| `testlar_online.html` mashq rejimi savollarini API'dan olish | ⬜ | hozir o'rnatilgan bank (oflayn ishlashi uchun qulay) |
+| Katalog va dars ishlanmalar API'dan | ⬜ | 4-bosqich (kontent boshqaruvi bilan) |
+| Yangi sahifalarning ruscha tarjimasi (i18n-ru.js) | ⬜ | |
+| `sw.js`: `/api/`, `/admin/`, `/media/` keshlanmaydi | ✅ | |
+| Topilgan va tuzatilgan xato: yopishqoq kanvas pastdagi jurnal ustiga chiqardi (panel ekran tepasidan chiqqanda) | ✅ | |

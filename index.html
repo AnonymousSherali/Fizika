@@ -11,8 +11,8 @@
     <meta property="og:type" content="website">
     <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Fizik Modellar — Interaktiv O'quv Platformasi</title>
-    <link rel="stylesheet" href="styles.css?v=20261029f">
-    <link rel="stylesheet" href="model-tools.css?v=20261029f">
+    <link rel="stylesheet" href="styles.css?v=20261031a">
+    <link rel="stylesheet" href="model-tools.css?v=20261031a">
     <style>
         /* ============================================================
            Bosh sahifa: simulyatsiyalar katalogi (toza, yorug', rangli
@@ -64,6 +64,8 @@
             color: var(--h-ink); font-weight: 600; font-size: 0.92rem; transition: background 0.2s var(--ease), color 0.2s var(--ease);
         }
         .nav-links a:hover { background: var(--h-sky); color: var(--h-blue); }
+        .nav-links .nav-account { border: 1px solid var(--h-line); }
+        [data-account][hidden] { display: none !important; }
         .nav-menu { display: none; margin-left: auto; position: relative; }
         .nav-menu summary {
             list-style: none; cursor: pointer; width: 42px; height: 42px; display: grid; place-items: center;
@@ -297,6 +299,7 @@
                 <a href="#oqituvchi">O'qituvchilar uchun</a>
                 <a href="testlar/testlar_online.html">Testlar</a>
                 <a href="dars_ishlanmalar/index.html">Dars ishlanmalar</a>
+                <a href="kirish.html" class="nav-account" data-account hidden>👤 Kirish</a>
             </div>
             <details class="nav-menu">
                 <summary aria-label="Menyu">☰</summary>
@@ -305,6 +308,7 @@
                     <a href="#oqituvchi">O'qituvchilar uchun</a>
                     <a href="testlar/testlar_online.html">Testlar</a>
                     <a href="dars_ishlanmalar/index.html">Dars ishlanmalar</a>
+                    <a href="kirish.html" data-account hidden>👤 Kirish</a>
                 </div>
             </details>
         </div>
@@ -703,7 +707,7 @@
         </div>
     </footer>
 
-    <script src="theme.js?v=20261029f"></script>
+    <script src="theme.js?v=20261031a"></script>
     <script>
         // ===== Katalog: qidiruv, bo'lim/sinf filtrlari, saralash, ko'rinish =====
         (function () {

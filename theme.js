@@ -99,7 +99,7 @@
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261029f';
+    var I18N_VER = '20261031a';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----
@@ -180,6 +180,55 @@
         setTimeout(function () { t.remove(); }, 3800);
     }
 
+    // ----- Backend bilan aloqa (api.js) va hisob tugmasi -----
+    // api.js har sahifada avtomatik yuklanadi. «Kirish» tugmasi faqat server ishlayotgan bo'lsa
+    // ko'rinadi — backendsiz (faqat statik hosting) saytda ortiqcha tugma chiqmaydi.
+    function loadApi() {
+        if (!ROOT || !/^https?:/.test(location.protocol) || window.FizikaAPI) return;
+        var s = document.createElement('script');
+        s.src = ROOT + 'api.js?v=' + I18N_VER;
+        s.onload = function () { renderAccount(); };
+        document.head.appendChild(s);
+        window.addEventListener('fizika:auth', renderAccount);
+    }
+
+    function renderAccount() {
+        var api = window.FizikaAPI;
+        if (!api) return;
+        var u = api.user();
+        var slots = document.querySelectorAll('[data-account]');
+        var show = function (ok) {
+            if (!ok && !u) {
+                slots.forEach(function (el) { el.hidden = true; });
+                return;
+            }
+            var href, text;
+            if (u) {
+                href = ROOT + (api.isTeacher() ? 'oqituvchi/index.html' : 'oquvchi/index.html');
+                text = '👤 ' + (u.first_name || u.username);
+            } else {
+                href = api.loginUrl(location.pathname + location.search);
+                text = '👤 Kirish';
+            }
+            if (!slots.length) {
+                var a = document.createElement('a');
+                a.id = 'accountBtn';
+                a.className = 'account-btn';
+                a.setAttribute('data-account', '');
+                document.body.appendChild(a);
+                slots = [a];
+            }
+            slots.forEach(function (el) {
+                el.hidden = false;
+                el.href = href;
+                el.textContent = text;
+                el.title = u ? 'Mening sahifam' : 'Tizimga kirish';
+            });
+        };
+        if (u) show(true);
+        else api.available().then(show);
+    }
+
     // ----- Ishga tushirish -----
     // Rejimni iloji boricha erta qo'llaymiz (miltillashning oldini olish)
     function boot() {
@@ -192,6 +241,7 @@
         initPwa();
         initTeacherFlag();
         loadLang();
+        loadApi();
     }
 
     if (document.readyState === 'loading') {

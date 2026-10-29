@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fizika 10–11 platformasiga kirish va ro'yxatdan o'tish">
+    <link rel="icon" href="img/icons/icon-192.png" type="image/png">
+    <title>Kirish — Fizika 10–11</title>
+    <link rel="stylesheet" href="styles.css?v=20261031a">
+    <link rel="stylesheet" href="app.css?v=20261031a">
+    <style>
+        .auth { max-width: 480px; margin: var(--sp-7) auto; }
+        .auth .panel { padding: var(--sp-6); }
+        .auth h1 { font-size: 1.5rem; text-align: center; margin-bottom: 4px; }
+        .auth .sub { text-align: center; color: var(--a-muted); margin-bottom: var(--sp-5); }
+        .auth .btn-a { width: 100%; }
+        .auth .switch { text-align: center; margin-top: var(--sp-4); font-size: 0.9rem; }
+        .auth .switch a { color: var(--a-blue); font-weight: 600; }
+        [data-step][hidden] { display: none; }
+    </style>
+</head>
+<body class="app">
+    <header class="app-nav">
+        <div class="wrap">
+            <a class="app-brand" href="index.html"><img src="img/icons/icon-192.png" alt="" width="32" height="32">Fizika 10–11</a>
+            <button type="button" class="btn-a ghost small menu-btn" aria-label="Menyu">☰</button>
+            <nav id="appNav" aria-label="Menyu"></nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="wrap auth">
+            <div class="panel">
+                <h1>👋 Xush kelibsiz</h1>
+                <p class="sub">Natijalaringiz saqlanadi, o'qituvchi topshiriq beradi va baholaydi</p>
+
+                <div class="tabs-a" role="tablist">
+                    <button type="button" role="tab" data-tab="login" aria-selected="true">Kirish</button>
+                    <button type="button" role="tab" data-tab="student" aria-selected="false">O'quvchi ro'yxati</button>
+                    <button type="button" role="tab" data-tab="teacher" aria-selected="false">O'qituvchi ro'yxati</button>
+                </div>
+
+                <div class="msg" id="msg" role="status" aria-live="polite"></div>
+
+                <!-- Kirish -->
+                <form data-step="login" id="fLogin" novalidate>
+                    <div class="field">
+                        <label for="lLogin">Login, telefon yoki email</label>
+                        <input id="lLogin" name="login" autocomplete="username" required placeholder="masalan: aliyev.vali yoki +998 90 123 45 67">
+                    </div>
+                    <div class="field">
+                        <label for="lPass">Parol</label>
+                        <input id="lPass" name="password" type="password" autocomplete="current-password" required>
+                    </div>
+                    <button class="btn-a" type="submit">Kirish</button>
+                    <p class="switch"><a href="#" id="forgotLink">Parolni unutdingizmi?</a></p>
+                </form>
+
+                <!-- O'quvchi: sinf kodi bilan -->
+                <form data-step="student" id="fStudent" hidden novalidate>
+                    <div class="field">
+                        <label for="sCode">Sinf kodi</label>
+                        <input id="sCode" required placeholder="FZ-7K3Q" autocomplete="off" style="text-transform:uppercase">
+                        <span class="hint">Kodni o'qituvchingiz beradi</span>
+                    </div>
+                    <div class="row">
+                        <div class="field"><label for="sLast">Familiya</label><input id="sLast" required autocomplete="family-name"></div>
+                        <div class="field"><label for="sFirst">Ism</label><input id="sFirst" required autocomplete="given-name"></div>
+                    </div>
+                    <div class="field">
+                        <label for="sUser">Login</label>
+                        <input id="sUser" required autocomplete="username" placeholder="aliyev.vali">
+                        <span class="hint">Lotin harflari, raqam, nuqta — 3–40 belgi</span>
+                    </div>
+                    <div class="field">
+                        <label for="sPass">Parol</label>
+                        <input id="sPass" type="password" required autocomplete="new-password">
+                        <span class="hint">Kamida 8 belgi, faqat raqamlardan iborat bo'lmasin</span>
+                    </div>
+                    <button class="btn-a" type="submit">Ro'yxatdan o'tish</button>
+                    <p class="muted small" style="margin-top:10px">Telefon va email so'ralmaydi. Shaxsiy ma'lumotlar faqat ta'lim maqsadida ishlatiladi.</p>
+                </form>
+
+                <!-- O'qituvchi -->
+                <form data-step="teacher" id="fTeacher" hidden novalidate>
+                    <div class="row">
+                        <div class="field"><label for="tLast">Familiya</label><input id="tLast" required autocomplete="family-name"></div>
+                        <div class="field"><label for="tFirst">Ism</label><input id="tFirst" required autocomplete="given-name"></div>
+                    </div>
+                    <div class="field">
+                        <label for="tPhone">Telefon</label>
+                        <input id="tPhone" type="tel" autocomplete="tel" placeholder="+998 90 123 45 67">
+                    </div>
+                    <div class="field">
+                        <label for="tEmail">yoki Email</label>
+                        <input id="tEmail" type="email" autocomplete="email">
+                    </div>
+                    <div class="field">
+                        <label for="tRegion">Viloyat</label>
+                        <select id="tRegion" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="tSchool">Maktab</label>
+                        <select id="tSchool"><option value="">— ro'yxatdan tanlang —</option></select>
+                        <span class="hint">Ro'yxatda bo'lmasa — pastda yangisini kiriting</span>
+                    </div>
+                    <div class="row" id="newSchoolRow">
+                        <div class="field"><label for="tSchoolName">Yangi maktab nomi</label><input id="tSchoolName" placeholder="12-umumta'lim maktabi"></div>
+                        <div class="field"><label for="tDistrict">Tuman / shahar</label><input id="tDistrict"></div>
+                    </div>
+                    <div class="field">
+                        <label for="tPass">Parol</label>
+                        <input id="tPass" type="password" required autocomplete="new-password">
+                    </div>
+                    <button class="btn-a" type="submit">Ro'yxatdan o'tish</button>
+                </form>
+
+                <!-- Tasdiqlash kodi -->
+                <form data-step="verify" id="fVerify" hidden novalidate>
+                    <p class="muted" id="verifyText"></p>
+                    <div class="field">
+                        <label for="vCode">Tasdiqlash kodi</label>
+                        <input id="vCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+                    </div>
+                    <button class="btn-a" type="submit">Tasdiqlash</button>
+                    <p class="switch"><a href="#" id="resendLink">Kodni qayta yuborish</a></p>
+                </form>
+
+                <!-- Parolni tiklash -->
+                <form data-step="reset" id="fReset" hidden novalidate>
+                    <p class="muted">O'qituvchilar telefon yoki emailiga kod oladi. <strong>O'quvchilar</strong> parolini o'qituvchisi tiklaydi.</p>
+                    <div class="field">
+                        <label for="rLogin">Telefon yoki email</label>
+                        <input id="rLogin" required>
+                    </div>
+                    <div class="field" id="rCodeBox" hidden>
+                        <label for="rCode">Kod</label>
+                        <input id="rCode" inputmode="numeric" maxlength="6">
+                        <label for="rPass" style="margin-top:8px">Yangi parol</label>
+                        <input id="rPass" type="password" autocomplete="new-password">
+                    </div>
+                    <button class="btn-a" type="submit" id="rBtn">Kod yuborish</button>
+                    <p class="switch"><a href="#" data-goto="login">← Kirishga qaytish</a></p>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="theme.js?v=20261031a"></script>
+    <script src="api.js?v=20261031a"></script>
+    <script src="app.js?v=20261031a"></script>
+    <script>
+    (function () {
+        var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
+        var next = new URLSearchParams(location.search).get('next');
+        var pendingLogin = '';
+
+        function show(step) {
+            document.querySelectorAll('[data-step]').forEach(function (f) { f.hidden = f.dataset.step !== step; });
+            document.querySelectorAll('[data-tab]').forEach(function (b) {
+                b.setAttribute('aria-selected', String(b.dataset.tab === step));
+            });
+            FA.msg('msg', 'info', '');
+            var first = document.querySelector('[data-step="' + step + '"] input');
+            if (first) first.focus();
+        }
+        function done(user) {
+            if (next && next.charAt(0) === '/' && next.indexOf('//') !== 0) { location.href = next; return; }
+            location.href = FA.root + (api.isTeacher() ? 'oqituvchi/index.html' : 'oquvchi/index.html');
+        }
+        function fail(e) { FA.msg('msg', 'err', FA.errText(e)); }
+        function busy(form, on) { form.querySelectorAll('button').forEach(function (b) { b.disabled = on; }); }
+
+        document.querySelectorAll('[data-tab]').forEach(function (b) {
+            b.onclick = function () { show(b.dataset.tab); };
+        });
+        document.querySelectorAll('[data-goto]').forEach(function (a) {
+            a.onclick = function (e) { e.preventDefault(); show(a.dataset.goto); };
+        });
+
+        FA.boot({ login: false }).then(function () {
+            if (api.isLoggedIn()) { done(api.user()); return; }
+            // Sinf kodi havolada kelsa (?kod=FZ-XXXX) — o'quvchi ro'yxatini ochamiz
+            var kod = new URLSearchParams(location.search).get('kod');
+            if (kod) { $('sCode').value = kod; show('student'); }
+            loadRegions();
+        }, function () {});
+
+        $('fLogin').onsubmit = function (e) {
+            e.preventDefault();
+            var f = this; busy(f, true);
+            api.login($('lLogin').value.trim(), $('lPass').value).then(done, function (err) {
+                if (err.code === 'not_verified') {
+                    pendingLogin = $('lLogin').value.trim();
+                    api.post('auth/verify/resend/', { login: pendingLogin }).catch(function () {});
+                    $('verifyText').textContent = 'Hisobingiz hali tasdiqlanmagan. Telefon/emailingizga yangi kod yuborildi.';
+                    show('verify');
+                    return;
+                }
+                fail(err);
+            }).then(function () { busy(f, false); });
+        };
+
+        $('fStudent').onsubmit = function (e) {
+            e.preventDefault();
+            var f = this; busy(f, true);
+            api.post('auth/register/student/', {
+                join_code: $('sCode').value.trim().toUpperCase(), first_name: $('sFirst').value.trim(),
+                last_name: $('sLast').value.trim(), username: $('sUser').value.trim(), password: $('sPass').value
+            }).then(function (r) { api.setAuth(r); done(r.user); }, fail).then(function () { busy(f, false); });
+        };
+
+        $('fTeacher').onsubmit = function (e) {
+            e.preventDefault();
+            var f = this, body = {
+                first_name: $('tFirst').value.trim(), last_name: $('tLast').value.trim(),
+                phone: $('tPhone').value.trim(), email: $('tEmail').value.trim(), password: $('tPass').value
+            };
+            if ($('tSchool').value) body.school_id = +$('tSchool').value;
+            else body.new_school = { name: $('tSchoolName').value.trim(), region: $('tRegion').value,
+                                     district: $('tDistrict').value.trim() };
+            busy(f, true);
+            api.post('auth/register/teacher/', body).then(function (r) {
+                pendingLogin = body.phone || body.email;
+                $('verifyText').textContent = 'Kod yuborildi: ' + r.verification.target + '. Uni kiriting.';
+                show('verify');
+            }, fail).then(function () { busy(f, false); });
+        };
+
+        $('fVerify').onsubmit = function (e) {
+            e.preventDefault();
+            var f = this; busy(f, true);
+            api.post('auth/verify/', { login: pendingLogin, code: $('vCode').value.trim() })
+                .then(function (r) { api.setAuth(r); done(r.user); }, fail).then(function () { busy(f, false); });
+        };
+        $('resendLink').onclick = function (e) {
+            e.preventDefault();
+            api.post('auth/verify/resend/', { login: pendingLogin }).then(function () {
+                FA.msg('msg', 'ok', 'Yangi kod yuborildi');
+            }, fail);
+        };
+
+        $('forgotLink').onclick = function (e) { e.preventDefault(); show('reset'); };
+        $('fReset').onsubmit = function (e) {
+            e.preventDefault();
+            var f = this; busy(f, true);
+            var p = $('rCodeBox').hidden
+                ? api.post('auth/password/reset/', { login: $('rLogin').value.trim() }).then(function (r) {
+                    $('rCodeBox').hidden = false;
+                    $('rBtn').textContent = 'Parolni o\'zgartirish';
+                    FA.msg('msg', 'ok', r.detail);
+                })
+                : api.post('auth/password/reset/confirm/', {
+                    login: $('rLogin').value.trim(), code: $('rCode').value.trim(), new_password: $('rPass').value
+                }).then(function (r) { api.setAuth(r); done(r.user); });
+            p.catch(fail).then(function () { busy(f, false); });
+        };
+
+        // Viloyat → maktablar ro'yxati
+        var REGIONS = [['toshkent_sh', 'Toshkent shahri'], ['toshkent', 'Toshkent viloyati'], ['andijon', 'Andijon viloyati'],
+            ['buxoro', 'Buxoro viloyati'], ['fargona', 'Farg\'ona viloyati'], ['jizzax', 'Jizzax viloyati'],
+            ['xorazm', 'Xorazm viloyati'], ['namangan', 'Namangan viloyati'], ['navoiy', 'Navoiy viloyati'],
+            ['qashqadaryo', 'Qashqadaryo viloyati'], ['samarqand', 'Samarqand viloyati'], ['sirdaryo', 'Sirdaryo viloyati'],
+            ['surxondaryo', 'Surxondaryo viloyati'], ['qoraqalpogiston', 'Qoraqalpog\'iston Respublikasi']];
+        function loadRegions() {
+            $('tRegion').innerHTML = REGIONS.map(function (r) {
+                return '<option value="' + r[0] + '">' + r[1] + '</option>';
+            }).join('');
+            $('tRegion').onchange = loadSchools;
+            $('tSchool').onchange = function () { $('newSchoolRow').hidden = !!this.value; };
+            loadSchools();
+        }
+        function loadSchools() {
+            api.get('schools/?page_size=100&region=' + $('tRegion').value).then(function (r) {
+                $('tSchool').innerHTML = '<option value="">— ro\'yxatdan tanlang —</option>' + r.results.map(function (s) {
+                    return '<option value="' + s.id + '">' + FA.esc(s.name + ' (' + s.district + ')') + '</option>';
+                }).join('');
+                $('newSchoolRow').hidden = false;
+            }, function () {});
+        }
+    })();
+    </script>
+</body>
+</html>

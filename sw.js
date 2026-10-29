@@ -8,9 +8,12 @@
    Yangilash: fayllar o'zgarganda pastdagi VERSION ni o'zgartiring —
    eski kesh o'chiriladi va yangi fayllar yuklanadi.
    ============================================================ */
-var VERSION = 'fizika-20261030a';
+var VERSION = 'fizika-20261031a';
 var CORE = [
     './',
+    './api.js',
+    './app.css',
+    './app.js',
     './dars_ishlanmalar/index.html',
     './fonts/inter-latin-ext-wght-normal.woff2',
     './fonts/inter-latin-wght-normal.woff2',
@@ -37,6 +40,7 @@ var CORE = [
     './img/rezerford.jpg',
     './img/yoruglik_sinishi.jpg',
     './index.html',
+    './kirish.html',
     './manifest.webmanifest',
     './model-tools.css',
     './model-tools.js',
@@ -56,9 +60,13 @@ var CORE = [
     './modellar/radioaktiv_yemirilish_model.html',
     './modellar/rezerford_model.html',
     './modellar/yoruglik_sinishi_model.html',
+    './oqituvchi/index.html',
+    './oquvchi/index.html',
+    './profil.html',
     './styles.css',
     './tekshiruv.html',
     './testlar/index.html',
+    './testlar/nazorat.html',
     './testlar/testlar_online.html',
     './theme.js'
 ];
