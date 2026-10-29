@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
+    <meta name="description" content="10-11-sinf fizikasi bo'yicha onlayn interaktiv test: 15 mavzu (mayatniklar, qiya tekislik, impuls, gaz qonunlari, Om qonuni, kondensator, induksiya, optika, fotoeffekt, radioaktivlik, Rezerford, Kepler) — mavzu tanlash va avtomatik baholash bilan.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20261029c">
+    <link rel="stylesheet" href="../styles.css?v=20261029d">
     <style>
         :root {
             --primary: #4f46e5;
@@ -132,9 +132,73 @@
         .topic-bar { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
         .topic-bar > i { display: block; height: 100%; border-radius: inherit; }
 
+        /* Mavzu va savollar sonini tanlash */
+        .picker { text-align: left; margin: 26px 0 0; }
+        .picker__head { display: flex; align-items: center; justify-content: space-between;
+                        gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .picker h3 { font-size: 1.02rem; color: var(--text); margin: 0; }
+        .picker h3 small { font-weight: 500; color: var(--text-muted); font-size: 0.85em; }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { position: relative; display: inline-flex; max-width: 100%; cursor: pointer; }
+        .chip input, .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+        .chip__body {
+            display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+            padding: 8px 12px 8px 10px; border-radius: 999px;
+            border: 1.5px solid var(--border); background: var(--panel-bg); color: var(--text);
+            font-size: 0.92rem; font-weight: 600; line-height: 1.25; user-select: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+        .chip__body::before {
+            content: ''; flex-shrink: 0; width: 18px; height: 18px; border-radius: 6px;
+            border: 2px solid color-mix(in srgb, var(--text-muted) 70%, transparent);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 800; color: #fff; box-sizing: border-box;
+        }
+        .chip__n {
+            font-size: 0.74rem; font-weight: 700; color: var(--text-muted);
+            background: var(--container-bg); border: 1px solid var(--border);
+            border-radius: 999px; padding: 1px 7px; font-variant-numeric: tabular-nums;
+        }
+        .chip:hover .chip__body { border-color: var(--accent); }
+        .chip input:checked + .chip__body {
+            border-color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 13%, var(--panel-bg));
+        }
+        .chip input:checked + .chip__body::before { content: '✓'; background: var(--accent); border-color: var(--accent); }
+        .chip input:indeterminate + .chip__body::before { content: '–'; background: var(--accent); border-color: var(--accent); }
+        .chip input:focus-visible + .chip__body { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .chip--all .chip__body { padding: 6px 12px 6px 9px; font-size: 0.88rem; }
+
+        .seg {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; max-width: 460px;
+            background: var(--panel-bg); border: 1.5px solid var(--border); border-radius: 14px; padding: 4px;
+        }
+        .seg label { position: relative; display: block; }
+        .seg span {
+            display: block; text-align: center; padding: 9px 4px; border-radius: 10px;
+            font-weight: 700; color: var(--text-muted); cursor: pointer; user-select: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .seg label:hover span { color: var(--text); }
+        .seg input:checked + span { background: var(--header-bg); color: #fff;
+                                    box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent); }
+        .seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .sel-summary { text-align: left; margin: 14px 0 0 !important; font-size: 0.95em; }
+        .sel-summary strong { color: var(--text); }
+        .sel-summary.warn { color: #dc2626 !important; font-weight: 600; }
+        html.dark .sel-summary.warn, body.dark .sel-summary.warn { color: #f87171 !important; }
+        .start-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
         .hidden { display: none; }
 
         @media (max-width: 600px) {
+            .start-actions .btn { width: 100%; }
+            .chip__body { font-size: 0.88rem; padding: 7px 10px 7px 8px; gap: 6px; }
+            .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+            .info-card { padding: 12px 14px; }
+            .info-card .num { font-size: 1.5em; }
+            .score-circle { width: 150px; height: 150px; }
+            .score-circle .pct { font-size: 2.5em; }
             .content { padding: 20px 16px; }
             .q-text { font-size: 1.1em; }
             .header h1 { font-size: 1.7em; }
@@ -151,7 +215,7 @@
         <div class="header">
             <a href="../index.html" class="back-link">← Bosh sahifa</a>
             <h1>📝 Onlayn Testlar</h1>
-            <p>Rezerford tajribasi va Kepler qonunlari</p>
+            <p>10–11-sinf fizikasi: 15 mavzu bo'yicha test va masalalar</p>
         </div>
 
         <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
@@ -161,23 +225,50 @@
             <div id="startScreen" class="start-screen">
                 <div class="quiz-icon">🎯</div>
                 <h2>Bilimingizni sinab ko'ring!</h2>
-                <p>Quyidagi test <strong>Rezerford tajribasi</strong> va <strong>Kepler qonunlari</strong>
-                   mavzularini qamrab oladi (11-sinf). Asosiy bilim, chuqur tushunish va
-                   hisoblash masalalari bo'limlaridan iborat.</p>
+                <p>Test 10–11-sinf fizikasining <strong id="topicTotal">15</strong> ta mavzusini qamrab oladi:
+                   har bir mavzuda asosiy bilim, chuqur tushunish va hisoblash masalalari bor.
+                   Kerakli mavzularni va savollar sonini tanlang.</p>
+
+                <section class="picker" aria-labelledby="topicsLbl">
+                    <div class="picker__head">
+                        <h3 id="topicsLbl">Mavzular</h3>
+                        <label class="chip chip--all">
+                            <input type="checkbox" id="allTopics">
+                            <span class="chip__body">Hammasi</span>
+                        </label>
+                    </div>
+                    <div class="chips" id="topicChips" role="group" aria-labelledby="topicsLbl"></div>
+                </section>
+
+                <section class="picker" aria-labelledby="countLbl">
+                    <div class="picker__head">
+                        <h3 id="countLbl">Test savollari soni <small>(tanlangan mavzulardan tasodifiy)</small></h3>
+                    </div>
+                    <div class="seg" role="radiogroup" aria-labelledby="countLbl" id="countSeg">
+                        <label><input type="radio" name="qcount" value="10"><span>10</span></label>
+                        <label><input type="radio" name="qcount" value="20"><span>20</span></label>
+                        <label><input type="radio" name="qcount" value="40"><span>40</span></label>
+                        <label><input type="radio" name="qcount" value="all"><span>Hammasi</span></label>
+                    </div>
+                </section>
+
+                <p class="sel-summary" id="selSummary" aria-live="polite"></p>
+
                 <div class="info-grid">
-                    <div class="info-card"><div class="num" id="totalQ">40</div><div class="lbl">Test savoli</div></div>
+                    <div class="info-card"><div class="num" id="totalQ">20</div><div class="lbl">Test savoli</div></div>
                     <div class="info-card"><div class="num" id="totalP">9</div><div class="lbl">Hisoblash masalasi</div></div>
-                    <div class="info-card"><div class="num">~25</div><div class="lbl">Daqiqa</div></div>
+                    <div class="info-card"><div class="num" id="totalMin">~10</div><div class="lbl">Daqiqa (test)</div></div>
                     <div class="info-card"><div class="num">60%</div><div class="lbl">O'tish balli</div></div>
                 </div>
                 <p style="font-size:0.9em; color:var(--text-muted);">Test savollarida javobni belgilaysiz;
                    hisoblash masalalarida raqamli javobni o'zingiz hisoblab kiritasiz.<br>
-                   Savollar va variantlar har safar aralashtiriladi.
+                   Savollar va variantlar har safar aralashtiriladi; tanlovingiz eslab qolinadi.
                    ⌨️ Klaviatura: <strong>A–D</strong> javob tanlash, <strong>← →</strong> navigatsiya.</p>
                 <br>
-                <button class="btn" onclick="startQuiz()">▶️ Test Savollari</button>
-                &nbsp;
-                <button class="btn" style="background: linear-gradient(135deg, var(--accent-2), #db2777);" onclick="startCalc()">🧮 Hisoblash Masalalari</button>
+                <div class="start-actions">
+                    <button class="btn" id="startBtn" onclick="startQuiz()">▶️ Test Savollari</button>
+                    <button class="btn" id="calcBtn" style="background: linear-gradient(135deg, var(--accent-2), #db2777);" onclick="startCalc()">🧮 Hisoblash Masalalari</button>
+                </div>
             </div>
 
             <!-- QUESTION -->
@@ -228,7 +319,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261029c"></script>
+    <script src="../theme.js?v=20261029d"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -315,15 +406,315 @@
             { tag: "Kepler · Chuqur", q: "Yer perigeliyda qachon bo'ladi?", o: ["Mart","Iyun","Sentyabr","Yanvar"], correct: 3,
               ex: "Yer perigeliydan har yili taxminan 3–4 yanvarda o'tadi. Fasllar esa masofaga emas, Yer o'qining og'ishiga bog'liq." },
             { tag: "Kepler · Chuqur", q: "Uchinchi qonunni kim nazariy asoslab berdi?", o: ["Galiley","Kepler","Nyuton","Eynshteyn"], correct: 2,
-              ex: "Nyuton butun olam tortishish qonunidan T² = 4π²a³/(GM) ni keltirib chiqarib, 3-qonunni nazariy asoslagan." }
+              ex: "Nyuton butun olam tortishish qonunidan T² = 4π²a³/(GM) ni keltirib chiqarib, 3-qonunni nazariy asoslagan." },
+            // ===== Matematik mayatnik - Asosiy =====
+            { tag: "Matematik mayatnik · Asosiy", q: "Matematik mayatnikning (kichik tebranishlardagi) davri qaysi formula bilan topiladi?", o: ["T = 2π√(l/g)", "T = 2π√(g/l)", "T = 2π√(m/k)", "T = 2π·l/g"], correct: 0,
+              ex: "Kichik tebranishlarda T = 2π√(l/g): davr faqat ip uzunligi l va erkin tushish tezlanishi g ga bog'liq. T = 2π√(m/k) — prujinali mayatnik formulasi." },
+            { tag: "Matematik mayatnik · Asosiy", q: "Matematik mayatnik ipining uzunligi 4 marta oshirilsa, tebranish davri qanday o'zgaradi?", o: ["4 marta ortadi", "2 marta ortadi", "2 marta kamayadi", "O'zgarmaydi"], correct: 1,
+              ex: "T ~ √l, shuning uchun uzunlik 4 marta ortsa, davr √4 = 2 marta ortadi." },
+            { tag: "Matematik mayatnik · Asosiy", q: "Mayatnik yukining massasi 2 marta oshirildi (ip uzunligi o'zgarmas). Tebranish davri qanday o'zgaradi?", o: ["2 marta ortadi", "√2 marta ortadi", "2 marta kamayadi", "O'zgarmaydi"], correct: 3,
+              ex: "T = 2π√(l/g) formulasida massa yo'q: og'irlik kuchi ham, jismning inertligi ham massaga proporsional bo'lgani uchun ular qisqaradi." },
+            { tag: "Matematik mayatnik · Asosiy", q: "Tebranish chastotasi ν va davri T qanday bog'langan?", o: ["ν = 1/T", "ν = 2π·T", "ν = T²", "ν = T/(2π)"], correct: 0,
+              ex: "Chastota — 1 sekunddagi to'liq tebranishlar soni: ν = 1/T, birligi gers (Hz). ω = 2πν esa siklik chastota." },
+            { tag: "Matematik mayatnik · Asosiy", q: "Mayatnik muvozanat holatidan o'tayotgan paytda qaysi kattalik eng katta qiymatga ega bo'ladi?", o: ["Potensial energiya", "Tezlik", "Qaytaruvchi kuch", "Siljish"], correct: 1,
+              ex: "Muvozanat holatida (eng past nuqtada) siljish va qaytaruvchi kuch nolga teng, potensial energiya minimal, kinetik energiya va tezlik esa maksimal." },
+            // ===== Matematik mayatnik - Chuqur =====
+            { tag: "Matematik mayatnik · Chuqur", q: "Mayatnik Yerdan Oyga olib borildi (g_Oy ≈ g_Yer/6). Uning tebranish davri qanday o'zgaradi?", o: ["6 marta ortadi", "√6 ≈ 2,45 marta ortadi", "√6 ≈ 2,45 marta kamayadi", "O'zgarmaydi"], correct: 1,
+              ex: "T ~ 1/√g. g 6 marta kamaysa, davr √6 ≈ 2,45 marta ortadi — Oyda mayatnik sekinroq tebranadi." },
+            { tag: "Matematik mayatnik · Chuqur", q: "Liftga osilgan mayatnik bor. Lift yuqoriga a tezlanish bilan tezlanuvchan harakatlansa, mayatnik davri qaysi formula bilan topiladi?", o: ["T = 2π√(l/(g + a))", "T = 2π√(l/(g − a))", "T = 2π√(l/g)", "T = 2π√((g + a)/l)"], correct: 0,
+              ex: "Yuqoriga tezlanayotgan liftda yuk \"og'irlashadi\": samarali tezlanish g + a ga teng bo'ladi, shuning uchun davr kamayadi: T = 2π√(l/(g + a))." },
+            { tag: "Matematik mayatnik · Chuqur", q: "Nima uchun T = 2π√(l/g) formulasi faqat kichik og'ish burchaklarida (taxminan 10° gacha) aniq bajariladi?", o: ["Kichik burchaklarda sin α ≈ α bo'lib, tebranish garmonik bo'ladi", "Katta burchaklarda ip cho'ziladi", "Katta burchaklarda g ning qiymati o'zgaradi", "Katta burchaklarda yuk massasi ta'sir qila boshlaydi"], correct: 0,
+              ex: "Qaytaruvchi kuch F = −mg·sin α. Faqat kichik α da sin α ≈ α (radianda) bo'lib, kuch siljishga proporsional — tebranish garmonik bo'ladi. Katta amplitudada davr biroz uzunroq bo'ladi." },
+            { tag: "Matematik mayatnik · Chuqur", q: "Davri 2 s bo'lgan matematik mayatnik ipining uzunligi taxminan qancha (g = 9,81 m/s²)?", o: ["0,25 m", "0,5 m", "1 m", "2 m"], correct: 2,
+              ex: "l = gT²/(4π²) = 9,81·4/39,48 ≈ 0,994 m ≈ 1 m. Bunday mayatnik bir chetki nuqtadan ikkinchisiga 1 s da o'tadi (\"sekundli mayatnik\")." },
+            { tag: "Matematik mayatnik · Chuqur", q: "Ishqalanish va havo qarshiligi bo'lmasa, tebranayotgan mayatnikning to'liq mexanik energiyasi qanday bo'ladi?", o: ["Faqat chetki nuqtalarda maksimal", "Faqat muvozanat holatida maksimal", "O'zgarmaydi: kinetik va potensial energiya bir-biriga aylanadi", "Har yarim davrda nolga teng bo'ladi"], correct: 2,
+              ex: "Ishqalanish bo'lmasa to'liq energiya saqlanadi: chetki nuqtada u to'liq potensial, muvozanat holatida to'liq kinetik energiya ko'rinishida bo'ladi." },
+            // ===== Prujinali mayatnik - Asosiy =====
+            { tag: "Prujinali mayatnik · Asosiy", q: "Prujinali mayatnikning tebranish davri qaysi formula bilan topiladi?", o: ["T = 2π√(m/k)", "T = 2π√(k/m)", "T = 2π√(l/g)", "T = 2π·m·k"], correct: 0,
+              ex: "T = 2π√(m/k), bu yerda m — yuk massasi, k — prujina bikrligi. Yuk og'ir bo'lsa sekinroq, prujina bikr bo'lsa tezroq tebranadi." },
+            { tag: "Prujinali mayatnik · Asosiy", q: "Prujina bikrligining SI dagi birligi qaysi?", o: ["N", "N/m", "N·m", "J·m"], correct: 1,
+              ex: "Guk qonuni F = kx dan k = F/x, demak birligi N/m." },
+            { tag: "Prujinali mayatnik · Asosiy", q: "Yuk massasi 4 marta oshirilsa, prujinali mayatnik davri qanday o'zgaradi?", o: ["4 marta ortadi", "2 marta kamayadi", "2 marta ortadi", "O'zgarmaydi"], correct: 2,
+              ex: "T ~ √m: √4 = 2, demak davr 2 marta ortadi." },
+            { tag: "Prujinali mayatnik · Asosiy", q: "Guk qonuni qaysi formula bilan ifodalanadi?", o: ["F = ma", "F = −kx", "F = μN", "F = mg"], correct: 1,
+              ex: "Elastik kuch deformatsiyaga proporsional va unga qarama-qarshi yo'nalgan: F = −kx." },
+            { tag: "Prujinali mayatnik · Asosiy", q: "Prujinali mayatnikda yukning tezligi qaysi nuqtalarda nolga teng bo'ladi?", o: ["Muvozanat holatida", "Eng chetki (maksimal siljish) nuqtalarda", "Amplitudaning yarmida", "Hech qachon nolga teng bo'lmaydi"], correct: 1,
+              ex: "Chetki nuqtalarda yuk to'xtab, harakat yo'nalishini o'zgartiradi: tezlik nolga teng, prujina energiyasi kA²/2 esa maksimal." },
+            // ===== Prujinali mayatnik - Chuqur =====
+            { tag: "Prujinali mayatnik · Chuqur", q: "Prujinali mayatnik Oyga olib borilsa, uning tebranish davri qanday o'zgaradi?", o: ["Ortadi", "Kamayadi", "O'zgarmaydi", "Tebranish to'xtaydi"], correct: 2,
+              ex: "T = 2π√(m/k) formulasida g yo'q: davr faqat massa va bikrlikka bog'liq, shuning uchun Oyda ham o'zgarmaydi (faqat muvozanat holati siljiydi)." },
+            { tag: "Prujinali mayatnik · Chuqur", q: "Bikrligi k bo'lgan ikkita bir xil prujina ketma-ket ulansa, umumiy bikrlik qancha bo'ladi?", o: ["2k", "k", "k/2", "k/4"], correct: 2,
+              ex: "Ketma-ket ulashda 1/k_um = 1/k + 1/k = 2/k → k_um = k/2: bir xil kuchda cho'zilish ikki marta katta bo'ladi." },
+            { tag: "Prujinali mayatnik · Chuqur", q: "Yuk bitta prujina o'rniga ikkita xuddi shunday parallel ulangan prujinaga osildi. Tebranish davri qanday o'zgaradi?", o: ["√2 marta kamayadi", "2 marta kamayadi", "√2 marta ortadi", "2 marta ortadi"], correct: 0,
+              ex: "Parallel ulashda k_um = 2k. T ~ 1/√k, demak davr √2 ≈ 1,41 marta kamayadi." },
+            { tag: "Prujinali mayatnik · Chuqur", q: "Tebranish amplitudasi 2 marta oshirilsa, prujinali mayatnikning to'liq mexanik energiyasi qanday o'zgaradi?", o: ["2 marta ortadi", "4 marta ortadi", "O'zgarmaydi", "√2 marta ortadi"], correct: 1,
+              ex: "To'liq energiya E = kA²/2 — amplituda kvadratiga proporsional, demak 4 marta ortadi. Davr esa amplitudaga bog'liq emas." },
+            { tag: "Prujinali mayatnik · Chuqur", q: "Yukning siljishi x = A·cos(ωt) qonuni bo'yicha o'zgaradi. Tezlanishning maksimal qiymati qaysi?", o: ["Aω", "Aω²", "A/ω", "A²ω"], correct: 1,
+              ex: "a = −ω²x, shuning uchun a_max = ω²A — eng chetki nuqtalarda erishiladi. Aω esa tezlikning maksimal qiymati." },
+            // ===== Qiya tekislik - Asosiy =====
+            { tag: "Qiya tekislik · Asosiy", q: "Qiyalik burchagi α bo'lgan tekislikdagi m massali jism og'irlik kuchining tekislik bo'ylab yo'nalgan tashkil etuvchisi qaysi?", o: ["mg·sin α", "mg·cos α", "mg·tg α", "mg"], correct: 0,
+              ex: "Og'irlik kuchini ikki tashkil etuvchiga ajratamiz: tekislik bo'ylab mg·sin α (jismni pastga sirpantiradi) va tekislikka perpendikulyar mg·cos α." },
+            { tag: "Qiya tekislik · Asosiy", q: "Qiya tekislikdagi jismga ta'sir etuvchi tayanch reaksiya kuchi N nimaga teng (boshqa tashqi kuchlar yo'q)?", o: ["mg", "mg·sin α", "mg·cos α", "mg/cos α"], correct: 2,
+              ex: "Tekislikka perpendikulyar yo'nalishda harakat yo'q, shuning uchun N = mg·cos α. Shu sababli ishqalanish kuchi F_ish = μmg·cos α." },
+            { tag: "Qiya tekislik · Asosiy", q: "Yuk qiya tekislik bo'ylab F kuch bilan l masofaga tortilib, h balandlikka ko'tarildi. Qiya tekislikning FIK qaysi formula bilan topiladi?", o: ["η = mgh/(F·l) · 100%", "η = F·l/(mgh) · 100%", "η = mgl/(F·h) · 100%", "η = F·h/(mgl) · 100%"], correct: 0,
+              ex: "FIK — foydali ishning (yukni h balandlikka ko'tarish: mgh) bajarilgan to'liq ishga (F·l) nisbati. Ishqalanish tufayli doim η < 100%." },
+            { tag: "Qiya tekislik · Asosiy", q: "Ishqalanishsiz qiya tekislik bo'ylab sirpanayotgan jismning tezlanishi qanday?", o: ["a = g", "a = g·sin α", "a = g·cos α", "a = g·tg α"], correct: 1,
+              ex: "Tekislik bo'ylab faqat mg·sin α ta'sir qiladi: ma = mg·sin α → a = g·sin α. Tezlanish massaga bog'liq emas." },
+            { tag: "Qiya tekislik · Asosiy", q: "Qiya tekislik kuchdan yutuq beradi. Ishdan ham yutuq beradimi?", o: ["Ha, ish ham shuncha marta kamayadi", "Yo'q: kuchdan necha marta yutilsa, yo'ldan shuncha marta yutqaziladi", "Ha, faqat α = 45° bo'lganda", "Yo'q, u kuchdan ham yutuq bermaydi"], correct: 1,
+              ex: "Mexanikaning \"oltin qoidasi\": oddiy mexanizmlar ishdan yutuq bermaydi. Ishqalanishsiz F·l = mgh; ishqalanish bo'lsa to'liq ish bundan ham katta." },
+            // ===== Qiya tekislik - Chuqur =====
+            { tag: "Qiya tekislik · Chuqur", q: "Jism qiya tekislikda tinch turibdi (μ — ishqalanish koeffitsiyenti). Buning uchun qaysi shart bajarilishi kerak?", o: ["μ ≥ tg α", "μ ≤ tg α", "μ ≥ sin α", "μ ≤ cos α"], correct: 0,
+              ex: "Tinch turish sharti: mg·sin α ≤ μmg·cos α, ya'ni μ ≥ tg α. Burchak oshirilsa, tg α = μ bo'lgan paytda jism sirpana boshlaydi." },
+            { tag: "Qiya tekislik · Chuqur", q: "Ishqalanish mavjud qiya tekislikda pastga sirpanayotgan jismning tezlanishi qaysi?", o: ["a = g(sin α + μ·cos α)", "a = g(sin α − μ·cos α)", "a = g(cos α − μ·sin α)", "a = μg·sin α"], correct: 1,
+              ex: "Pastga harakatda ishqalanish kuchi yuqoriga yo'nalgan: ma = mg·sin α − μmg·cos α → a = g(sin α − μ·cos α)." },
+            { tag: "Qiya tekislik · Chuqur", q: "Yukni qiya tekislik bo'ylab tekis tortib chiqarishda ishqalanish koeffitsiyenti ortsa, FIK qanday o'zgaradi?", o: ["Ortadi", "Kamayadi", "O'zgarmaydi", "100% ga yetadi"], correct: 1,
+              ex: "Foydali ish mgh o'zgarmaydi, lekin ishqalanishni yengish uchun qo'shimcha ish sarflanadi — to'liq ish ortib, FIK kamayadi." },
+            { tag: "Qiya tekislik · Chuqur", q: "Balandligi h bo'lgan ishqalanishsiz qiya tekislik tepasidan jism tinch holatdan sirpanib tushdi. Pastdagi tezligi qanday?", o: ["v = √(2gh)", "v = √(2gh·sin α)", "v = √(gh)", "v = 2gh"], correct: 0,
+              ex: "Energiya saqlanishi: mgh = mv²/2 → v = √(2gh). Tezlik qiyalik burchagiga bog'liq emas (tushish vaqti esa bog'liq)." },
+            { tag: "Qiya tekislik · Chuqur", q: "Ishqalanish koeffitsiyenti μ bo'lgan qiya tekislik bo'ylab yukni yuqoriga tekis tortish uchun tekislikka parallel qanday kuch kerak?", o: ["F = mg(sin α + μ·cos α)", "F = mg(sin α − μ·cos α)", "F = μmg", "F = mg·cos α"], correct: 0,
+              ex: "Yuqoriga harakatda ishqalanish pastga yo'nalgan; tekis harakatda kuchlar muvozanatda: F = mg·sin α + μmg·cos α." },
+            // ===== Otilgan jism - Asosiy =====
+            { tag: "Otilgan jism · Asosiy", q: "Gorizontga burchak ostida otilgan jism (havo qarshiligisiz) qanday trayektoriya bo'ylab harakatlanadi?", o: ["To'g'ri chiziq", "Aylana", "Parabola", "Giperbola"], correct: 2,
+              ex: "Gorizontal yo'nalishda tekis, vertikal yo'nalishda tekis o'zgaruvchan harakat qo'shilib, trayektoriya parabola bo'ladi: y = x·tg α − gx²/(2v₀²cos²α)." },
+            { tag: "Otilgan jism · Asosiy", q: "Burchak ostida otilgan jismning trayektoriyaning eng yuqori nuqtasidagi tezligi qanday?", o: ["Nolga teng", "v₀·cos α ga teng (faqat gorizontal tashkil etuvchi)", "v₀ ga teng", "v₀·sin α ga teng"], correct: 1,
+              ex: "Eng yuqori nuqtada vertikal tezlik nolga teng, gorizontal tezlik esa butun harakat davomida o'zgarmas: v_x = v₀·cos α." },
+            { tag: "Otilgan jism · Asosiy", q: "Havo qarshiligi hisobga olinmasa, otilgan jismning tezlanishi uchish davomida qanday bo'ladi?", o: ["Yuqoriga ko'tarilishda nolga teng", "Doim g ga teng va vertikal pastga yo'nalgan", "Doim gorizontal yo'nalgan", "Faqat eng yuqori nuqtada nolga teng"], correct: 1,
+              ex: "Jismga faqat og'irlik kuchi ta'sir qiladi, shuning uchun tezlanish butun harakat davomida g ga teng va vertikal pastga yo'nalgan — eng yuqori nuqtada ham." },
+            { tag: "Otilgan jism · Asosiy", q: "Bir xil boshlang'ich tezlikda qaysi burchak ostida otilganda gorizontal tekislikdagi uchish uzoqligi eng katta bo'ladi?", o: ["30°", "45°", "60°", "90°"], correct: 1,
+              ex: "L = v₀²·sin 2α/g; sin 2α = 1 bo'lganda maksimal, ya'ni α = 45°." },
+            { tag: "Otilgan jism · Asosiy", q: "Gorizontga α burchak ostida v₀ tezlik bilan otilgan jismning uchish uzoqligi qaysi formula bilan topiladi?", o: ["L = v₀²·sin 2α/g", "L = v₀²·sin²α/(2g)", "L = 2v₀·sin α/g", "L = v₀·cos α/g"], correct: 0,
+              ex: "L = v₀²·sin 2α/g. Boshqa variantlar: v₀²·sin²α/(2g) — maksimal ko'tarilish balandligi, 2v₀·sin α/g — uchish vaqti." },
+            // ===== Otilgan jism - Chuqur =====
+            { tag: "Otilgan jism · Chuqur", q: "Ikki jism bir xil v₀ tezlik bilan 30° va 60° burchak ostida otildi. Ularning uchish uzoqliklari qanday?", o: ["60° da 2 marta katta", "Teng", "30° da 2 marta katta", "60° da √3 marta katta"], correct: 1,
+              ex: "sin(2·30°) = sin(2·60°) = √3/2, shuning uchun uzoqliklar teng. Umuman, α va 90° − α burchaklar bir xil uzoqlik beradi (balandliklar esa har xil)." },
+            { tag: "Otilgan jism · Chuqur", q: "Boshlang'ich tezlik 2 marta oshirilsa (burchak o'zgarmas), maksimal ko'tarilish balandligi qanday o'zgaradi?", o: ["2 marta ortadi", "4 marta ortadi", "√2 marta ortadi", "O'zgarmaydi"], correct: 1,
+              ex: "H = v₀²·sin²α/(2g) ~ v₀², demak 4 marta ortadi." },
+            { tag: "Otilgan jism · Chuqur", q: "Gorizontga α burchak ostida otilgan jismning to'liq uchish vaqti (otilgan sathga qaytguncha) qaysi?", o: ["t = 2v₀·sin α/g", "t = v₀·sin α/g", "t = 2v₀·cos α/g", "t = v₀²/g"], correct: 0,
+              ex: "Ko'tarilish vaqti v₀·sin α/g, tushish vaqti ham shuncha; jami t = 2v₀·sin α/g." },
+            { tag: "Otilgan jism · Chuqur", q: "45° ostida otilgan jism uchun maksimal ko'tarilish balandligi H ning uchish uzoqligi L ga nisbati qancha?", o: ["1/2", "1/4", "1", "1/√2"], correct: 1,
+              ex: "H/L = [v₀²sin²α/(2g)] / [2v₀²sin α·cos α/g] = tg α/4. α = 45° da tg α = 1, demak H/L = 1/4." },
+            { tag: "Otilgan jism · Chuqur", q: "Havo qarshiligi bo'lmasa, uchish davomida jismning qaysi kattaligi o'zgarmaydi?", o: ["Tezlik moduli", "Tezlikning vertikal tashkil etuvchisi", "Tezlikning gorizontal tashkil etuvchisi", "Kinetik energiya"], correct: 2,
+              ex: "Gorizontal yo'nalishda kuch yo'q, shuning uchun v_x = v₀·cos α o'zgarmas. Vertikal tezlik, demak tezlik moduli va kinetik energiya o'zgaradi." },
+            // ===== Impuls - Asosiy =====
+            { tag: "Impuls · Asosiy", q: "Jism impulsi qaysi formula bilan aniqlanadi?", o: ["p = mv", "p = mv²/2", "p = ma", "p = F/t"], correct: 0,
+              ex: "Impuls (harakat miqdori) — massa va tezlik ko'paytmasi: p = mv. U vektor kattalik, yo'nalishi tezlik yo'nalishi bilan bir xil. mv²/2 — kinetik energiya." },
+            { tag: "Impuls · Asosiy", q: "Impulsning SI dagi birligi qaysi?", o: ["N", "J", "kg·m/s", "kg·m/s²"], correct: 2,
+              ex: "p = mv → kg·m/s. Bu N·s ga teng (kuch impulsi F·Δt bilan bir xil birlik). kg·m/s² — nyuton (kuch birligi)." },
+            { tag: "Impuls · Asosiy", q: "Impulsning saqlanish qonuni qanday sistemada bajariladi?", o: ["Har qanday sistemada", "Yopiq sistemada (tashqi kuchlarning teng ta'sir etuvchisi nolga teng)", "Faqat elastik to'qnashuvlarda", "Faqat tinch turgan jismlar uchun"], correct: 1,
+              ex: "Tashqi kuchlarning teng ta'sir etuvchisi nolga teng bo'lgan (yopiq) sistemada jismlar impulslarining vektor yig'indisi o'zgarmaydi — to'qnashuv elastikmi yoki noelastikmi, farqi yo'q." },
+            { tag: "Impuls · Asosiy", q: "Nyutonning ikkinchi qonuni impuls orqali qanday yoziladi?", o: ["F·Δt = Δp", "F = p·t", "F = Δp·Δt", "F = p/m"], correct: 0,
+              ex: "Kuch impulsi jism impulsining o'zgarishiga teng: F·Δt = Δ(mv). Shuning uchun zarba vaqtini cho'zish (masalan, yumshoq qo'nish) kuchni kamaytiradi." },
+            { tag: "Impuls · Asosiy", q: "Raketaning reaktiv harakati qaysi qonunga asoslanadi?", o: ["Arximed qonuni", "Impulsning saqlanish qonuni", "Guk qonuni", "Paskal qonuni"], correct: 1,
+              ex: "Raketa yonish mahsulotlarini katta tezlik bilan orqaga otib chiqaradi; sistema impulsi saqlanishi uchun raketa qarama-qarshi tomonga impuls oladi. Reaktiv harakat havosiz fazoda ham ishlaydi." },
+            // ===== Impuls - Chuqur =====
+            { tag: "Impuls · Chuqur", q: "Mutlaq noelastik to'qnashuvda qaysi kattalik saqlanadi?", o: ["Faqat kinetik energiya", "Faqat impuls (kinetik energiyaning bir qismi ichki energiyaga aylanadi)", "Impuls ham, kinetik energiya ham", "Hech biri saqlanmaydi"], correct: 1,
+              ex: "Noelastik to'qnashuvda jismlar birlashib, bir xil tezlik bilan harakatlanadi: impuls saqlanadi, kinetik energiyaning bir qismi esa issiqlik va deformatsiyaga sarflanadi." },
+            { tag: "Impuls · Chuqur", q: "Mutlaq elastik to'qnashuvda qaysi kattaliklar saqlanadi?", o: ["Faqat impuls", "Faqat kinetik energiya", "Impuls ham, kinetik energiya ham", "Har bir jismning tezligi"], correct: 2,
+              ex: "Elastik to'qnashuvda deformatsiya to'liq tiklanadi: sistemaning impulsi ham, kinetik energiyasi ham saqlanadi." },
+            { tag: "Impuls · Chuqur", q: "Massalari teng ikki shar markaziy elastik to'qnashdi: biri v tezlikda harakatlanayotgan edi, ikkinchisi tinch turgan edi. To'qnashuvdan keyin nima bo'ladi?", o: ["Ikkalasi v/2 tezlik bilan birga harakatlanadi", "Birinchisi to'xtaydi, ikkinchisi v tezlik bilan harakatlanadi", "Birinchisi v tezlik bilan orqaga qaytadi, ikkinchisi tinch qoladi", "Ikkalasi ham to'xtaydi"], correct: 1,
+              ex: "Teng massali jismlar markaziy elastik to'qnashuvda tezliklarini almashtiradi: shundagina impuls ham, kinetik energiya ham saqlanadi (bilyard sharlari misolida)." },
+            { tag: "Impuls · Chuqur", q: "m massali shar v tezlik bilan devorga perpendikulyar urilib, shu tezlik moduli bilan orqaga qaytdi. Shar impulsi o'zgarishining moduli qancha?", o: ["0", "mv", "2mv", "mv/2"], correct: 2,
+              ex: "Impuls vektor kattalik: Δp = mv − (−mv) = 2mv. Tezlik moduli o'zgarmasa ham, yo'nalishi o'zgargani uchun impuls o'zgaradi." },
+            { tag: "Impuls · Chuqur", q: "Tinch turgan zambarakdan snaryad otilganda zambarak orqaga tepiladi. Zambarak tezligi snaryad tezligidan ancha kichik bo'lishining sababi nima?", o: ["Ularning impulslari moduli teng, zambarak massasi esa ancha katta", "Zambarakka ishqalanish kuchi ta'sir qiladi", "Snaryadning energiyasi zambarak energiyasidan kichik", "Zambarak impulsi snaryad impulsidan ancha kichik"], correct: 0,
+              ex: "Boshlang'ich impuls nolga teng, demak otishdan keyin impulslar moduli teng va qarama-qarshi: M·V = m·v. Zambarak massasi M katta bo'lgani uchun uning tezligi V kichik." },
+            // ===== Gaz qonunlari - Asosiy =====
+            { tag: "Gaz qonunlari · Asosiy", q: "Izotermik jarayon (T = const) uchun qaysi qonun o'rinli?", o: ["Boyl–Mariott qonuni: pV = const", "Gey-Lyussak qonuni: V/T = const", "Sharl qonuni: p/T = const", "Dalton qonuni: p = p₁ + p₂"], correct: 0,
+              ex: "Berilgan massali gaz uchun harorat o'zgarmas bo'lsa, bosim va hajm ko'paytmasi o'zgarmaydi: p₁V₁ = p₂V₂ (Boyl–Mariott qonuni)." },
+            { tag: "Gaz qonunlari · Asosiy", q: "Izobarik jarayonda qaysi kattalik o'zgarmaydi?", o: ["Hajm", "Bosim", "Harorat", "Ichki energiya"], correct: 1,
+              ex: "Izobarik — bosim o'zgarmas (p = const). Bunda V/T = const (Gey-Lyussak qonuni)." },
+            { tag: "Gaz qonunlari · Asosiy", q: "Izoxorik jarayonda (V = const) bosim va mutlaq harorat qanday bog'langan?", o: ["p·T = const", "p/T = const", "p·V = const", "p − T = const"], correct: 1,
+              ex: "V = const da p/T = const (Sharl qonuni): mutlaq harorat necha marta ortsa, bosim ham shuncha marta ortadi." },
+            { tag: "Gaz qonunlari · Asosiy", q: "Ideal gaz holat tenglamasi (Mendeleyev–Klapeyron tenglamasi) qaysi?", o: ["pV = νRT", "pV = RT/ν", "p = νRTV", "pT = νRV"], correct: 0,
+              ex: "pV = (m/M)·RT = νRT, bu yerda ν — modda miqdori (mol), R = 8,31 J/(mol·K) — universal gaz doimiysi." },
+            { tag: "Gaz qonunlari · Asosiy", q: "Gaz qonunlari formulalarida harorat qaysi birlikda olinadi?", o: ["Selsiy gradusida (°C)", "Kelvinda (K) — mutlaq harorat", "Farengeyt gradusida (°F)", "Ixtiyoriy shkalada"], correct: 1,
+              ex: "Formulalarda mutlaq harorat T = t + 273 (K) ishlatiladi. Masalan, p/T = const faqat Kelvinda to'g'ri: 0 °C da gaz bosimi nolga teng emas." },
+            // ===== Gaz qonunlari - Chuqur =====
+            { tag: "Gaz qonunlari · Chuqur", q: "Gaz izotermik siqilib, hajmi 3 marta kamaydi. Uning bosimi qanday o'zgaradi?", o: ["3 marta kamayadi", "3 marta ortadi", "9 marta ortadi", "O'zgarmaydi"], correct: 1,
+              ex: "pV = const: hajm 3 marta kamaysa, bosim 3 marta ortadi." },
+            { tag: "Gaz qonunlari · Chuqur", q: "Yopiq idishdagi gaz 27 °C dan 327 °C gacha qizdirildi. Uning bosimi qanday o'zgaradi?", o: ["Taxminan 12 marta ortadi", "2 marta ortadi", "1,5 marta ortadi", "O'zgarmaydi"], correct: 1,
+              ex: "Izoxorik jarayon: p₂/p₁ = T₂/T₁ = 600 K/300 K = 2. Selsiyda hisoblash (327/27 ≈ 12) — tipik xato." },
+            { tag: "Gaz qonunlari · Chuqur", q: "p–V diagrammasida izoterma qanday chiziq bilan tasvirlanadi?", o: ["Koordinata boshidan o'tuvchi to'g'ri chiziq", "Giperbola", "Parabola", "Vertikal to'g'ri chiziq"], correct: 1,
+              ex: "pV = const → p = const/V — teskari proporsionallik, grafigi giperbola. Vertikal chiziq — izoxora, gorizontal — izobara." },
+            { tag: "Gaz qonunlari · Chuqur", q: "Ideal gaz molekulalari ilgarilanma harakatining o'rtacha kinetik energiyasi nimaga to'g'ri proporsional?", o: ["Bosimga", "Hajmga", "Mutlaq haroratga", "Molyar massaga"], correct: 2,
+              ex: "E = (3/2)kT, k = 1,38·10⁻²³ J/K — Bolsman doimiysi. O'rtacha kinetik energiya faqat mutlaq haroratga bog'liq." },
+            { tag: "Gaz qonunlari · Chuqur", q: "1 mol ideal gaz izobarik qizdirilib, harorati ΔT ga oshdi. Gaz bajargan ish qaysi formula bilan topiladi?", o: ["A = R·ΔT", "A = p·ΔT", "A = 0", "A = (3/2)R·ΔT"], correct: 0,
+              ex: "A = p·ΔV; pV = RT dan p = const da pΔV = RΔT (1 mol uchun). (3/2)RΔT — bir atomli gaz ichki energiyasining o'zgarishi, izoxorik jarayonda esa A = 0." },
+            // ===== Om qonuni - Asosiy =====
+            { tag: "Om qonuni · Asosiy", q: "Zanjirning bir qismi uchun Om qonuni qaysi?", o: ["I = U/R", "I = U·R", "I = R/U", "U = I/R"], correct: 0,
+              ex: "Zanjir qismidagi tok kuchi kuchlanishga to'g'ri, qarshilikka teskari proporsional: I = U/R." },
+            { tag: "Om qonuni · Asosiy", q: "Elektr qarshiligining SI dagi birligi qaysi?", o: ["Amper (A)", "Volt (V)", "Om (Ω)", "Vatt (W)"], correct: 2,
+              ex: "R = U/I → 1 Om = 1 V/1 A. Amper — tok kuchi, volt — kuchlanish, vatt — quvvat birligi." },
+            { tag: "Om qonuni · Asosiy", q: "Ketma-ket ulangan rezistorlarda qaysi kattalik barcha rezistorlar uchun bir xil?", o: ["Kuchlanish", "Tok kuchi", "Quvvat", "Qarshilik"], correct: 1,
+              ex: "Ketma-ket ulashda zanjir tarmoqlanmaydi, shuning uchun tok kuchi hamma joyda bir xil; kuchlanishlar va qarshiliklar qo'shiladi: R = R₁ + R₂." },
+            { tag: "Om qonuni · Asosiy", q: "Parallel ulangan ikki rezistorning (R₁ va R₂) umumiy qarshiligi qaysi formula bilan topiladi?", o: ["R = R₁ + R₂", "R = R₁R₂/(R₁ + R₂)", "R = (R₁ + R₂)/2", "R = R₁ − R₂"], correct: 1,
+              ex: "Parallel ulashda 1/R = 1/R₁ + 1/R₂, bundan R = R₁R₂/(R₁ + R₂). Umumiy qarshilik eng kichik qarshilikdan ham kichik bo'ladi." },
+            { tag: "Om qonuni · Asosiy", q: "O'tkazgich qarshiligi qaysi formula bilan topiladi (ρ — solishtirma qarshilik, l — uzunlik, S — ko'ndalang kesim yuzi)?", o: ["R = ρl/S", "R = ρS/l", "R = ρlS", "R = l/(ρS)"], correct: 0,
+              ex: "R = ρl/S: qarshilik uzunlikka to'g'ri, ko'ndalang kesim yuziga teskari proporsional." },
+            // ===== Om qonuni - Chuqur =====
+            { tag: "Om qonuni · Chuqur", q: "To'liq zanjir uchun Om qonuni qaysi (ℰ — EYuK, r — manbaning ichki qarshiligi, R — tashqi qarshilik)?", o: ["I = ℰ/(R + r)", "I = ℰ/R", "I = ℰ·(R + r)", "I = (ℰ − r)/R"], correct: 0,
+              ex: "I = ℰ/(R + r). Ichki qarshilik tufayli manba qisqichlaridagi kuchlanish U = ℰ − Ir EYuK dan kichik bo'ladi." },
+            { tag: "Om qonuni · Chuqur", q: "Manba qisqa tutashtirilganda (R → 0) zanjirdagi tok kuchi qanday bo'ladi?", o: ["I = 0", "I = ℰ/r — mumkin bo'lgan eng katta tok", "Cheksiz katta", "I = ℰ·r"], correct: 1,
+              ex: "R = 0 da I_q.t. = ℰ/r: tok faqat manbaning ichki qarshiligi bilan cheklanadi. Ichki qarshiligi kichik akkumulyatorlarda bu tok xavfli darajada katta." },
+            { tag: "Om qonuni · Chuqur", q: "Simning uzunligi ham, diametri ham 2 marta oshirildi (material o'sha). Uning qarshiligi qanday o'zgaradi?", o: ["2 marta ortadi", "2 marta kamayadi", "4 marta kamayadi", "O'zgarmaydi"], correct: 1,
+              ex: "Diametr 2 marta ortsa, kesim yuzi S = πd²/4 4 marta ortadi. R = ρl/S → 2/4 = 1/2, ya'ni qarshilik 2 marta kamayadi." },
+            { tag: "Om qonuni · Chuqur", q: "Qarshiligi 6 Ω bo'lgan uchta rezistor parallel ulangan. Umumiy qarshilik qancha?", o: ["18 Ω", "6 Ω", "3 Ω", "2 Ω"], correct: 3,
+              ex: "1/R = 1/6 + 1/6 + 1/6 = 1/2 → R = 2 Ω. n ta bir xil rezistor parallel ulansa R_um = R/n." },
+            { tag: "Om qonuni · Chuqur", q: "Metall o'tkazgich qizdirilganda uning qarshiligi qanday o'zgaradi?", o: ["Ortadi", "Kamayadi", "O'zgarmaydi", "Nolga tushadi"], correct: 0,
+              ex: "Metallarda harorat ortishi bilan kristall panjara ionlarining tebranishi kuchayib, erkin elektronlar ko'proq sochiladi: R = R₀(1 + αΔt), α > 0." },
+            // ===== Kondensator - Asosiy =====
+            { tag: "Kondensator · Asosiy", q: "Kondensatorning elektr sig'imi qaysi formula bilan aniqlanadi?", o: ["C = q/U", "C = q·U", "C = U/q", "C = q²/U"], correct: 0,
+              ex: "Sig'im — kondensator zaryadining qoplamalari orasidagi kuchlanishga nisbati: C = q/U. U kondensatorning tuzilishiga bog'liq, q va U ga emas." },
+            { tag: "Kondensator · Asosiy", q: "Elektr sig'imining SI dagi birligi qaysi?", o: ["Kulon (C)", "Farad (F)", "Genri (H)", "Tesla (T)"], correct: 1,
+              ex: "1 F = 1 C/1 V. Farad juda katta birlik, amalda mkF (10⁻⁶ F), nF va pF (10⁻¹² F) ishlatiladi. Genri — induktivlik birligi." },
+            { tag: "Kondensator · Asosiy", q: "Yassi kondensatorning sig'imi qaysi formula bilan topiladi (S — qoplama yuzi, d — qoplamalar orasidagi masofa)?", o: ["C = εε₀S/d", "C = εε₀d/S", "C = εε₀Sd", "C = S/(εε₀d)"], correct: 0,
+              ex: "C = εε₀S/d, ε₀ = 8,85·10⁻¹² F/m. Sig'im qoplama yuziga to'g'ri, oraliq masofaga teskari proporsional." },
+            { tag: "Kondensator · Asosiy", q: "Zaryadlangan kondensator energiyasi qaysi formula bilan topiladi?", o: ["W = CU²/2", "W = CU", "W = qU²/2", "W = C²U/2"], correct: 0,
+              ex: "W = CU²/2 = qU/2 = q²/(2C)." },
+            { tag: "Kondensator · Asosiy", q: "Ikki kondensator parallel ulanganda umumiy sig'im qanday topiladi?", o: ["C = C₁ + C₂", "1/C = 1/C₁ + 1/C₂", "C = C₁·C₂", "C = (C₁ + C₂)/2"], correct: 0,
+              ex: "Parallel ulashda kuchlanish bir xil, zaryadlar qo'shiladi: C = C₁ + C₂ (rezistorlardagi qoidaning teskarisi)." },
+            // ===== Kondensator - Chuqur =====
+            { tag: "Kondensator · Chuqur", q: "Yassi kondensator qoplamalari orasidagi masofa 2 marta oshirilsa, sig'im qanday o'zgaradi?", o: ["2 marta ortadi", "2 marta kamayadi", "4 marta kamayadi", "O'zgarmaydi"], correct: 1,
+              ex: "C = εε₀S/d ~ 1/d, demak sig'im 2 marta kamayadi." },
+            { tag: "Kondensator · Chuqur", q: "Havo kondensatori qoplamalari orasi dielektrik singdiruvchanligi ε = 4 bo'lgan dielektrik bilan to'ldirildi. Sig'im qanday o'zgaradi?", o: ["4 marta kamayadi", "4 marta ortadi", "2 marta ortadi", "O'zgarmaydi"], correct: 1,
+              ex: "C = εε₀S/d: dielektrik maydonni susaytiradi va sig'imni ε marta, ya'ni 4 marta oshiradi." },
+            { tag: "Kondensator · Chuqur", q: "Zaryadlangan kondensator manbadan uzildi, so'ng qoplamalar orasidagi masofa oshirildi. Qaysi kattalik o'zgarmaydi?", o: ["Kuchlanish", "Sig'im", "Zaryad", "Energiya"], correct: 2,
+              ex: "Manbadan uzilgan kondensatorda zaryad q saqlanadi (ketishga joyi yo'q). d ortganda C kamayadi, U = q/C va W = q²/(2C) esa ortadi." },
+            { tag: "Kondensator · Chuqur", q: "Sig'imi C bo'lgan ikkita bir xil kondensator ketma-ket ulansa, umumiy sig'im qancha?", o: ["2C", "C", "C/2", "C/4"], correct: 2,
+              ex: "Ketma-ket ulashda 1/C_um = 1/C + 1/C = 2/C → C_um = C/2." },
+            { tag: "Kondensator · Chuqur", q: "Manbaga ulangan kondensatordagi kuchlanish 2 marta oshirildi. Kondensator energiyasi qanday o'zgaradi?", o: ["2 marta ortadi", "4 marta ortadi", "O'zgarmaydi", "2 marta kamayadi"], correct: 1,
+              ex: "W = CU²/2: sig'im o'zgarmaydi, kuchlanish 2 marta ortsa energiya 2² = 4 marta ortadi." },
+            // ===== Elektromagnit induksiya - Asosiy =====
+            { tag: "Elektromagnit induksiya · Asosiy", q: "Elektromagnit induksiya hodisasini 1831-yilda kim kashf etgan?", o: ["G. Om", "M. Faradey", "A. Amper", "Sh. Kulon"], correct: 1,
+              ex: "Maykl Faradey 1831-yilda berk kontur orqali o'tuvchi magnit oqimi o'zgarganda konturda tok hosil bo'lishini kashf etgan." },
+            { tag: "Elektromagnit induksiya · Asosiy", q: "Yuzi S bo'lgan kontur orqali o'tuvchi magnit oqimi qaysi formula bilan topiladi (α — B va kontur normali orasidagi burchak)?", o: ["Φ = BS·cos α", "Φ = B/S", "Φ = BIl", "Φ = qvB"], correct: 0,
+              ex: "Φ = BS·cos α. BIl — Amper kuchi, qvB — Lorens kuchi formulalari." },
+            { tag: "Elektromagnit induksiya · Asosiy", q: "Magnit oqimining SI dagi birligi qaysi?", o: ["Tesla (T)", "Veber (Wb)", "Genri (H)", "Farad (F)"], correct: 1,
+              ex: "1 Wb = 1 T·m². Tesla — magnit induksiya, genri — induktivlik birligi." },
+            { tag: "Elektromagnit induksiya · Asosiy", q: "Faradey qonuniga ko'ra induksiya EYuK nimaga teng?", o: ["ℰ = −ΔΦ/Δt", "ℰ = Φ·Δt", "ℰ = B·S", "ℰ = −Δt/ΔΦ"], correct: 0,
+              ex: "Induksiya EYuK magnit oqimining o'zgarish tezligiga teng: ℰ = −ΔΦ/Δt (N o'ramli g'altakda ℰ = −N·ΔΦ/Δt). Minus ishorasi Lens qoidasini ifodalaydi." },
+            { tag: "Elektromagnit induksiya · Asosiy", q: "Doimiy magnit g'altak ichida qo'zg'almas turibdi. G'altakda induksion tok hosil bo'ladimi?", o: ["Ha, doimo hosil bo'ladi", "Yo'q, chunki magnit oqimi o'zgarmayapti", "Ha, agar magnit kuchli bo'lsa", "Faqat g'altak mis simdan bo'lsa"], correct: 1,
+              ex: "Induksion tok faqat magnit oqimi o'zgarganda hosil bo'ladi. Magnit yoki g'altak harakatlanmasa, oqim o'zgarmaydi va tok yo'q." },
+            // ===== Elektromagnit induksiya - Chuqur =====
+            { tag: "Elektromagnit induksiya · Chuqur", q: "Lens qoidasi nimani ifodalaydi?", o: ["Induksion tok o'zini vujudga keltirgan magnit oqimi o'zgarishiga qarshilik qiladi", "Induksion tok doimo soat mili yo'nalishida oqadi", "Induksion tok magnit oqimining kattaligiga proporsional", "Induksion tok faqat o'zgarmas magnit maydonda hosil bo'ladi"], correct: 0,
+              ex: "Induksion tokning magnit maydoni tashqi oqim o'zgarishini kompensatsiyalashga intiladi. Bu energiyaning saqlanish qonunining natijasi." },
+            { tag: "Elektromagnit induksiya · Chuqur", q: "Uzunligi l bo'lgan o'tkazgich magnit maydonda induksiya chiziqlariga perpendikulyar v tezlik bilan harakatlanmoqda. Unda hosil bo'ladigan induksiya EYuK qaysi?", o: ["ℰ = Bvl", "ℰ = Bv/l", "ℰ = Bl/v", "ℰ = qvB"], correct: 0,
+              ex: "Harakatdagi o'tkazgichda ℰ = Bvl·sin α (α — v va B orasidagi burchak); v ⊥ B da ℰ = Bvl. Bu EYuK erkin zaryadlarga ta'sir qiluvchi Lorens kuchi tufayli hosil bo'ladi." },
+            { tag: "Elektromagnit induksiya · Chuqur", q: "G'altak o'ramlari soni 2 marta oshirildi, har bir o'ram orqali magnit oqimining o'zgarish tezligi esa o'zgarmadi. Induksiya EYuK qanday o'zgaradi?", o: ["2 marta kamayadi", "O'zgarmaydi", "2 marta ortadi", "4 marta ortadi"], correct: 2,
+              ex: "ℰ = N·ΔΦ/Δt — o'ramlar soniga proporsional, demak 2 marta ortadi." },
+            { tag: "Elektromagnit induksiya · Chuqur", q: "Ramka bir jinsli magnit maydonda shunday joylashganki, uning tekisligi B vektoriga parallel. Ramka orqali o'tuvchi magnit oqimi qancha?", o: ["Maksimal, BS ga teng", "Nolga teng", "BS/2 ga teng", "BS√2 ga teng"], correct: 1,
+              ex: "Ramka tekisligi B ga parallel bo'lsa, normal B ga perpendikulyar (α = 90°): Φ = BS·cos 90° = 0 — induksiya chiziqlari ramkani kesib o'tmaydi." },
+            { tag: "Elektromagnit induksiya · Chuqur", q: "O'zinduksiya EYuK qaysi formula bilan topiladi (L — g'altak induktivligi)?", o: ["ℰ = −L·ΔI/Δt", "ℰ = L·I", "ℰ = −I/(L·Δt)", "ℰ = LI²/2"], correct: 0,
+              ex: "O'zinduksiya EYuK tok kuchining o'zgarish tezligiga proporsional: ℰ = −L·ΔI/Δt. LI²/2 — g'altak magnit maydonining energiyasi, L·I — magnit oqimi." },
+            // ===== Yorug'lik sinishi - Asosiy =====
+            { tag: "Yorug'lik sinishi · Asosiy", q: "Yorug'likning sinish qonuni (Snell qonuni) qaysi (α — tushish, β — sinish burchagi)?", o: ["n₁·sin α = n₂·sin β", "n₁·cos α = n₂·cos β", "n₁/sin α = n₂/sin β", "α = β"], correct: 0,
+              ex: "n₁·sin α = n₂·sin β, burchaklar chegaraga o'tkazilgan normaldan o'lchanadi. α = β — qaytish qonuni." },
+            { tag: "Yorug'lik sinishi · Asosiy", q: "Muhitning absolyut sindirish ko'rsatkichi qanday aniqlanadi (c — vakuumdagi, v — muhitdagi yorug'lik tezligi)?", o: ["n = c/v", "n = v/c", "n = c·v", "n = c − v"], correct: 0,
+              ex: "n = c/v — yorug'likning vakuumdagi tezligi muhitdagidan necha marta katta ekanini ko'rsatadi; shuning uchun har doim n ≥ 1." },
+            { tag: "Yorug'lik sinishi · Asosiy", q: "Yorug'lik havodan shishaga qiya tushganda sinish burchagi tushish burchagiga nisbatan qanday bo'ladi?", o: ["Katta", "Kichik", "Teng", "Doim 90°"], correct: 1,
+              ex: "Shisha optik zichroq (n ≈ 1,5 > 1). n₁·sin α = n₂·sin β dan β < α — nur normalga yaqinlashadi." },
+            { tag: "Yorug'lik sinishi · Asosiy", q: "Suvning sindirish ko'rsatkichi 1,33. Yorug'likning suvdagi tezligi taxminan qancha (c = 3·10⁸ m/s)?", o: ["3·10⁸ m/s", "2,26·10⁸ m/s", "4·10⁸ m/s", "1,33·10⁸ m/s"], correct: 1,
+              ex: "v = c/n = 3·10⁸/1,33 ≈ 2,26·10⁸ m/s. Muhitda yorug'lik vakuumdagidan sekinroq tarqaladi." },
+            { tag: "Yorug'lik sinishi · Asosiy", q: "To'liq ichki qaytish qachon kuzatiladi?", o: ["Yorug'lik optik zichroq muhitdan siyrakroq muhitga o'tib, tushish burchagi chegaraviy burchakdan katta bo'lganda", "Yorug'lik optik siyrak muhitdan zichroq muhitga o'tganda", "Tushish burchagi nolga teng bo'lganda", "Yorug'lik ko'zgu sirtiga tushganda"], correct: 0,
+              ex: "Zich muhitdan siyrakroq muhitga o'tishda sinish burchagi tushish burchagidan katta; α chegaraviy burchakdan oshsa, siniq nur yo'qoladi va yorug'lik to'liq qaytadi." },
+            // ===== Yorug'lik sinishi - Chuqur =====
+            { tag: "Yorug'lik sinishi · Chuqur", q: "Nur sindirish ko'rsatkichi n bo'lgan muhitdan havoga chiqmoqda. To'liq ichki qaytishning chegaraviy burchagi α₀ qaysi formula bilan topiladi?", o: ["sin α₀ = 1/n", "sin α₀ = n", "cos α₀ = 1/n", "tg α₀ = n"], correct: 0,
+              ex: "Chegaraviy burchakda sinish burchagi 90° bo'ladi: n·sin α₀ = 1·sin 90° → sin α₀ = 1/n." },
+            { tag: "Yorug'lik sinishi · Chuqur", q: "Shisha (n = 1,5) uchun to'liq ichki qaytishning chegaraviy burchagi taxminan qancha?", o: ["30°", "42°", "49°", "60°"], correct: 1,
+              ex: "sin α₀ = 1/1,5 ≈ 0,667 → α₀ ≈ 41,8° ≈ 42°. 49° — suv (n = 1,33) uchun chegaraviy burchak." },
+            { tag: "Yorug'lik sinishi · Chuqur", q: "Yorug'lik bir muhitdan ikkinchisiga o'tganda qaysi kattalik o'zgarmaydi?", o: ["Tarqalish tezligi", "To'lqin uzunligi", "Chastota", "Tarqalish yo'nalishi (qiya tushganda)"], correct: 2,
+              ex: "Chastota manba bilan aniqlanadi va o'zgarmaydi; tezlik v = c/n va to'lqin uzunligi λ = λ₀/n esa o'zgaradi." },
+            { tag: "Yorug'lik sinishi · Chuqur", q: "Optik tolada (svetovodda) yorug'lik signali qaysi hodisa tufayli uzoq masofaga uzatiladi?", o: ["Dispersiya", "To'liq ichki qaytish", "Difraksiya", "Qutblanish"], correct: 1,
+              ex: "Tola o'zagi qobig'iga nisbatan optik zichroq; nur chegaraga chegaraviy burchakdan katta burchak ostida tushib, ko'p marta to'liq qaytadi va deyarli yo'qotishsiz tarqaladi." },
+            { tag: "Yorug'lik sinishi · Chuqur", q: "Tiniq suvli hovuzga tepadan qaralganda uning tubi haqiqiy chuqurlikka nisbatan qanday ko'rinadi?", o: ["Chuqurroq", "Sayozroq", "Aynan haqiqiy chuqurlikda", "Ko'rinmaydi"], correct: 1,
+              ex: "Suvdan havoga chiqayotgan nurlar normaldan uzoqlashadi; ko'z ularning davomini kesishgan joyda — yuqoriroqda ko'radi (tik qaraganda h' ≈ h/n ≈ 0,75h)." },
+            // ===== Linza - Asosiy =====
+            { tag: "Linza · Asosiy", q: "Yupqa linza formulasi qaysi (d — linzadan buyumgacha, f — linzadan tasvirgacha masofa, F — fokus masofasi)?", o: ["1/F = 1/d + 1/f", "F = d + f", "1/F = 1/d · 1/f", "F = d·f"], correct: 0,
+              ex: "1/F = 1/d + 1/f. Mavhum tasvir uchun f, sochuvchi linza uchun F manfiy ishora bilan olinadi." },
+            { tag: "Linza · Asosiy", q: "Linza optik kuchining birligi qaysi?", o: ["Metr", "Dioptriya (dptr)", "Lyumen", "Kandela"], correct: 1,
+              ex: "D = 1/F, F metrda olinadi: 1 dptr = 1 m⁻¹. Yig'uvchi linzada D > 0, sochuvchida D < 0." },
+            { tag: "Linza · Asosiy", q: "Fokus masofasi 25 cm bo'lgan yig'uvchi linzaning optik kuchi qancha?", o: ["0,25 dptr", "2,5 dptr", "4 dptr", "25 dptr"], correct: 2,
+              ex: "D = 1/F = 1/0,25 m = 4 dptr. Fokus masofasini albatta metrga o'tkazish kerak." },
+            { tag: "Linza · Asosiy", q: "Sochuvchi linza haqiqiy buyumning har doim qanday tasvirini beradi?", o: ["Haqiqiy, teskari, kattalashgan", "Mavhum, to'g'ri, kichraygan", "Haqiqiy, to'g'ri, kichraygan", "Mavhum, teskari, kattalashgan"], correct: 1,
+              ex: "Sochuvchi linzadan o'tgan nurlar tarqaladi; ularning davomlari kesishib, buyum tomonida mavhum, to'g'ri, kichraygan tasvir hosil qiladi." },
+            { tag: "Linza · Asosiy", q: "Buyum yig'uvchi linza bilan uning fokusi orasida (d < F) joylashgan. Tasvir qanday bo'ladi?", o: ["Haqiqiy, teskari, kichraygan", "Mavhum, to'g'ri, kattalashgan", "Haqiqiy, teskari, kattalashgan", "Tasvir hosil bo'lmaydi"], correct: 1,
+              ex: "d < F da nurlar linzadan keyin ham tarqaladi; ularning davomlari kesishib, mavhum, to'g'ri, kattalashgan tasvir beradi — lupa shu tamoyilda ishlaydi." },
+            // ===== Linza - Chuqur =====
+            { tag: "Linza · Chuqur", q: "Buyum yig'uvchi linzadan 2F masofada joylashgan. Tasvir qayerda va qanday hosil bo'ladi?", o: ["2F masofada; haqiqiy, teskari, buyum bilan bir xil o'lchamda", "F masofada; mavhum, to'g'ri", "Cheksizlikda", "F va 2F oralig'ida; kattalashgan, to'g'ri"], correct: 0,
+              ex: "1/f = 1/F − 1/(2F) = 1/(2F) → f = 2F, kattalashtirish Γ = f/d = 1: haqiqiy, teskari, teng o'lchamli tasvir." },
+            { tag: "Linza · Chuqur", q: "Buyum yig'uvchi linzaning fokusida (d = F) joylashsa, nima bo'ladi?", o: ["Tasvir 2F masofada hosil bo'ladi", "Nurlar linzadan parallel dasta bo'lib chiqadi — tasvir hosil bo'lmaydi (cheksizlikda)", "Fokus ichida mavhum tasvir hosil bo'ladi", "Tasvir linzaning ikkinchi fokusida hosil bo'ladi"], correct: 1,
+              ex: "d = F da 1/f = 1/F − 1/F = 0 → f → ∞: fokusdan chiqqan nurlar linzadan keyin parallel ketadi (projektor va mayoqlarda shundan foydalaniladi)." },
+            { tag: "Linza · Chuqur", q: "Linzaning chiziqli kattalashtirishi qanday topiladi?", o: ["Γ = f/d", "Γ = d/f", "Γ = 1/d + 1/f", "Γ = d·f"], correct: 0,
+              ex: "Γ = H/h = f/d — tasvir balandligining buyum balandligiga nisbati, u tasvir va buyum masofalari nisbatiga teng." },
+            { tag: "Linza · Chuqur", q: "Optik kuchlari +5 dptr va −2 dptr bo'lgan ikki yupqa linza bir-biriga zich qo'yildi. Sistemaning fokus masofasi qancha?", o: ["≈ 0,33 m", "3 m", "≈ 0,14 m", "7 m"], correct: 0,
+              ex: "Zich qo'yilgan yupqa linzalar optik kuchlari qo'shiladi: D = 5 + (−2) = 3 dptr → F = 1/3 m ≈ 0,33 m (sistema yig'uvchi)." },
+            { tag: "Linza · Chuqur", q: "Shishadan yasalgan yig'uvchi linza havodan suvga botirildi. Uning fokus masofasi qanday o'zgaradi?", o: ["Kamayadi", "Ortadi", "O'zgarmaydi", "Linza sochuvchiga aylanadi"], correct: 1,
+              ex: "Optik kuch (n_linza/n_muhit − 1) ga proporsional. Suvda bu nisbat 1,5/1,33 ≈ 1,13 ga kamayadi (havoda 1,5), optik kuch kamayadi, fokus masofasi ortadi; linza yig'uvchiligicha qoladi." },
+            // ===== Fotoeffekt - Asosiy =====
+            { tag: "Fotoeffekt · Asosiy", q: "Tashqi fotoeffekt nima?", o: ["Yorug'lik ta'sirida moddadan elektronlarning urib chiqarilishi", "Yorug'likning ikki muhit chegarasida sinishi", "Qizdirilgan jismning yorug'lik chiqarishi", "Elektronlarning atom yadrosiga qulashi"], correct: 0,
+              ex: "Fotoeffektni G. Gers (1887) kashf etgan, A. G. Stoletov batafsil o'rgangan, A. Eynshteyn (1905) kvant nazariyasi asosida tushuntirgan." },
+            { tag: "Fotoeffekt · Asosiy", q: "Foton energiyasi qaysi formula bilan topiladi (h — Plank doimiysi, ν — chastota)?", o: ["E = hν", "E = mv²/2", "E = h/ν", "E = hλ"], correct: 0,
+              ex: "E = hν = hc/λ, h = 6,63·10⁻³⁴ J·s. Chastota qancha katta (to'lqin uzunligi qancha kichik) bo'lsa, foton energiyasi shuncha katta." },
+            { tag: "Fotoeffekt · Asosiy", q: "Fotoeffekt uchun Eynshteyn tenglamasi qaysi (A — chiqish ishi)?", o: ["hν = A + mv²/2", "hν = A − mv²/2", "hν = mc²", "A = hν + mv²/2"], correct: 0,
+              ex: "Foton energiyasi elektronni metalldan chiqarish ishiga (A) va unga maksimal kinetik energiya berishga sarflanadi: hν = A + mv²_max/2." },
+            { tag: "Fotoeffekt · Asosiy", q: "Fotoelektronlarning maksimal kinetik energiyasi nimaga bog'liq?", o: ["Yorug'lik intensivligiga", "Yorug'lik chastotasiga va metall turiga (chiqish ishiga)", "Yoritish davomiyligiga", "Katod yuzining kattaligiga"], correct: 1,
+              ex: "E_k = hν − A — faqat chastota va chiqish ishiga bog'liq. Intensivlik faqat chiqqan elektronlar sonini (to'yinish tokini) oshiradi." },
+            { tag: "Fotoeffekt · Asosiy", q: "Fotoeffektning qizil chegarasi nima?", o: ["Fotoeffekt yuz beradigan eng kichik chastota (eng katta to'lqin uzunligi)", "Fotoeffekt yuz beradigan eng katta chastota", "Qizil rangli yorug'likning chastotasi", "To'yinish tokining eng katta qiymati"], correct: 0,
+              ex: "ν_min = A/h, λ_max = hc/A. Bundan kichik chastotada yorug'lik qanchalik intensiv bo'lmasin fotoeffekt bo'lmaydi." },
+            // ===== Fotoeffekt - Chuqur =====
+            { tag: "Fotoeffekt · Chuqur", q: "Tushayotgan yorug'lik intensivligi 2 marta oshirildi (chastota o'zgarmas, fotoeffekt kuzatilmoqda). Nima o'zgaradi?", o: ["Fotoelektronlarning maksimal kinetik energiyasi 2 marta ortadi", "To'yinish toki 2 marta ortadi, kinetik energiya o'zgarmaydi", "Qizil chegara kattaroq to'lqin uzunligiga siljiydi", "To'xtatuvchi kuchlanish 2 marta ortadi"], correct: 1,
+              ex: "Intensivlik — vaqt birligida tushadigan fotonlar soni. Fotonlar ko'paysa urib chiqarilgan elektronlar soni va to'yinish toki ortadi; har bir fotonning energiyasi hν esa o'sha." },
+            { tag: "Fotoeffekt · Chuqur", q: "To'xtatuvchi kuchlanish U_t fotoelektronlarning maksimal kinetik energiyasi bilan qanday bog'langan?", o: ["eU_t = mv²_max/2", "U_t = mv²_max/2", "eU_t = hν", "U_t = e·A"], correct: 0,
+              ex: "Eng tez elektronni ham to'xtatish uchun elektr maydon uning butun kinetik energiyasini yutishi kerak: eU_t = mv²_max/2 = hν − A." },
+            { tag: "Fotoeffekt · Chuqur", q: "Chiqish ishi 2 eV bo'lgan metallga energiyasi 5 eV bo'lgan fotonlar tushmoqda. To'xtatuvchi kuchlanish qancha?", o: ["2 V", "3 V", "5 V", "7 V"], correct: 1,
+              ex: "E_k = hν − A = 5 − 2 = 3 eV. eU_t = E_k → U_t = 3 V." },
+            { tag: "Fotoeffekt · Chuqur", q: "Fotoelektronlar maksimal kinetik energiyasining yorug'lik chastotasiga bog'liqlik grafigi E_k(ν) to'g'ri chiziq. Uning qiyaligi (og'ish koeffitsiyenti) nimaga teng?", o: ["Plank doimiysi h ga", "Chiqish ishi A ga", "Elektron zaryadi e ga", "Yorug'lik tezligi c ga"], correct: 0,
+              ex: "E_k = hν − A — qiyaligi h bo'lgan to'g'ri chiziq; u barcha metallar uchun bir xil. Grafikning ν o'qi bilan kesishish nuqtasi — qizil chegara ν_min." },
+            { tag: "Fotoeffekt · Chuqur", q: "Fotoeffektning qaysi qonuniyatini yorug'likning klassik to'lqin nazariyasi tushuntira olmadi?", o: ["Qizil chegaraning mavjudligi", "Yorug'lik interferensiyasi", "Yorug'lik difraksiyasi", "Yorug'likning sinishi"], correct: 0,
+              ex: "To'lqin nazariyasiga ko'ra, yetarlicha intensiv har qanday yorug'lik elektronni urib chiqarishi kerak edi. Qizil chegara va fotoeffektning inersiyasizligi faqat foton (kvant) tasavvuri bilan tushuntiriladi." },
+            // ===== Radioaktiv yemirilish - Asosiy =====
+            { tag: "Radioaktiv yemirilish · Asosiy", q: "Alfa yemirilishda yadroning massa soni A va zaryad soni Z qanday o'zgaradi?", o: ["A 4 ga, Z 2 ga kamayadi", "A o'zgarmaydi, Z 1 ga ortadi", "A 2 ga, Z 4 ga kamayadi", "A ham, Z ham o'zgarmaydi"], correct: 0,
+              ex: "Alfa zarra — geliy yadrosi ⁴₂He (2 proton + 2 neytron). Uni chiqargan yadroda A 4 ga, Z 2 ga kamayadi (siljish qoidasi)." },
+            { tag: "Radioaktiv yemirilish · Asosiy", q: "β⁻ (elektron) yemirilishda yadroning A va Z sonlari qanday o'zgaradi?", o: ["A o'zgarmaydi, Z 1 ga ortadi", "A 4 ga, Z 2 ga kamayadi", "A o'zgarmaydi, Z 1 ga kamayadi", "A 1 ga ortadi, Z o'zgarmaydi"], correct: 0,
+              ex: "β⁻ yemirilishda yadrodagi neytron protonga aylanadi, elektron va antineytrino chiqadi: nuklonlar soni A o'zgarmaydi, Z esa 1 ga ortadi." },
+            { tag: "Radioaktiv yemirilish · Asosiy", q: "Yarim yemirilish davri nima?", o: ["Radioaktiv yadrolarning yarmi yemiriladigan vaqt", "Barcha yadrolar yemirilib bo'ladigan vaqt", "Bitta yadroning yashash vaqtining yarmi", "Nurlanish intensivligi 2 marta ortadigan vaqt"], correct: 0,
+              ex: "Yarim yemirilish davri T — dastlabki radioaktiv yadrolarning yarmi yemiriladigan vaqt. Yemirilish statistik jarayon: alohida yadro qachon yemirilishini oldindan aytib bo'lmaydi." },
+            { tag: "Radioaktiv yemirilish · Asosiy", q: "Gamma nurlanish nima?", o: ["Geliy yadrolari oqimi", "Elektronlar oqimi", "Juda qisqa to'lqinli elektromagnit nurlanish (yuqori energiyali fotonlar)", "Neytronlar oqimi"], correct: 2,
+              ex: "Gamma nurlar — zaryadsiz yuqori energiyali fotonlar; ular magnit maydonda og'maydi. Gamma nurlanishda A va Z o'zgarmaydi, yadro faqat uyg'ongan holatdan chiqadi." },
+            { tag: "Radioaktiv yemirilish · Asosiy", q: "Qaysi radioaktiv nurlanish eng katta o'tuvchanlik (singish) qobiliyatiga ega?", o: ["Alfa nurlanish", "Beta nurlanish", "Gamma nurlanish", "Ularning o'tuvchanligi bir xil"], correct: 2,
+              ex: "Alfa zarralarni qog'oz varag'i, beta zarralarni bir necha mm alyuminiy to'xtatadi; gamma nurlarni susaytirish uchun qalin qo'rg'oshin yoki beton kerak." },
+            // ===== Radioaktiv yemirilish - Chuqur =====
+            { tag: "Radioaktiv yemirilish · Chuqur", q: "Radioaktiv yemirilish qonuni qaysi (N₀ — dastlabki, N — t vaqtdan keyin qolgan yadrolar soni, T — yarim yemirilish davri)?", o: ["N = N₀·2^(−t/T)", "N = N₀·(1 − t/T)", "N = N₀·t/T", "N = N₀·2^(t/T)"], correct: 0,
+              ex: "Har bir yarim yemirilish davrida yadrolar soni 2 marta kamayadi: N = N₀·2^(−t/T). Kamayish chiziqli emas, eksponensial." },
+            { tag: "Radioaktiv yemirilish · Chuqur", q: "Uchta yarim yemirilish davri o'tgach, dastlabki radioaktiv yadrolarning qancha qismi yemirilmay qoladi?", o: ["1/3", "1/6", "1/8", "1/9"], correct: 2,
+              ex: "N/N₀ = 2⁻³ = 1/8. Qolgan 7/8 qismi yemirilgan bo'ladi." },
+            { tag: "Radioaktiv yemirilish · Chuqur", q: "Uran-238 yadrosi (Z = 92) bitta alfa va ketma-ket ikkita β⁻ yemirilishdan so'ng qanday yadroga aylanadi?", o: ["Uran-234 (Z = 92)", "Toriy-234 (Z = 90)", "Protaktiniy-234 (Z = 91)", "Toriy-230 (Z = 90)"], correct: 0,
+              ex: "Alfa: A 238 → 234, Z 92 → 90 (toriy). Ikkita β⁻: Z 90 → 91 → 92, A o'zgarmaydi. Natija — ²³⁴U, uranning izotopi." },
+            { tag: "Radioaktiv yemirilish · Chuqur", q: "Radioaktiv izotopning yarim yemirilish davri nimaga bog'liq?", o: ["Faqat izotop (yadro) turiga", "Moddaning haroratiga", "Tashqi bosimga", "Moddaning kimyoviy birikma tarkibiga"], correct: 0,
+              ex: "Radioaktiv yemirilish yadro ichidagi jarayon; oddiy sharoitdagi harorat, bosim va kimyoviy holat uni amalda o'zgartirmaydi." },
+            { tag: "Radioaktiv yemirilish · Chuqur", q: "Radioaktiv namunaning faolligi (aktivligi) 16 marta kamaydi. Necha yarim yemirilish davri o'tgan?", o: ["2", "4", "8", "16"], correct: 1,
+              ex: "Faollik yemirilmagan yadrolar soniga proporsional: 2ⁿ = 16 → n = 4 ta yarim yemirilish davri." }
         ];
 
+        // ================== MAVZULAR VA TANLOV ==================
+        // Teg ko'rinishi: "<Mavzu> · Asosiy/Chuqur/Hisoblash"
+        const TOPICS = ["Rezerford","Kepler","Matematik mayatnik","Prujinali mayatnik","Qiya tekislik","Otilgan jism","Impuls","Gaz qonunlari","Om qonuni","Kondensator","Elektromagnit induksiya","Yorug'lik sinishi","Linza","Fotoeffekt","Radioaktiv yemirilish"];
+        const topicOf = tag => tag.split(' · ')[0];
+        const levelOf = tag => tag.split(' · ')[1] || '';
+        const COUNT_OPTIONS = ['10', '20', '40', 'all'];
+        const SEL_KEY = 'fizika-testlar-tanlov';
+
+        let selTopics = new Set(TOPICS);
+        let qCount = '20';
+
         let current = 0;
-        let answers = new Array(questions.length).fill(null);
+        let answers = [];
         // Har bir sessiyada savollar va variantlar aralashtiriladi
         let quiz = [];
 
-        document.getElementById('totalQ').textContent = questions.length;
+        // HTML sifatida chiqariladigan matnlarni xavfsiz qilish
+        function esc(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
 
         // Fisher-Yates aralashtirish
         function shuffled(arr) {
@@ -335,9 +726,97 @@
             return a;
         }
 
+        function loadSelection() {
+            try {
+                const s = JSON.parse(localStorage.getItem(SEL_KEY) || 'null');
+                if (s && Array.isArray(s.topics)) selTopics = new Set(s.topics.filter(t => TOPICS.indexOf(t) > -1));
+                if (s && COUNT_OPTIONS.indexOf(s.count) > -1) qCount = s.count;
+            } catch (e) { /* xotira yopiq bo'lsa standart tanlov qoladi */ }
+        }
+        function saveSelection() {
+            try { localStorage.setItem(SEL_KEY, JSON.stringify({ topics: Array.from(selTopics), count: qCount })); }
+            catch (e) { /* e'tiborsiz */ }
+        }
+
+        const countIn = (arr, t) => arr.filter(x => topicOf(x.tag) === t).length;
+        const selectedQuestions = () => questions.filter(q => selTopics.has(topicOf(q.tag)));
+        const selectedProblems = () => problems.filter(p => selTopics.has(topicOf(p.tag)));
+        function quizSize() {
+            const n = selectedQuestions().length;
+            return qCount === 'all' ? n : Math.min(n, +qCount);
+        }
+
+        function buildPicker() {
+            const box = document.getElementById('topicChips');
+            box.innerHTML = '';
+            TOPICS.forEach(t => {
+                const nq = countIn(questions, t), np = countIn(problems, t);
+                const lab = document.createElement('label');
+                lab.className = 'chip';
+                lab.title = nq + ' ta test savoli, ' + np + ' ta masala';
+                lab.innerHTML = '<input type="checkbox" value="' + esc(t) + '">' +
+                    '<span class="chip__body"><span>' + esc(t) + '</span>' +
+                    '<span class="chip__n" aria-hidden="true">' + nq + '</span></span>';
+                const inp = lab.querySelector('input');
+                inp.setAttribute('aria-label', t + ': ' + lab.title);
+                inp.checked = selTopics.has(t);
+                inp.addEventListener('change', () => {
+                    if (inp.checked) selTopics.add(t); else selTopics.delete(t);
+                    refreshStart();
+                });
+                box.appendChild(lab);
+            });
+            document.getElementById('allTopics').addEventListener('change', function () {
+                selTopics = this.checked ? new Set(TOPICS) : new Set();
+                box.querySelectorAll('input').forEach(i => { i.checked = this.checked; });
+                refreshStart();
+            });
+            document.querySelectorAll('input[name="qcount"]').forEach(r => {
+                r.checked = r.value === qCount;
+                r.addEventListener('change', () => { if (r.checked) { qCount = r.value; refreshStart(); } });
+            });
+            document.getElementById('topicTotal').textContent = TOPICS.length;
+        }
+
+        // Boshlang'ich ekrandagi jami sonlar va tugmalar holatini yangilaydi
+        function refreshStart() {
+            const all = document.getElementById('allTopics');
+            all.checked = selTopics.size === TOPICS.length;
+            all.indeterminate = selTopics.size > 0 && selTopics.size < TOPICS.length;
+            const bank = selectedQuestions().length, n = quizSize(), m = selectedProblems().length;
+            document.getElementById('totalQ').textContent = n;
+            document.getElementById('totalP').textContent = m;
+            document.getElementById('totalMin').textContent = '~' + Math.max(5, Math.round(n * 0.6 / 5) * 5);
+            const sum = document.getElementById('selSummary');
+            if (!selTopics.size) {
+                sum.className = 'sel-summary warn';
+                sum.textContent = 'Kamida bitta mavzuni tanlang.';
+            } else {
+                sum.className = 'sel-summary';
+                sum.innerHTML = 'Tanlandi: <strong>' + selTopics.size + ' ta mavzu</strong> — testda <strong>' + n +
+                    ' ta savol</strong>' + (n < bank ? ' (bankdagi ' + bank + ' tadan)' : '') +
+                    ', hisoblashda <strong>' + m + ' ta masala</strong>.';
+            }
+            document.getElementById('startBtn').disabled = n === 0;
+            document.getElementById('calcBtn').disabled = m === 0;
+            saveSelection();
+        }
+
+        // Har bir tanlangan mavzudan navbat bilan olinadi — kichik testda ham mavzular teng qamraladi
+        function drawBalanced(pool, n) {
+            const by = {};
+            pool.forEach(q => { const t = topicOf(q.tag); (by[t] || (by[t] = [])).push(q); });
+            const lists = shuffled(Object.keys(by).map(t => shuffled(by[t])));
+            const out = [];
+            while (out.length < n && lists.some(l => l.length)) {
+                lists.forEach(l => { if (out.length < n && l.length) out.push(l.pop()); });
+            }
+            return shuffled(out);
+        }
+
         // Savol variantlarini aralashtirib, to'g'ri javob indeksini yangilaydi
         function prepareQuiz() {
-            quiz = shuffled(questions).map(q => {
+            quiz = drawBalanced(selectedQuestions(), quizSize()).map(q => {
                 const correctText = q.o[q.correct];
                 const opts = shuffled(q.o);
                 return { tag: q.tag, q: q.q, o: opts, correct: opts.indexOf(correctText), ex: q.ex };
@@ -345,13 +824,15 @@
         }
 
         function startQuiz() {
+            if (!quizSize()) return;
             current = 0;
             prepareQuiz();
-            answers = new Array(questions.length).fill(null);
+            answers = new Array(quiz.length).fill(null);
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.add('hidden');
             document.getElementById('quizScreen').classList.remove('hidden');
             renderQuestion();
+            window.scrollTo(0, 0);
         }
 
         function renderQuestion() {
@@ -367,7 +848,7 @@
                 const div = document.createElement('div');
                 const isSel = answers[current] === i;
                 div.className = 'option' + (isSel ? ' selected' : '');
-                div.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+                div.innerHTML = `<span class="letter">${letters[i]}</span><span>${esc(opt)}</span>`;
                 // Klaviatura bilan ham tanlash mumkin (Tab bilan o'tib, Enter/Probel bilan belgilash)
                 div.tabIndex = 0;
                 div.setAttribute('role', 'radio');
@@ -426,6 +907,35 @@
             if (current > 0) { current--; renderQuestion(); }
         }
 
+        function gradeFor(pct) {
+            if (pct >= 90) return ['🏆 "5" (A\'lo)', 'linear-gradient(135deg,#28a745,#20c997)'];
+            if (pct >= 75) return ['⭐ "4" (Yaxshi)', 'linear-gradient(135deg,#17a2b8,#4facfe)'];
+            if (pct >= 60) return ['✓ "3" (Qoniqarli)', 'linear-gradient(135deg,#ffc107,#ff9800)'];
+            return ['✗ "2" (Qoniqarsiz)', 'linear-gradient(135deg,#dc3545,#e83e8c)'];
+        }
+
+        // Mavzular bo'yicha natija: qaysi bo'limni takrorlash kerakligini ko'rsatadi
+        function renderTopicStats(items, isOk) {
+            const groups = {};
+            items.forEach((q, i) => {
+                const g = groups[q.tag] || (groups[q.tag] = { ok: 0, all: 0 });
+                g.all++;
+                if (isOk(q, i)) g.ok++;
+            });
+            const LV = ['Asosiy', 'Chuqur', 'Hisoblash'];
+            const key = tag => TOPICS.indexOf(topicOf(tag)) * 10 + LV.indexOf(levelOf(tag));
+            const ts = document.getElementById('topicStats');
+            ts.innerHTML = '';
+            Object.keys(groups).sort((a, b) => key(a) - key(b)).forEach(tag => {
+                const g = groups[tag], pc = Math.round(g.ok / g.all * 100);
+                const col = pc >= 75 ? '#10b981' : pc >= 50 ? '#f59e0b' : '#ef4444';
+                const row = document.createElement('div');
+                row.innerHTML = `<div class="topic-row__head"><span>${esc(tag)}</span><span>${g.ok}/${g.all} · ${pc}%</span></div>
+                    <div class="topic-bar"><i style="width:${pc}%;background:${col}"></i></div>`;
+                ts.appendChild(row);
+            });
+        }
+
         function showResult() {
             let correct = 0;
             quiz.forEach((q, i) => { if (answers[i] === q.correct) correct++; });
@@ -434,37 +944,22 @@
             document.getElementById('quizScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.remove('hidden');
             document.getElementById('progressBar').style.width = '100%';
+            window.scrollTo(0, 0);
 
             document.getElementById('scorePct').textContent = pct + '%';
             document.getElementById('scoreFrac').textContent = correct + '/' + quiz.length;
 
-            let grade, color, msg;
-            if (pct >= 90) { grade = '🏆 "5" (A\'lo)'; color = 'linear-gradient(135deg,#28a745,#20c997)'; msg = 'Ajoyib natija! Mavzuni mukammal o\'zlashtirgansiz.'; }
-            else if (pct >= 75) { grade = '⭐ "4" (Yaxshi)'; color = 'linear-gradient(135deg,#17a2b8,#4facfe)'; msg = 'Yaxshi natija! Ozgina mashq bilan a\'loga yetasiz.'; }
-            else if (pct >= 60) { grade = '✓ "3" (Qoniqarli)'; color = 'linear-gradient(135deg,#ffc107,#ff9800)'; msg = 'Qoniqarli. Xatolaringizni ko\'rib chiqing va takrorlang.'; }
-            else { grade = '✗ "2" (Qoniqarsiz)'; color = 'linear-gradient(135deg,#dc3545,#e83e8c)'; msg = 'Mavzuni qayta o\'rganib, modellar bilan mashq qiling.'; }
+            const [grade, color] = gradeFor(pct);
+            const msg = pct >= 90 ? 'Ajoyib natija! Mavzularni mukammal o\'zlashtirgansiz.'
+                : pct >= 75 ? 'Yaxshi natija! Ozgina mashq bilan a\'loga yetasiz.'
+                : pct >= 60 ? 'Qoniqarli. Xatolaringizni ko\'rib chiqing va takrorlang.'
+                : 'Mavzularni qayta o\'rganib, modellar bilan mashq qiling.';
 
             document.getElementById('scoreCircle').style.background = color;
             document.getElementById('gradeText').textContent = grade;
             document.getElementById('resultDetail').textContent = msg;
 
-            // Mavzular bo'yicha natija: qaysi bo'limni takrorlash kerakligini ko'rsatadi
-            const groups = {};
-            quiz.forEach((q, i) => {
-                const g = groups[q.tag] || (groups[q.tag] = { ok: 0, all: 0 });
-                g.all++;
-                if (answers[i] === q.correct) g.ok++;
-            });
-            const ts = document.getElementById('topicStats');
-            ts.innerHTML = '';
-            Object.keys(groups).sort().forEach(tag => {
-                const g = groups[tag], pc = Math.round(g.ok / g.all * 100);
-                const col = pc >= 75 ? '#10b981' : pc >= 50 ? '#f59e0b' : '#ef4444';
-                const row = document.createElement('div');
-                row.innerHTML = `<div class="topic-row__head"><span>${tag}</span><span>${g.ok}/${g.all} · ${pc}%</span></div>
-                    <div class="topic-bar"><i style="width:${pc}%;background:${col}"></i></div>`;
-                ts.appendChild(row);
-            });
+            renderTopicStats(quiz, (q, i) => answers[i] === q.correct);
 
             const letters = ['A', 'B', 'C', 'D'];
             const reviewEl = document.getElementById('reviewList');
@@ -481,18 +976,19 @@
                     if (answers[i] === q.correct) return;
                     const div = document.createElement('div');
                     div.className = 'review-item no';
-                    const yourAns = answers[i] === null ? 'belgilanmagan' : `${letters[answers[i]]}) ${q.o[answers[i]]}`;
-                    div.innerHTML = `<div class="rq">${i + 1}. ${q.q}</div>
+                    const yourAns = answers[i] === null ? 'belgilanmagan' : `${letters[answers[i]]}) ${esc(q.o[answers[i]])}`;
+                    div.innerHTML = `<div class="rq">${i + 1}. ${esc(q.q)}</div>
                         <div class="ra">❌ Sizning javobingiz: ${yourAns}<br>
-                        ✅ To'g'ri javob: ${letters[q.correct]}) ${q.o[q.correct]}</div>
-                        ${q.ex ? `<div class="rx">💡 ${q.ex}</div>` : ''}`;
+                        ✅ To'g'ri javob: ${letters[q.correct]}) ${esc(q.o[q.correct])}</div>
+                        ${q.ex ? `<div class="rx">💡 ${esc(q.ex)}</div>` : ''}`;
                     reviewEl.appendChild(div);
                 });
             }
         }
 
+
         // ================== HISOBLASH MASALALARI ==================
-        // Har biri testlar.md dagi 5-ballik masalalarga asoslangan
+        // Rezerford va Kepler masalalari testlar.md dagi 5-ballik masalalarga asoslangan
         const problems = [
             { tag: "Rezerford · Hisoblash", unit: "fm", ans: 45, tol: 12,
               q: "Alfa zarra 5 MeV energiya bilan harakatlanadi. Oltin yadrosiga (Z=79) minimal qancha yaqinlasha oladi? Javobni femtometrda (fm) yozing.",
@@ -520,31 +1016,152 @@
               sol: "Impuls momenti saqlanadi: v\u209A\u00B7r\u209A = v\u2090\u00B7r\u2090 \u2192 v\u2090 = 30.3 \u00D7 0.983/1.017 \u2248 29.3 km/s" },
             { tag: "Kepler · Hisoblash", unit: "ming km", ans: 42.2, tol: 4,
               q: "Geostatsionar yo'ldosh Yer atrofida 24 soatda aylanadi. Orbita radiusini toping (ming km). (M = 5.97\u00D710\u00B2\u2074 kg, G = 6.67\u00D710\u207B\u00B9\u00B9)",
-              sol: "r\u00B3 = T\u00B2GM/4\u03C0\u00B2 = (86400)\u00B2 \u00D7 6.67\u00D710\u207B\u00B9\u00B9 \u00D7 5.97\u00D710\u00B2\u2074 / 39.48 \u2248 7.53\u00D710\u00B2\u00B2 m\u00B3 \u2192 r \u2248 4.22\u00D710\u2077 m = 42.2 ming km" }
+              sol: "r\u00B3 = T\u00B2GM/4\u03C0\u00B2 = (86400)\u00B2 \u00D7 6.67\u00D710\u207B\u00B9\u00B9 \u00D7 5.97\u00D710\u00B2\u2074 / 39.48 \u2248 7.53\u00D710\u00B2\u00B2 m\u00B3 \u2192 r \u2248 4.22\u00D710\u2077 m = 42.2 ming km" },
+            { tag: "Matematik mayatnik · Hisoblash", unit: "s", ans: 3.17, tol: 2,
+              q: "Uzunligi 2,5 m bo'lgan matematik mayatnikning tebranish davrini toping (g = 9,81 m/s²).",
+              sol: "T = 2π√(l/g) = 2·3,1416·√(2,5/9,81) = 6,283·√0,2548 = 6,283·0,5048 ≈ 3,17 s" },
+            { tag: "Matematik mayatnik · Hisoblash", unit: "m", ans: 0.994, tol: 3,
+              q: "Matematik mayatnik 1 minutda 30 marta to'liq tebranadi. Ipning uzunligini toping (g = 9,81 m/s²).",
+              sol: "T = t/N = 60/30 = 2 s. l = gT²/(4π²) = 9,81·4/39,48 ≈ 0,994 m" },
+            { tag: "Matematik mayatnik · Hisoblash", unit: "s", ans: 4.94, tol: 2,
+              q: "Oyda (g = 1,62 m/s²) uzunligi 1 m bo'lgan matematik mayatnikning tebranish davri qancha?",
+              sol: "T = 2π√(l/g) = 6,283·√(1/1,62) = 6,283·0,7857 ≈ 4,94 s (Yerda bu mayatnik davri ≈ 2 s)" },
+            { tag: "Prujinali mayatnik · Hisoblash", unit: "s", ans: 0.314, tol: 3,
+              q: "Bikrligi 200 N/m bo'lgan prujinaga 0,5 kg yuk osilgan. Tebranish davrini toping.",
+              sol: "T = 2π√(m/k) = 6,283·√(0,5/200) = 6,283·0,05 ≈ 0,314 s" },
+            { tag: "Prujinali mayatnik · Hisoblash", unit: "N/m", ans: 49.3, tol: 3,
+              q: "Prujinali mayatnikning davri 0,4 s, yuk massasi 0,2 kg. Prujina bikrligini toping.",
+              sol: "T = 2π√(m/k) → k = 4π²m/T² = 39,48·0,2/0,16 ≈ 49,3 N/m" },
+            { tag: "Prujinali mayatnik · Hisoblash", unit: "m/s", ans: 0.8, tol: 3,
+              q: "Bikrligi 100 N/m prujinadagi 0,25 kg yuk 4 cm amplituda bilan tebranmoqda. Yukning maksimal tezligini toping.",
+              sol: "ω = √(k/m) = √(100/0,25) = 20 rad/s. v_max = Aω = 0,04·20 = 0,8 m/s (yoki kA²/2 = mv²/2 dan)" },
+            { tag: "Qiya tekislik · Hisoblash", unit: "%", ans: 70.6, tol: 2,
+              q: "Uzunligi 5 m, balandligi 1,5 m bo'lgan qiya tekislik bo'ylab 60 kg yukni tekis tortib chiqarishda 250 N kuch qo'yildi. FIK ni toping (g = 9,8 m/s²).",
+              sol: "A_foydali = mgh = 60·9,8·1,5 = 882 J; A_to'liq = F·l = 250·5 = 1250 J; η = 882/1250·100% ≈ 70,6%" },
+            { tag: "Qiya tekislik · Hisoblash", unit: "m/s²", ans: 4.9, tol: 2,
+              q: "Qiyalik burchagi 30° bo'lgan ishqalanishsiz qiya tekislik bo'ylab jism sirpanib tushmoqda. Tezlanishini toping (g = 9,8 m/s²).",
+              sol: "a = g·sin α = 9,8·sin 30° = 9,8·0,5 = 4,9 m/s²" },
+            { tag: "Qiya tekislik · Hisoblash", unit: "m/s²", ans: 3.2, tol: 3,
+              q: "Qiyalik burchagi 30°, ishqalanish koeffitsiyenti 0,2 bo'lgan qiya tekislikdan jism sirpanib tushmoqda. Tezlanishini toping (g = 9,8 m/s²).",
+              sol: "a = g(sin α − μ·cos α) = 9,8·(0,5 − 0,2·0,866) = 9,8·0,327 ≈ 3,2 m/s²" },
+            { tag: "Otilgan jism · Hisoblash", unit: "m", ans: 35.3, tol: 3,
+              q: "Jism 20 m/s tezlik bilan gorizontga 30° burchak ostida otildi. Uchish uzoqligini toping (g = 9,8 m/s², havo qarshiligisiz).",
+              sol: "L = v₀²·sin 2α/g = 400·sin 60°/9,8 = 400·0,866/9,8 ≈ 35,3 m" },
+            { tag: "Otilgan jism · Hisoblash", unit: "m", ans: 5.1, tol: 3,
+              q: "Jism 20 m/s tezlik bilan gorizontga 30° burchak ostida otildi. Maksimal ko'tarilish balandligini toping (g = 9,8 m/s²).",
+              sol: "H = v₀²·sin²α/(2g) = 400·0,25/19,6 ≈ 5,1 m" },
+            { tag: "Otilgan jism · Hisoblash", unit: "s", ans: 2.16, tol: 3,
+              q: "Jism 15 m/s tezlik bilan gorizontga 45° burchak ostida otildi. To'liq uchish vaqtini toping (g = 9,8 m/s²).",
+              sol: "t = 2v₀·sin α/g = 2·15·0,7071/9,8 ≈ 2,16 s" },
+            { tag: "Impuls · Hisoblash", unit: "m/s", ans: 2, tol: 2,
+              q: "Massasi 2 kg, tezligi 3 m/s bo'lgan shar tinch turgan 1 kg massali sharga urilib, ular birgalikda harakatlana boshladi. Ularning umumiy tezligini toping.",
+              sol: "Impulsning saqlanishi: m₁v₁ = (m₁ + m₂)·u → u = 2·3/(2 + 1) = 2 m/s" },
+            { tag: "Impuls · Hisoblash", unit: "m/s", ans: 1.5, tol: 2,
+              q: "Massasi 4 kg bo'lgan miltiqdan 10 g massali o'q 600 m/s tezlik bilan otildi. Miltiqning orqaga tepilish tezligini toping.",
+              sol: "0 = m·v − M·V → V = m·v/M = 0,01·600/4 = 1,5 m/s" },
+            { tag: "Impuls · Hisoblash", unit: "N", ans: 450, tol: 2,
+              q: "0,5 kg massali to'p 10 m/s tezlik bilan devorga perpendikulyar urilib, 8 m/s tezlik bilan qaytdi. Urilish 0,02 s davom etdi. Devorning to'pga o'rtacha ta'sir kuchini toping.",
+              sol: "Δp = m(v₂ + v₁) = 0,5·(8 + 10) = 9 kg·m/s (yo'nalish o'zgaradi); F = Δp/Δt = 9/0,02 = 450 N" },
+            { tag: "Gaz qonunlari · Hisoblash", unit: "kPa", ans: 300, tol: 1,
+              q: "Gaz izotermik siqilib, hajmi 6 L dan 2 L gacha kamaydi. Boshlang'ich bosim 100 kPa bo'lsa, oxirgi bosimni toping.",
+              sol: "p₁V₁ = p₂V₂ → p₂ = p₁V₁/V₂ = 100·6/2 = 300 kPa" },
+            { tag: "Gaz qonunlari · Hisoblash", unit: "MPa", ans: 2.4, tol: 2,
+              q: "Ballondagi gaz 27 °C da 2 MPa bosimga ega. Gaz 87 °C gacha qizdirilsa, bosimi qancha bo'ladi (hajm o'zgarmas)?",
+              sol: "T₁ = 300 K, T₂ = 360 K. p₂ = p₁·T₂/T₁ = 2·360/300 = 2,4 MPa" },
+            { tag: "Gaz qonunlari · Hisoblash", unit: "kPa", ans: 249, tol: 2,
+              q: "Hajmi 0,02 m³ bo'lgan ballonda 300 K haroratda 2 mol ideal gaz bor. Gaz bosimini toping (R = 8,31 J/(mol·K)).",
+              sol: "pV = νRT → p = νRT/V = 2·8,31·300/0,02 = 249 300 Pa ≈ 249 kPa" },
+            { tag: "Om qonuni · Hisoblash", unit: "A", ans: 0.6, tol: 2,
+              q: "Qarshiligi 20 Ω bo'lgan rezistorga 12 V kuchlanish berildi. Undagi tok kuchini toping.",
+              sol: "I = U/R = 12/20 = 0,6 A" },
+            { tag: "Om qonuni · Hisoblash", unit: "A", ans: 2, tol: 2,
+              q: "EYuK 12 V, ichki qarshiligi 1 Ω bo'lgan manbaga 5 Ω tashqi qarshilik ulandi. Zanjirdagi tok kuchini toping.",
+              sol: "I = ℰ/(R + r) = 12/(5 + 1) = 2 A" },
+            { tag: "Om qonuni · Hisoblash", unit: "Ω", ans: 10, tol: 1,
+              q: "4 Ω va 12 Ω li rezistorlar parallel ulanib, ularga ketma-ket 7 Ω li rezistor ulangan. Zanjirning umumiy qarshiligini toping.",
+              sol: "R_par = 4·12/(4 + 12) = 48/16 = 3 Ω; R_um = 3 + 7 = 10 Ω" },
+            { tag: "Kondensator · Hisoblash", unit: "mC", ans: 2, tol: 2,
+              q: "Sig'imi 10 mkF bo'lgan kondensator 200 V kuchlanishgacha zaryadlandi. Kondensator zaryadini toping (millikulonda).",
+              sol: "q = CU = 10·10⁻⁶·200 = 2·10⁻³ C = 2 mC" },
+            { tag: "Kondensator · Hisoblash", unit: "J", ans: 0.2, tol: 2,
+              q: "Sig'imi 10 mkF bo'lgan kondensator 200 V kuchlanishgacha zaryadlandi. Kondensator energiyasini toping.",
+              sol: "W = CU²/2 = 10·10⁻⁶·200²/2 = 10⁻⁵·40 000/2 = 0,2 J" },
+            { tag: "Kondensator · Hisoblash", unit: "pF", ans: 177, tol: 2,
+              q: "Yassi havo kondensatori qoplamalarining yuzi 200 cm², ular orasidagi masofa 1 mm. Sig'imni toping (pikofaradda). ε₀ = 8,85·10⁻¹² F/m.",
+              sol: "S = 200 cm² = 0,02 m², d = 10⁻³ m. C = ε₀S/d = 8,85·10⁻¹²·0,02/10⁻³ = 1,77·10⁻¹⁰ F = 177 pF" },
+            { tag: "Elektromagnit induksiya · Hisoblash", unit: "V", ans: 20, tol: 2,
+              q: "100 o'ramli g'altak orqali o'tuvchi magnit oqimi 0,2 s davomida 0,01 Wb dan 0,05 Wb gacha tekis ortdi. Induksiya EYuK modulini toping.",
+              sol: "|ℰ| = N·ΔΦ/Δt = 100·(0,05 − 0,01)/0,2 = 100·0,04/0,2 = 20 V" },
+            { tag: "Elektromagnit induksiya · Hisoblash", unit: "V", ans: 2, tol: 2,
+              q: "Uzunligi 0,5 m bo'lgan o'tkazgich induksiyasi 0,4 T bo'lgan magnit maydonda induksiya chiziqlariga perpendikulyar 10 m/s tezlik bilan harakatlanmoqda. O'tkazgich uchlaridagi induksiya EYuK ni toping.",
+              sol: "ℰ = B·v·l = 0,4·10·0,5 = 2 V" },
+            { tag: "Elektromagnit induksiya · Hisoblash", unit: "V", ans: 12, tol: 2,
+              q: "Induktivligi 0,2 H bo'lgan g'altakdagi tok 0,05 s davomida 3 A dan 0 gacha tekis kamaydi. O'zinduksiya EYuK modulini toping.",
+              sol: "|ℰ| = L·ΔI/Δt = 0,2·3/0,05 = 12 V" },
+            { tag: "Yorug'lik sinishi · Hisoblash", unit: "°", ans: 35.3, tol: 3,
+              q: "Yorug'lik nuri havodan shishaga (n = 1,5) 60° burchak ostida tushmoqda. Sinish burchagini toping (gradusda).",
+              sol: "sin β = sin α/n = 0,866/1,5 = 0,577 → β = arcsin 0,577 ≈ 35,3°" },
+            { tag: "Yorug'lik sinishi · Hisoblash", unit: "°", ans: 24.4, tol: 3,
+              q: "Olmosning sindirish ko'rsatkichi 2,42. Olmos–havo chegarasi uchun to'liq ichki qaytishning chegaraviy burchagini toping (gradusda).",
+              sol: "sin α₀ = 1/n = 1/2,42 = 0,413 → α₀ ≈ 24,4° (kichik chegaraviy burchak olmosning \"yaltirashi\" sababi)" },
+            { tag: "Yorug'lik sinishi · Hisoblash", unit: "", ans: 1.5, tol: 2,
+              q: "Yorug'likning biror shaffof muhitdagi tezligi 2·10⁸ m/s. Muhitning absolyut sindirish ko'rsatkichini toping (c = 3·10⁸ m/s).",
+              sol: "n = c/v = 3·10⁸/(2·10⁸) = 1,5 (o'lchamsiz kattalik)" },
+            { tag: "Linza · Hisoblash", unit: "cm", ans: 30, tol: 2,
+              q: "Fokus masofasi 10 cm bo'lgan yig'uvchi linzadan 15 cm masofada buyum turibdi. Linzadan tasvirgacha bo'lgan masofani toping.",
+              sol: "1/f = 1/F − 1/d = 1/10 − 1/15 = (3 − 2)/30 = 1/30 → f = 30 cm (haqiqiy tasvir)" },
+            { tag: "Linza · Hisoblash", unit: "marta", ans: 2, tol: 2,
+              q: "Fokus masofasi 10 cm bo'lgan yig'uvchi linzadan 15 cm masofada buyum turibdi. Linzaning chiziqli kattalashtirishini toping.",
+              sol: "1/f = 1/10 − 1/15 → f = 30 cm; Γ = f/d = 30/15 = 2 marta (tasvir teskari, kattalashgan)" },
+            { tag: "Linza · Hisoblash", unit: "dptr", ans: 5, tol: 2,
+              q: "Buyum yig'uvchi linzadan 40 cm masofada turibdi, uning aniq tasviri linzaning narigi tomonida 40 cm masofadagi ekranda hosil bo'ldi. Linzaning optik kuchini toping.",
+              sol: "D = 1/F = 1/d + 1/f = 1/0,4 + 1/0,4 = 2,5 + 2,5 = 5 dptr (F = 20 cm, buyum 2F da)" },
+            { tag: "Fotoeffekt · Hisoblash", unit: "eV", ans: 2.49, tol: 2,
+              q: "To'lqin uzunligi 500 nm bo'lgan yorug'lik fotonining energiyasini toping (elektronvoltda). h = 6,63·10⁻³⁴ J·s, c = 3·10⁸ m/s, e = 1,6·10⁻¹⁹ C.",
+              sol: "E = hc/λ = 6,63·10⁻³⁴·3·10⁸/(5·10⁻⁷) = 3,98·10⁻¹⁹ J; E = 3,98·10⁻¹⁹/1,6·10⁻¹⁹ ≈ 2,49 eV" },
+            { tag: "Fotoeffekt · Hisoblash", unit: "eV", ans: 2.14, tol: 3,
+              q: "Chiqish ishi 2,0 eV bo'lgan metallga to'lqin uzunligi 300 nm bo'lgan ultrabinafsha nur tushmoqda. Fotoelektronlarning maksimal kinetik energiyasini toping (eV). h = 6,63·10⁻³⁴ J·s, c = 3·10⁸ m/s, e = 1,6·10⁻¹⁹ C.",
+              sol: "hν = hc/λ = 6,63·10⁻³⁴·3·10⁸/(3·10⁻⁷) = 6,63·10⁻¹⁹ J ≈ 4,14 eV; E_k = hν − A = 4,14 − 2,0 ≈ 2,14 eV" },
+            { tag: "Fotoeffekt · Hisoblash", unit: "nm", ans: 276, tol: 2,
+              q: "Volfram uchun chiqish ishi 4,5 eV. Fotoeffektning qizil chegarasi to'lqin uzunligini toping (nanometrda). h = 6,63·10⁻³⁴ J·s, c = 3·10⁸ m/s, e = 1,6·10⁻¹⁹ C.",
+              sol: "A = 4,5·1,6·10⁻¹⁹ = 7,2·10⁻¹⁹ J; λ_max = hc/A = 6,63·10⁻³⁴·3·10⁸/(7,2·10⁻¹⁹) ≈ 2,76·10⁻⁷ m = 276 nm" },
+            { tag: "Radioaktiv yemirilish · Hisoblash", unit: "mg", ans: 25, tol: 2,
+              q: "Yod-131 ning yarim yemirilish davri 8 sutka. Dastlab 200 mg yod bo'lgan bo'lsa, 24 sutkadan keyin qancha yemirilmagan yod qoladi?",
+              sol: "n = t/T = 24/8 = 3. m = m₀·2⁻ⁿ = 200/8 = 25 mg" },
+            { tag: "Radioaktiv yemirilish · Hisoblash", unit: "min", ans: 30, tol: 2,
+              q: "Radioaktiv namunadagi yadrolarning 75% i 1 soatda yemirildi. Izotopning yarim yemirilish davrini toping (minutda).",
+              sol: "Qolgan ulush 25% = 1/4 = 2⁻² → 1 soatda 2 ta yarim yemirilish davri o'tgan: T = 60/2 = 30 min" },
+            { tag: "Radioaktiv yemirilish · Hisoblash", unit: "yil", ans: 17190, tol: 2,
+              q: "Uglerod-14 ning yarim yemirilish davri 5730 yil. Qadimiy yog'och namunasida C-14 miqdori tirik daraxtdagiga nisbatan 8 marta kam. Namunaning yoshini toping.",
+              sol: "N/N₀ = 1/8 = 2⁻³ → t = 3T = 3·5730 = 17 190 yil" }
         ];
 
         let pCurrent = 0;
         let pScore = 0;
         let pAnswered = false;
-        document.getElementById('totalP').textContent = problems.length;
-
         let calcSet = [];
 
+        // Javobni o'zbekcha ko'rinishda chiqarish (o'nli vergul)
+        const fmtNum = x => String(x).replace('.', ',');
+        const withUnit = p => fmtNum(p.ans) + (p.unit ? ' ' + p.unit : '');
+
         function startCalc() {
+            const pool = selectedProblems();
+            if (!pool.length) return;
             pCurrent = 0;
             pScore = 0;
-            calcSet = shuffled(problems);
-            calcSet.forEach(function (p) { p._ok = false; });
+            calcSet = shuffled(pool).map(function (p) { return Object.assign({}, p, { _ok: false }); });
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.add('hidden');
             document.getElementById('calcScreen').classList.remove('hidden');
             renderProblem();
+            window.scrollTo(0, 0);
         }
 
         function renderProblem() {
             const p = calcSet[pCurrent];
             pAnswered = false;
-            document.getElementById('pCounter').textContent = `Masala ${pCurrent + 1} / ${problems.length}`;
+            document.getElementById('pCounter').textContent = `Masala ${pCurrent + 1} / ${calcSet.length}`;
             document.getElementById('pTag').textContent = p.tag;
             document.getElementById('pText').textContent = p.q;
             document.getElementById('pUnit').textContent = p.unit;
@@ -553,8 +1170,8 @@
             document.getElementById('pFeedback').innerHTML = '';
             document.getElementById('pCheckBtn').disabled = false;
             document.getElementById('pNextBtn').disabled = true;
-            document.getElementById('pNextBtn').textContent = pCurrent === problems.length - 1 ? '\u2713 Yakunlash' : 'Keyingi \u2192';
-            document.getElementById('progressBar').style.width = (pCurrent / problems.length * 100) + '%';
+            document.getElementById('pNextBtn').textContent = pCurrent === calcSet.length - 1 ? '✓ Yakunlash' : 'Keyingi →';
+            document.getElementById('progressBar').style.width = (pCurrent / calcSet.length * 100) + '%';
             // Keyingi masalaga o'tilganda yozishni darhol davom ettirish mumkin bo'lsin
             // (birinchi masalada emas — telefonda klaviatura o'z-o'zidan ochilmasin)
             if (pCurrent > 0) document.getElementById('pInput').focus();
@@ -569,7 +1186,7 @@
             // lekin son davom etsa ("1.2.3") javob noaniq deb rad etiladi
             // Darajali yozuv ham: 4,22·10^7, 4.22×10⁷, 4.5*10^-3, 4.5e7
             const SUP = { '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-','⁺':'+' };
-            const raw = inp.value.trim().replace(/\s+/g, '').replace(/[\u2212\u2013]/g, '-').replace(',', '.')
+            const raw = inp.value.trim().replace(/\s+/g, '').replace(/[−–]/g, '-').replace(',', '.')
                 .replace(/10([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, e) => '10^' + e.replace(/./g, c => SUP[c]));
             const m = raw.match(/^([-+]?(?:\d+\.?\d*|\.\d+))(?:e([-+]?\d+)|[·×x*]10\^?([-+]?\d+))?/i);
             const rest = m ? raw.slice(m[0].length) : '';
@@ -585,15 +1202,15 @@
                 return;
             }
             pAnswered = true;
-            const ok = Math.abs(val - p.ans) <= p.ans * p.tol / 100;
+            const ok = Math.abs(val - p.ans) <= Math.abs(p.ans) * p.tol / 100;
             p._ok = ok;
             if (ok) pScore++;
             const fb = document.getElementById('pFeedback');
             fb.innerHTML =
                 '<div class="review-item ' + (ok ? 'ok' : 'no') + '">' +
-                '<div class="rq">' + (ok ? '\u2705 To\'g\'ri! Javob: ' : '\u274C Noto\'g\'ri. To\'g\'ri javob: ') +
-                p.ans + ' ' + p.unit + '</div>' +
-                '<div class="ra"><strong>Yechim:</strong> ' + p.sol + '</div></div>';
+                '<div class="rq">' + (ok ? '✅ To\'g\'ri! Javob: ' : '❌ Noto\'g\'ri. To\'g\'ri javob: ') +
+                esc(withUnit(p)) + '</div>' +
+                '<div class="ra"><strong>Yechim:</strong> ' + esc(p.sol) + '</div></div>';
             document.getElementById('pInput').disabled = true;
             document.getElementById('pCheckBtn').disabled = true;
             document.getElementById('pNextBtn').disabled = false;
@@ -608,7 +1225,7 @@
         });
 
         function nextProblem() {
-            if (pCurrent === problems.length - 1) {
+            if (pCurrent === calcSet.length - 1) {
                 showCalcResult();
             } else {
                 pCurrent++;
@@ -623,22 +1240,24 @@
         }
 
         function showCalcResult() {
-            const pct = Math.round(pScore / problems.length * 100);
-            // Oldingi testdan qolgan mavzular tahlili masalalar natijasida ko'rinmasin
-            document.getElementById('topicStats').innerHTML = '';
+            const pct = Math.round(pScore / calcSet.length * 100);
             document.getElementById('calcScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.remove('hidden');
             document.getElementById('progressBar').style.width = '100%';
+            window.scrollTo(0, 0);
             document.getElementById('scorePct').textContent = pct + '%';
-            document.getElementById('scoreFrac').textContent = pScore + '/' + problems.length;
-            let grade, color, msg;
-            if (pct >= 90) { grade = '\uD83C\uDFC6 "5" (A\'lo)'; color = 'linear-gradient(135deg,#28a745,#20c997)'; msg = 'Hisoblash mahoratingiz ajoyib!'; }
-            else if (pct >= 75) { grade = '\u2B50 "4" (Yaxshi)'; color = 'linear-gradient(135deg,#17a2b8,#4facfe)'; msg = 'Yaxshi! Formulalarni yana bir bor takrorlang.'; }
-            else if (pct >= 60) { grade = '\u2713 "3" (Qoniqarli)'; color = 'linear-gradient(135deg,#ffc107,#ff9800)'; msg = 'Qoniqarli. Yechimlarni diqqat bilan o\'rganib chiqing.'; }
-            else { grade = '\u2717 "2" (Qoniqarsiz)'; color = 'linear-gradient(135deg,#dc3545,#e83e8c)'; msg = 'Interaktiv modellar bilan mashq qilib, qayta urinib ko\'ring.'; }
+            document.getElementById('scoreFrac').textContent = pScore + '/' + calcSet.length;
+            const [grade, color] = gradeFor(pct);
+            const msg = pct >= 90 ? 'Hisoblash mahoratingiz ajoyib!'
+                : pct >= 75 ? 'Yaxshi! Formulalarni yana bir bor takrorlang.'
+                : pct >= 60 ? 'Qoniqarli. Yechimlarni diqqat bilan o\'rganib chiqing.'
+                : 'Interaktiv modellar bilan mashq qilib, qayta urinib ko\'ring.';
             document.getElementById('scoreCircle').style.background = color;
             document.getElementById('gradeText').textContent = grade;
             document.getElementById('resultDetail').textContent = msg;
+
+            // Masalalar bo'yicha ham mavzular tahlili (oldingi test natijasi o'rniga)
+            renderTopicStats(calcSet, p => p._ok);
 
             // Xato qilingan masalalar yechimi bilan ko'rsatiladi
             const rev = document.getElementById('reviewList');
@@ -650,9 +1269,9 @@
                            wrongP.length + ' ta):</p>';
                 calcSet.forEach(function (p, i) {
                     if (p._ok) return;
-                    html += '<div class="review-item no"><div class="rq">' + (i + 1) + '. ' + p.q + '</div>' +
-                            '<div class="ra">✅ To\'g\'ri javob: <strong>' + p.ans + ' ' + p.unit + '</strong><br>' +
-                            '<strong>Yechim:</strong> ' + p.sol + '</div></div>';
+                    html += '<div class="review-item no"><div class="rq">' + (i + 1) + '. ' + esc(p.q) + '</div>' +
+                            '<div class="ra">✅ To\'g\'ri javob: <strong>' + esc(withUnit(p)) + '</strong><br>' +
+                            '<strong>Yechim:</strong> ' + esc(p.sol) + '</div></div>';
                 });
                 rev.innerHTML = html;
             }
@@ -662,7 +1281,13 @@
             document.getElementById('resultScreen').classList.add('hidden');
             document.getElementById('startScreen').classList.remove('hidden');
             document.getElementById('progressBar').style.width = '0%';
+            refreshStart();
+            window.scrollTo(0, 0);
         }
+
+        loadSelection();
+        buildPicker();
+        refreshStart();
     </script>
 </body>
 </html>

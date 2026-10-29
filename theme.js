@@ -57,6 +57,21 @@
             t.onclick = toggleTheme;
             document.body.appendChild(t);
         }
+        if (!document.getElementById('langToggle')) {
+            var lg = document.createElement('button');
+            lg.id = 'langToggle';
+            lg.className = 'floating-btn';
+            var ru = getLang() === 'ru';
+            lg.textContent = ru ? 'UZ' : 'RU';
+            lg.title = ru ? 'O\'zbek tiliga o\'tish' : 'Русский язык';
+            lg.setAttribute('aria-label', lg.title);
+            lg.setAttribute('data-no-i18n', '');
+            lg.onclick = function () {
+                try { localStorage.setItem('fizika-lang', ru ? 'uz' : 'ru'); } catch (e) {}
+                location.reload();
+            };
+            document.body.appendChild(lg);
+        }
         if (!document.getElementById('scrollTop')) {
             var s = document.createElement('button');
             s.id = 'scrollTop';
@@ -68,6 +83,24 @@
             document.body.appendChild(s);
         }
     }
+
+    // ----- Til (o'zbek / rus) -----
+    function getLang() {
+        try { return localStorage.getItem('fizika-lang') === 'ru' ? 'ru' : 'uz'; } catch (e) { return 'uz'; }
+    }
+    function loadLang() {
+        if (getLang() !== 'ru' || !ROOT) return;
+        var d = document.createElement('script');
+        d.src = ROOT + 'i18n-ru.js?v=' + I18N_VER;
+        d.onload = function () {
+            var r = document.createElement('script');
+            r.src = ROOT + 'i18n.js?v=' + I18N_VER;
+            document.head.appendChild(r);
+        };
+        document.head.appendChild(d);
+    }
+    var I18N_VER = '20261029d';
+    window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----
     function initScrollTop() {
@@ -127,6 +160,26 @@
         }
     }
 
+    // ----- O'qituvchi rejimi (?oqituvchi=1 / ?oqituvchi=0) -----
+    // Har qanday sahifadan yoqiladi; modellarda kutilgan natijalarni model-tools.js ko'rsatadi
+    function initTeacherFlag() {
+        var q = null;
+        try { q = new URLSearchParams(location.search).get('oqituvchi'); } catch (e) {}
+        if (q !== '1' && q !== '0') return;
+        try {
+            if (q === '1') localStorage.setItem('fizika-teacher', '1');
+            else localStorage.removeItem('fizika-teacher');
+        } catch (e) {}
+        var t = document.createElement('div');
+        t.className = 'toast';
+        t.setAttribute('role', 'status');
+        t.textContent = q === '1' ? '👩‍🏫 O\'qituvchi rejimi yoqildi — modellarda kutilgan natijalar ko\'rinadi'
+                                  : 'O\'qituvchi rejimi o\'chirildi';
+        document.body.appendChild(t);
+        setTimeout(function () { t.classList.add('toast--hide'); }, 3200);
+        setTimeout(function () { t.remove(); }, 3800);
+    }
+
     // ----- Ishga tushirish -----
     // Rejimni iloji boricha erta qo'llaymiz (miltillashning oldini olish)
     function boot() {
@@ -137,6 +190,8 @@
         initScrollTop();
         initReveal();
         initPwa();
+        initTeacherFlag();
+        loadLang();
     }
 
     if (document.readyState === 'loading') {

@@ -21,7 +21,12 @@
         { file: 'prujinali_mayatnik_model.html', icon: '🌀', name: 'Prujinali mayatnik' },
         { file: 'otilgan_jism_model.html',  icon: '🎯', name: 'Otilgan jism' },
         { file: 'gaz_qonunlari_model.html', icon: '🎈', name: 'Gaz qonunlari' },
-        { file: 'kondensator_model.html',   icon: '🔋', name: 'Kondensator' }
+        { file: 'kondensator_model.html',   icon: '🔋', name: 'Kondensator' },
+        { file: 'impuls_model.html',        icon: '🎱', name: 'Impuls' },
+        { file: 'yoruglik_sinishi_model.html', icon: '🌈', name: 'Yorug\'lik sinishi' },
+        { file: 'linza_model.html',         icon: '🔍', name: 'Linza' },
+        { file: 'fotoeffekt_model.html',    icon: '💡', name: 'Fotoeffekt' },
+        { file: 'radioaktiv_yemirilish_model.html', icon: '☢️', name: 'Radioaktiv yemirilish' }
     ];
 
     function currentFile() {
@@ -353,7 +358,16 @@
         'qiya_tekislik_model.html': { x: 'α', y: 'FIK' },
         'otilgan_jism_model.html': { x: 'α', y: "L o'lch" },
         'rezerford_model.html': { x: 'v', y: 'r_min' },
-        'kepler_model.html': { x: 'a', xp: 3, y: 'T²/a³' }
+        'kepler_model.html': { x: 'a', xp: 3, y: 'T²/a³' },
+        'impuls_model.html': { x: 'p (', y: 'p′',
+            hint: function (k) { return 'p′ = p bo\'lsa qiyalik 1 bo\'ladi: hozir ' + fx(k, 3) + ' — impuls saqlanadi'; } },
+        'yoruglik_sinishi_model.html': { x: 'sinβ', y: 'sinα',
+            hint: function (k) { return 'n₁·sinα = n₂·sinβ → n₂/n₁ = qiyalik ≈ ' + fx(k, 3); } },
+        'fotoeffekt_model.html': { x: 'U', y: "I o'lch" },
+        'radioaktiv_yemirilish_model.html': { x: 't (s)', y: 'N',
+            hint: function () { return 'Y o\'qini ln N qilib bo\'lmaydi — lekin N har T½ da 2 marta kamayishini jadvaldan tekshiring'; } },
+        'linza_model.html': { x: 'd', xp: -1, y: 'f', yp: -1,
+            hint: function (k, b) { return '1/f = −1/d + 1/F → qiyalik ≈ −1, kesishma 1/F ≈ ' + fx(b, 4) + ' 1/cm → F ≈ ' + fx(1 / b, 1) + ' cm'; } }
     };
     var POWS = [[1, 'x'], [2, 'x²'], [3, 'x³'], [0.5, '√x'], [-1, '1/x']];
 
@@ -638,22 +652,27 @@
             'Elastik, m₁ = m₂ = 1 kg, v₁ = 2 m/s, v₂ = 0: tezliklar almashinadi (v₁′ = 0, v₂′ = 2 m/s)',
             'Noelastik, m₁ = m₂: umumiy tezlik 1 m/s, kinetik energiyaning yarmi issiqlikka aylanadi',
             'Elastik, m₁ = 1 kg, m₂ = 4 kg, v₁ = 2 m/s: v₁′ = −1.2 m/s (orqaga qaytadi), v₂′ = 0.8 m/s',
-            'Barcha holatlarda umumiy impuls saqlanadi'],
+            'Qisman elastik, k = 0.5 (m₁ = m₂ = 1 kg, v₁ = 2): v₁′ = 0.5, v₂′ = 1.5 m/s, Q = 0.75 J',
+            'Noelastik, v₁ = +2, v₂ = −2 m/s: aravachalar to\'xtaydi, p = 0, butun Eₖ = 4 J issiqlikka aylanadi',
+            'Barcha holatlarda umumiy impuls saqlanadi (Δp = 0)'],
         'yoruglik_sinishi_model.html': [
             'Havo → shisha (n = 1.5): α = 30° → β ≈ 19.5°; 45° → ≈ 28.1°; 60° → ≈ 35.3°; sinα/sinβ = 1.5',
+            'Impuls tezligi: v₁/v₂ = n₂/n₁ = 1.5 (havoda 3.00, shishada 2.00·10⁸ m/s)',
             'Shisha → havo: chegaraviy burchak α_kr = arcsin(1/1.5) ≈ 41.8°',
             'Suv → havo: α_kr ≈ 48.8°; olmos → havo: ≈ 24.4°'],
         'linza_model.html': [
-            'Yig\'uvchi linza, d > 2F: haqiqiy, teskari, kichiklashgan (F < f < 2F)',
-            'd = 2F: haqiqiy, teskari, teng (f = 2F, Γ = 1)',
-            'F < d < 2F: haqiqiy, teskari, kattalashgan (f > 2F)',
-            'd < F: mavhum, to\'g\'ri, kattalashgan (lupa); d = F da tasvir hosil bo\'lmaydi'],
+            'F = 10 cm, d = 30 cm (3F): f = 15 cm, Γ = 0.5 — haqiqiy, teskari, kichiklashgan',
+            'd = 20 cm (2F): f = 20 cm, Γ = 1 — haqiqiy, teskari, kattaligi teng',
+            'd = 15 cm (1.5F): f = 30 cm, Γ = 2 — haqiqiy, teskari, kattalashgan',
+            'd = 5 cm (0.5F): f = −10 cm, Γ = 2 — mavhum, to\'g\'ri, kattalashgan (lupa), ekranda tutib bo\'lmaydi',
+            'Har qatorda 1/d + 1/f = 10 dptr; sochuvchi linza (F = −10 cm), d = 20 cm: f ≈ −6.67 cm'],
         'fotoeffekt_model.html': [
-            'Sezyi (A ≈ 1.9 eV): λ_kr = hc/A ≈ 650 nm',
-            'λ = 400 nm: hν ≈ 3.11 eV, E_k max ≈ 1.21 eV, to\'xtatuvchi kuchlanish ≈ 1.2 V',
+            'Sezyi (A ≈ 1.9 eV): λ_kr = hc/A ≈ 654 nm',
+            'λ = 400 nm: hν ≈ 3.11 eV, E_k max ≈ 1.21 eV, to\'xtatuvchi kuchlanish ≈ 1.21 V',
+            'Rux (A = 4.3 eV): 400 nm da fotoeffekt yo\'q (λ_kr ≈ 289 nm); 250 nm da U_t ≈ 0.67 V',
             'Yorug\'lik intensivligi tok kuchini o\'zgartiradi, lekin to\'xtatuvchi kuchlanishni emas'],
         'radioaktiv_yemirilish_model.html': [
-            'N₀ = 400: t = T½ da ≈ 200, 2T½ da ≈ 100, 3T½ da ≈ 50 (statistik tebranish ±√N)',
+            'N₀ = 400, T½ = 5 s: t = 5 / 10 / 15 s da N ≈ 200 / 100 / 50 (statistik tebranish ±√N, masalan ±10–14)',
             'N₀ = 100 da nisbiy tebranish kattaroq (≈ ±10%) — qonun statistik',
             'Har bir yadroning yemirilish vaqtini oldindan aytib bo\'lmaydi, lekin ko\'p yadrolar uchun N = N₀·2^(−t/T½)']
     };

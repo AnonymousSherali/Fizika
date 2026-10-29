@@ -479,10 +479,21 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
 .floating-btn:hover { transform: translateY(-3px) scale(1.06); box-shadow: var(--shadow-xl); }
 .floating-btn:active { transform: translateY(0) scale(0.97); }
 #themeToggle { bottom: var(--sp-5); right: var(--sp-5); }
+#langToggle { bottom: var(--sp-5); left: var(--sp-5); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em; }
 /* visibility: ko'rinmas tugma Tab bilan fokus olmasin (opacity yetarli emas) */
 #scrollTop { bottom: calc(var(--sp-5) + 60px); right: var(--sp-5); opacity: 0; pointer-events: none;
              visibility: hidden; transition: opacity 0.25s var(--ease), visibility 0s linear 0.25s, transform 0.25s var(--ease-out); }
 #scrollTop.show { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+
+/* ===== Qisqa xabar (toast) ===== */
+.toast {
+    position: fixed; left: 50%; bottom: var(--sp-6); transform: translateX(-50%);
+    max-width: calc(100vw - 32px); padding: var(--sp-3) var(--sp-5);
+    background: #0f172a; color: #fff; border-radius: var(--r-pill);
+    box-shadow: var(--shadow-xl); font-size: 0.9rem; font-weight: 500; z-index: 1100;
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.toast--hide { opacity: 0; transform: translateX(-50%) translateY(10px); }
 
 /* ===== Scroll-reveal animatsiya ===== */
 .reveal {
@@ -543,6 +554,7 @@ body.dark .stat-value, html.dark .stat-value { color: color-mix(in srgb, var(--a
     /* Suzuvchi tugmalar kichikroq — matn va tugmalarni yopib qo'ymasin */
     .floating-btn { width: 42px; height: 42px; font-size: 1.05rem; }
     #themeToggle { bottom: var(--sp-3); right: var(--sp-3); }
+    #langToggle { bottom: var(--sp-3); left: var(--sp-3); font-size: 0.78rem; }
     #scrollTop { bottom: calc(var(--sp-3) + 50px); right: var(--sp-3); }
     body { padding-bottom: 64px; }
 }
