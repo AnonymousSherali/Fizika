@@ -8,7 +8,7 @@
    Yangilash: fayllar o'zgarganda pastdagi VERSION ni o'zgartiring —
    eski kesh o'chiriladi va yangi fayllar yuklanadi.
    ============================================================ */
-var VERSION = 'fizika-20261029e';
+var VERSION = 'fizika-20261030a';
 var CORE = [
     './',
     './dars_ishlanmalar/index.html',
@@ -97,6 +97,8 @@ self.addEventListener('fetch', function (e) {
     if (req.method !== 'GET') return;
     var url = new URL(req.url);
     if (url.origin !== location.origin) return;
+    // Backend (API, admin, yuklangan fayllar) hech qachon keshlanmaydi — har doim tarmoqdan
+    if (/\/(api|admin|media|static)\//.test(url.pathname)) return;
 
     // HTML: avval tarmoq (yangi versiya darhol ko'rinsin), internet bo'lmasa — kesh
     if (req.mode === 'navigate' || /\.html?$/.test(url.pathname) || url.pathname.slice(-1) === '/') {

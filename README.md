@@ -34,6 +34,10 @@ O'quvchilarga fizik jarayonlarni visualizatsiya qilish va interaktiv tarzda o'rg
   kutilgan natijalar ko'rinadi; `?oqituvchi=0` bilan o'chiriladi
 - 🌐 Interfeys tilini o'zgartirish: o'zbekcha / ruscha (suzuvchi «RU» tugmasi)
 
+### Backend (reja):
+Backend qismi uchun to'liq texnik topshiriq: [`hujjatlar/backend_TZ.md`](hujjatlar/backend_TZ.md)
+(Python + Django + PostgreSQL tavsiya etilgan; muqobil — PHP + Laravel).
+
 ### Oflayn ishlash (PWA):
 Sayt bir marta internet bilan ochilgach, barcha sahifalar, modellar va testlar brauzer
 xotirasiga saqlanadi va **internetsiz ham ochiladi**. Telefonda «Bosh ekranga qo'shish»

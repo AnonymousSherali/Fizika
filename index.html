@@ -5,595 +5,633 @@
     <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="10-11 sinflar uchun 15 ta interaktiv fizika modeli: mexanika, molekulyar fizika, elektr, optika, kvant va yadro fizikasi. Onlayn testlar, laboratoriya jurnali va 22 ta dars ishlanma.">
-    <meta name="keywords" content="fizika, Rezerford, Kepler, mayatnik, interaktiv model, 10-sinf, 11-sinf, test, dars ishlanma">
+    <meta name="keywords" content="fizika, simulyatsiya, interaktiv model, 10-sinf, 11-sinf, test, dars ishlanma">
     <meta property="og:title" content="Fizik Modellar - Interaktiv O'quv Platformasi">
     <meta property="og:description" content="15 ta interaktiv fizika modeli, onlayn testlar, hisoblash masalalari va 22 ta dars ishlanma - 10-11 sinflar uchun.">
     <meta property="og:type" content="website">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔬%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Fizik Modellar — Interaktiv O'quv Platformasi</title>
-    <link rel="stylesheet" href="styles.css?v=20261029d">
-    <link rel="stylesheet" href="model-tools.css?v=20261029d">
+    <link rel="stylesheet" href="styles.css?v=20261029f">
+    <link rel="stylesheet" href="model-tools.css?v=20261029f">
     <style>
-        .container { max-width: 1240px; }
-
-        /* ===== HERO ===== */
-        .header {
-            padding: var(--sp-8) var(--sp-6) var(--sp-7);
-            overflow: hidden;
-        }
-        #headerFx {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-            border: none;
-            border-radius: 0;
-            background: transparent;
-            box-shadow: none;
-            opacity: 0.85;
-        }
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--sp-2);
-            background: rgba(255,255,255,0.13);
-            border: 1px solid rgba(255,255,255,0.2);
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
-            padding: var(--sp-1) var(--sp-4);
-            border-radius: var(--r-pill);
-            font-size: 0.82rem;
-            font-weight: 500;
-            letter-spacing: 0.01em;
-            margin-bottom: var(--sp-5);
-        }
-        .hero-badge .dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: #4ade80;
-            box-shadow: 0 0 0 3px rgba(74,222,128,0.25);
-        }
-        .header h1 {
-            font-size: clamp(2rem, 1.2rem + 3.4vw, 3.4rem);
-            max-width: 18ch;
-            margin: 0 auto var(--sp-4);
-            letter-spacing: -0.035em;
-        }
-        .header .lead {
-            font-size: clamp(1rem, 0.92rem + 0.45vw, 1.2rem);
-            max-width: 56ch;
-            margin: 0 auto;
-            opacity: 0.88;
-            font-weight: 400;
-        }
-        .hero-actions {
-            display: flex;
-            gap: var(--sp-3);
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: var(--sp-6);
-        }
-
-        /* ===== Tugmalar ===== */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--sp-2);
-            padding: var(--sp-3) var(--sp-5);
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: var(--r-sm);
-            font-weight: 600;
-            font-size: 0.92rem;
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: transform 0.2s var(--ease), box-shadow 0.22s var(--ease), background 0.22s var(--ease);
-            box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 38%, transparent); }
-        .btn:active { transform: translateY(0); }
-        .btn-ghost {
-            background: rgba(255,255,255,0.12);
-            border-color: rgba(255,255,255,0.25);
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
-            box-shadow: none;
-        }
-        .btn-ghost:hover { background: rgba(255,255,255,0.22); box-shadow: none; }
-        .btn-white { background: white; color: var(--primary-dark); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
-        .btn-white:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.24); }
-        .btn-secondary { background: var(--card-bg); color: var(--text); border-color: var(--border); box-shadow: var(--shadow-xs); }
-        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); box-shadow: var(--shadow-sm); }
-        .btn-success { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(16,185,129,0.3); }
-        .btn-success:hover { box-shadow: 0 8px 20px rgba(16,185,129,0.36); }
-
-        /* ===== Kontent ===== */
-        .content { padding: var(--sp-7) var(--sp-6) var(--sp-6); }
-        .section { margin-bottom: var(--sp-8); }
-        .section-head { margin-bottom: var(--sp-5); }
-        .section-eyebrow {
-            display: block;
-            font-size: 0.78rem;
-            font-weight: 650;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: var(--sp-2);
-        }
-        .section h2 {
-            font-size: clamp(1.35rem, 1.1rem + 1vw, 1.8rem);
-            color: var(--text);
-            letter-spacing: -0.025em;
-        }
-        .section-sub { color: var(--text-muted); font-size: 0.95rem; margin-top: var(--sp-2); }
-
-        /* ===== Kartalar ===== */
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-            gap: var(--sp-4);
-        }
-        .card {
-            position: relative;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            padding: var(--sp-5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
-        }
-        /* Yuqorida nozik rangli chiziq — hover'da paydo bo'ladi */
-        .card::before {
-            content: '';
-            position: absolute;
-            inset: 0 0 auto 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
-            opacity: 0;
-            transition: opacity 0.3s var(--ease);
-        }
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
-        }
-        .card:hover::before { opacity: 1; }
-
-        .card-icon {
-            width: 52px; height: 52px;
-            display: grid; place-items: center;
-            font-size: 1.6rem;
-            border-radius: var(--r-sm);
-            background: color-mix(in srgb, var(--accent) 10%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-            margin-bottom: var(--sp-4);
-        }
-        .card h3 {
-            color: var(--text);
-            font-size: 1.1rem;
-            margin-bottom: var(--sp-2);
-            letter-spacing: -0.02em;
-        }
-        .card p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            line-height: 1.65;
-            margin-bottom: var(--sp-5);
-            flex: 1;
-        }
-        .card .btn { align-self: flex-start; }
-        /* Model kartasi: tepasida modelning haqiqiy ko'rinishi */
-        .card-thumb {
-            display: block;
-            width: calc(100% + 2 * var(--sp-5));
-            max-width: none;
-            height: auto;
-            aspect-ratio: 16 / 10;
-            object-fit: cover;
-            margin: calc(-1 * var(--sp-5)) calc(-1 * var(--sp-5)) var(--sp-4);
-            border-bottom: 1px solid var(--border);
-            background: var(--panel-bg);
-            transition: transform 0.5s var(--ease-out);
-        }
-        .card--model:hover .card-thumb { transform: scale(1.03); }
-        .card--model .card-icon {
-            width: 44px; height: 44px; font-size: 1.35rem;
-            margin: calc(-1 * var(--sp-4) - 22px) 0 var(--sp-3);
-            position: relative;
-            background: var(--card-bg);
-            box-shadow: var(--shadow-sm);
-        }
-        .card--model .card-tag { z-index: 1; background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-                                 -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-        .card-tag {
-            position: absolute;
-            top: var(--sp-4); right: var(--sp-4);
-            font-size: 0.7rem;
-            font-weight: 650;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: var(--accent);
-            background: color-mix(in srgb, var(--accent) 12%, transparent);
-            padding: 3px 10px;
-            border-radius: var(--r-pill);
-        }
-
-        /* ===== Statistika (bento) ===== */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: var(--sp-4);
-            background: transparent;
+        /* ============================================================
+           Bosh sahifa: simulyatsiyalar katalogi (toza, yorug', rangli
+           bo'limlar). Ranglar shu sahifa uchun tokenlar orqali.
+           ============================================================ */
+        body.home {
+            --h-blue: #1f6fb5;
+            --h-blue-d: #174f84;
+            --h-sky: #eaf4fc;
+            --h-sky-2: #d7ebf9;
+            --h-bg: #ffffff;
+            --h-soft: #f5f8fb;
+            --h-line: #e1e8ef;
+            --h-ink: #13283d;
+            --h-muted: #5b6b7c;
+            --h-play: #f59f00;
             padding: 0;
-            border: none;
-            margin: 0;
+            background: var(--h-bg);
+            color: var(--h-ink);
         }
-        .stat {
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            padding: var(--sp-5) var(--sp-4);
-            border-radius: var(--r-md);
-            text-align: center;
-            transition: transform 0.3s var(--ease-out), border-color 0.3s var(--ease);
+        html.dark body.home, body.home.dark {
+            --h-blue: #6cb2f0;
+            --h-blue-d: #a5d0f5;
+            --h-sky: #10223a;
+            --h-sky-2: #16304f;
+            --h-bg: #0d1520;
+            --h-soft: #121d2b;
+            --h-line: #223246;
+            --h-ink: #e6edf5;
+            --h-muted: #9fb0c3;
         }
-        .stat:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
-        .stat-number {
-            font-size: clamp(1.8rem, 1.4rem + 1.6vw, 2.4rem);
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            font-variant-numeric: tabular-nums;
-            background: linear-gradient(135deg, var(--primary), var(--accent-2));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .stat-label {
-            color: var(--text-muted);
-            margin-top: var(--sp-1);
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
+        body.home::before { display: none; }
+        .wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--sp-5); }
 
-        /* ===== Xususiyatlar ===== */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: var(--sp-3);
+        /* ----- Yuqori navigatsiya ----- */
+        .site-nav {
+            position: sticky; top: 0; z-index: 50;
+            background: color-mix(in srgb, var(--h-bg) 92%, transparent);
+            -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px);
+            border-bottom: 1px solid var(--h-line);
         }
-        .feature {
-            background: var(--panel-bg);
-            padding: var(--sp-4);
-            border-radius: var(--r-md);
-            border: 1px solid var(--border);
-            transition: border-color 0.25s var(--ease), transform 0.25s var(--ease-out);
+        .site-nav .wrap { display: flex; align-items: center; gap: var(--sp-5); height: 64px; }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--h-ink); font-weight: 800; letter-spacing: -0.02em; font-size: 1.15rem; flex-shrink: 0; }
+        .brand img { width: 36px; height: 36px; border-radius: 9px; }
+        .brand small { display: block; font-size: 0.7rem; font-weight: 600; color: var(--h-muted); letter-spacing: 0.02em; margin-top: -2px; }
+        .nav-links { display: flex; gap: var(--sp-1); margin-left: auto; }
+        .nav-links a {
+            padding: 8px 14px; border-radius: var(--r-pill); text-decoration: none;
+            color: var(--h-ink); font-weight: 600; font-size: 0.92rem; transition: background 0.2s var(--ease), color 0.2s var(--ease);
         }
-        .feature:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); }
-        .feature h3 { color: var(--text); margin-bottom: var(--sp-1); font-size: 0.95rem; }
-        .feature p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; }
+        .nav-links a:hover { background: var(--h-sky); color: var(--h-blue); }
+        .nav-menu { display: none; margin-left: auto; position: relative; }
+        .nav-menu summary {
+            list-style: none; cursor: pointer; width: 42px; height: 42px; display: grid; place-items: center;
+            border-radius: var(--r-sm); border: 1px solid var(--h-line); font-size: 1.2rem; color: var(--h-ink);
+        }
+        .nav-menu summary::-webkit-details-marker { display: none; }
+        .nav-menu[open] .nav-drop { display: flex; }
+        .nav-drop {
+            display: none; flex-direction: column; position: absolute; right: 0; top: 50px; min-width: 220px;
+            background: var(--h-bg); border: 1px solid var(--h-line); border-radius: var(--r-md); padding: 6px;
+            box-shadow: var(--shadow-xl);
+        }
+        .nav-drop a { padding: 10px 14px; border-radius: var(--r-sm); text-decoration: none; color: var(--h-ink); font-weight: 600; }
+        .nav-drop a:hover { background: var(--h-sky); }
 
-        /* ===== Ko'rsatma qutisi ===== */
-        .info-box {
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--accent);
-            padding: var(--sp-5);
-            border-radius: var(--r-md);
+        /* ----- Hero ----- */
+        .hero { background: linear-gradient(180deg, var(--h-sky) 0%, var(--h-bg) 100%); border-bottom: 1px solid var(--h-line); }
+        .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--sp-7); align-items: center; padding-top: var(--sp-8); padding-bottom: var(--sp-8); }
+        .hero h1 { font-size: clamp(2rem, 1.3rem + 2.8vw, 3.2rem); line-height: 1.08; letter-spacing: -0.035em; color: var(--h-ink); margin-bottom: var(--sp-4); }
+        .hero h1 em { font-style: normal; color: var(--h-blue); }
+        .hero .lead { font-size: 1.08rem; color: var(--h-muted); max-width: 52ch; margin-bottom: var(--sp-5); }
+        .search {
+            display: flex; align-items: center; gap: var(--sp-2); max-width: 520px;
+            background: var(--h-bg); border: 2px solid var(--h-line); border-radius: var(--r-pill);
+            padding: 6px 6px 6px 18px; box-shadow: var(--shadow-sm); transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
         }
-        .info-box h3 { color: var(--text); margin-bottom: var(--sp-3); font-size: 1.05rem; }
-        .steps { list-style: none; display: grid; gap: var(--sp-3); }
-        /* flex emas: <strong>/<kbd> alohida ustunlarga bo'linib, mobilda kesilardi */
-        .steps li {
-            position: relative;
-            padding-left: 36px;
-            color: var(--text-muted);
-            font-size: 0.92rem;
-            line-height: 1.6;
+        .search:focus-within { border-color: var(--h-blue); box-shadow: 0 0 0 4px color-mix(in srgb, var(--h-blue) 18%, transparent); }
+        .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1rem; color: var(--h-ink); padding: 8px 0; }
+        .search button {
+            border: 0; background: var(--h-blue); color: #fff; font: inherit; font-weight: 700; font-size: 0.92rem;
+            padding: 10px 20px; border-radius: var(--r-pill); cursor: pointer;
         }
-        .steps li strong { color: var(--text); }
-        .steps .num {
-            position: absolute;
-            left: 0; top: 0;
-            width: 24px; height: 24px;
-            display: grid; place-items: center;
-            background: color-mix(in srgb, var(--accent) 14%, transparent);
-            color: var(--accent);
-            border-radius: 50%;
-            font-size: 0.78rem;
-            font-weight: 700;
+        .search button:hover { background: var(--h-blue-d); }
+        html.dark .search button, body.dark .search button { color: #0d1520; }
+        .hero-links { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-4); font-size: 0.88rem; color: var(--h-muted); align-items: center; }
+        .hero-links a { color: var(--h-blue); font-weight: 600; text-decoration: none; padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--h-blue) 9%, transparent); }
+        .hero-links a:hover { background: color-mix(in srgb, var(--h-blue) 16%, transparent); }
+        .mosaic { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); transform: rotate(-2deg); }
+        .mosaic img {
+            width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; display: block;
+            border-radius: var(--r-md); border: 4px solid var(--h-bg); box-shadow: var(--shadow-lg);
         }
+        .mosaic img:nth-child(2) { transform: translateY(18px); }
+        .mosaic img:nth-child(4) { transform: translateY(18px); }
+        .stat-strip { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); margin-top: var(--sp-6); }
+        .stat-strip div { font-size: 0.85rem; color: var(--h-muted); }
+        .stat-strip b { display: block; font-size: 1.5rem; color: var(--h-ink); letter-spacing: -0.02em; }
 
-        html.dark .card-tag, body.dark .card-tag,
-        html.dark .section-eyebrow, body.dark .section-eyebrow,
-        html.dark .steps .num, body.dark .steps .num {
-            color: color-mix(in srgb, var(--accent) 50%, white);
-        }
+        /* ----- Bo'lim sarlavhalari ----- */
+        .block { padding: var(--sp-8) 0; }
+        .block--soft { background: var(--h-soft); border-top: 1px solid var(--h-line); border-bottom: 1px solid var(--h-line); }
+        .block h2 { font-size: clamp(1.45rem, 1.1rem + 1.2vw, 2rem); letter-spacing: -0.025em; color: var(--h-ink); margin-bottom: var(--sp-2); }
+        .block .sub { color: var(--h-muted); margin-bottom: var(--sp-6); max-width: 70ch; }
 
-        /* ===== Footer ===== */
-        .footer {
-            background: var(--panel-bg);
-            border-top: 1px solid var(--border);
-            padding: var(--sp-6);
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.88rem;
+        /* ----- Bo'limlar (kategoriya plitkalari) ----- */
+        .cats { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--sp-3); }
+        .cat-tile {
+            display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+            padding: var(--sp-4) var(--sp-2); border-radius: var(--r-lg); cursor: pointer; font: inherit;
+            background: color-mix(in srgb, var(--c) 9%, var(--h-bg)); border: 2px solid color-mix(in srgb, var(--c) 22%, transparent);
+            color: var(--h-ink); transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
         }
-        .footer strong { color: var(--text); }
-        .footer .meta { margin-top: var(--sp-3); font-size: 0.8rem; opacity: 0.8; }
-        .footer .quote { margin-top: var(--sp-4); font-style: italic; opacity: 0.75; }
+        .cat-tile:hover, .cat-tile[aria-pressed="true"] { transform: translateY(-3px); border-color: var(--c); box-shadow: 0 10px 22px color-mix(in srgb, var(--c) 22%, transparent); }
+        .cat-tile[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 18%, var(--h-bg)); }
+        .cat-tile__icon {
+            width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-size: 1.6rem;
+            background: var(--h-bg); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--c) 40%, transparent);
+        }
+        .cat-tile__name { font-weight: 700; font-size: 0.88rem; line-height: 1.25; }
+        .cat-tile__count { font-size: 0.75rem; color: var(--h-muted); }
 
-        @media (max-width: 768px) {
-            .content { padding: var(--sp-5) var(--sp-4); }
-            .section { margin-bottom: var(--sp-6); }
-            .cards { grid-template-columns: 1fr; }
-            .stats { grid-template-columns: repeat(2, 1fr); }
-            .header { padding: var(--sp-6) var(--sp-4); }
-            .hero-actions .btn { flex: 1 1 100%; }
+        /* ----- Katalog: filtr + to'r ----- */
+        .catalog { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--sp-6); align-items: start; }
+        .filters { position: sticky; top: 84px; display: grid; gap: var(--sp-5); }
+        .filters h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--h-muted); margin-bottom: var(--sp-2); }
+        .check {
+            display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--r-sm);
+            cursor: pointer; font-size: 0.92rem; color: var(--h-ink); user-select: none;
         }
+        .check:hover { background: var(--h-soft); }
+        .check input { width: 17px; height: 17px; accent-color: var(--h-blue); margin: 0; flex-shrink: 0; }
+        .check__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
+        .check__n { margin-left: auto; font-size: 0.78rem; color: var(--h-muted); font-variant-numeric: tabular-nums; }
+        .linkbtn { background: none; border: 0; color: var(--h-blue); font: inherit; font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 4px 10px; }
+
+        .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+        .toolbar .found { font-weight: 700; color: var(--h-ink); margin-right: auto; }
+        .toolbar .search { padding: 2px 4px 2px 14px; max-width: 280px; border-width: 1px; box-shadow: none; }
+        .toolbar .search input { font-size: 0.9rem; padding: 7px 0; }
+        .toolbar select {
+            padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--h-line); background: var(--h-bg);
+            color: var(--h-ink); font: inherit; font-size: 0.88rem;
+        }
+        .viewsw { display: inline-flex; border: 1px solid var(--h-line); border-radius: var(--r-sm); overflow: hidden; }
+        .viewsw button { border: 0; background: var(--h-bg); color: var(--h-muted); width: 38px; height: 36px; cursor: pointer; font-size: 1rem; }
+        .viewsw button[aria-pressed="true"] { background: var(--h-blue); color: #fff; }
+
+        .sims { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--sp-5) var(--sp-4); }
+        .sim { display: flex; flex-direction: column; text-decoration: none; color: var(--h-ink); border-radius: var(--r-md); }
+        .sim[hidden] { display: none; }
+        .sim__thumb {
+            position: relative; display: block; border-radius: var(--r-md); overflow: hidden;
+            border: 1px solid var(--h-line); box-shadow: 0 1px 2px rgba(15, 30, 50, 0.06);
+            transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease);
+            background: var(--h-soft);
+        }
+        .sim__thumb::after { content: ''; position: absolute; inset: auto 0 0 0; height: 4px; background: var(--c); }
+        .sim__thumb img { display: block; width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; }
+        .sim__play {
+            position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px;
+            border-radius: 50%; background: var(--h-play); color: #fff; display: grid; place-items: center;
+            font-size: 1.35rem; padding-left: 4px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            opacity: 0; transform: scale(0.8); transition: opacity 0.2s var(--ease), transform 0.25s var(--ease-out);
+        }
+        .sim:hover .sim__thumb, .sim:focus-visible .sim__thumb { transform: translateY(-4px); box-shadow: 0 14px 28px rgba(15, 30, 50, 0.16); }
+        .sim:hover .sim__play, .sim:focus-visible .sim__play { opacity: 1; transform: scale(1); }
+        .sim:focus-visible { outline: 3px solid var(--h-blue); outline-offset: 4px; }
+        .sim__body { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-3) 2px 0; }
+        .sim__title { font-weight: 700; font-size: 1rem; letter-spacing: -0.01em; line-height: 1.3; }
+        .sim__desc { display: none; font-size: 0.88rem; color: var(--h-muted); line-height: 1.55; }
+        .sim__meta { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: var(--r-pill); background: var(--h-soft); color: var(--h-muted); border: 1px solid var(--h-line); }
+        .tag--cat { color: var(--c); background: color-mix(in srgb, var(--c) 10%, var(--h-bg)); border-color: color-mix(in srgb, var(--c) 25%, transparent); }
+        html.dark .tag--cat, body.dark .tag--cat { color: color-mix(in srgb, var(--c) 55%, white); }
+
+        /* Ro'yxat ko'rinishi */
+        .sims.is-list { grid-template-columns: 1fr; gap: var(--sp-3); }
+        .sims.is-list .sim { flex-direction: row; gap: var(--sp-4); padding: var(--sp-3); border: 1px solid var(--h-line); background: var(--h-bg); }
+        .sims.is-list .sim:hover { border-color: var(--c); }
+        .sims.is-list .sim__thumb { width: 220px; flex-shrink: 0; }
+        .sims.is-list .sim__body { padding: 0; }
+        .sims.is-list .sim__desc { display: block; }
+        .empty { display: none; text-align: center; padding: var(--sp-8) var(--sp-4); color: var(--h-muted); border: 2px dashed var(--h-line); border-radius: var(--r-lg); }
+
+        /* ----- O'qituvchilar uchun resurslar ----- */
+        .res { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
+        .res a {
+            display: flex; gap: var(--sp-4); align-items: flex-start; padding: var(--sp-5); text-decoration: none;
+            background: var(--h-bg); border: 1px solid var(--h-line); border-radius: var(--r-lg); color: var(--h-ink);
+            transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+        }
+        .res a:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: color-mix(in srgb, var(--h-blue) 40%, var(--h-line)); }
+        .res__icon { width: 48px; height: 48px; border-radius: var(--r-md); display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0; background: var(--h-sky); }
+        .res h3 { font-size: 1.02rem; margin-bottom: 4px; letter-spacing: -0.01em; }
+        .res p { font-size: 0.88rem; color: var(--h-muted); line-height: 1.55; }
+        .res .go { display: inline-block; margin-top: 8px; font-weight: 700; font-size: 0.85rem; color: var(--h-blue); }
+
+        /* ----- Afzalliklar va qadamlar ----- */
+        .feats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-5) var(--sp-6); }
+        .feature h3 { font-size: 1rem; margin-bottom: 4px; color: var(--h-ink); }
+        .feature p { font-size: 0.9rem; color: var(--h-muted); line-height: 1.6; }
+        .feature a { color: var(--h-blue); font-weight: 600; }
+        .how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); counter-reset: s; list-style: none; }
+        .how li {
+            position: relative; padding: var(--sp-5) var(--sp-5) var(--sp-5) 64px; background: var(--h-bg);
+            border: 1px solid var(--h-line); border-radius: var(--r-lg); font-size: 0.92rem; color: var(--h-ink); line-height: 1.55;
+        }
+        .how li::before {
+            counter-increment: s; content: counter(s); position: absolute; left: var(--sp-5); top: var(--sp-5);
+            width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+            background: var(--h-blue); color: #fff; font-weight: 800; font-size: 0.9rem;
+        }
+        html.dark .how li::before, body.dark .how li::before { color: #0d1520; }
+        .kbd-line { margin-top: var(--sp-4); font-size: 0.85rem; color: var(--h-muted); }
+
+        /* ----- Futer ----- */
+        .site-foot { background: #0f2238; color: #c9d6e3; padding: var(--sp-8) 0 var(--sp-6); }
+        .site-foot .cols { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: var(--sp-6); }
+        .site-foot h4 { color: #fff; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--sp-3); }
+        .site-foot ul { list-style: none; display: grid; gap: 6px; }
+        .site-foot a { color: #c9d6e3; text-decoration: none; font-size: 0.92rem; }
+        .site-foot a:hover { color: #fff; text-decoration: underline; }
+        .site-foot .brand { color: #fff; margin-bottom: var(--sp-3); }
+        .site-foot .brand small { color: #9fb3c8; }
+        .site-foot p { font-size: 0.88rem; line-height: 1.6; }
+        .site-foot .quote { font-style: italic; color: #9fb3c8; margin-top: var(--sp-3); }
+        .site-foot .bottom { border-top: 1px solid rgba(255,255,255,0.12); margin-top: var(--sp-6); padding-top: var(--sp-4); font-size: 0.82rem; color: #8ea3b8; display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); justify-content: space-between; }
+
+        /* ----- Moslashuvchanlik ----- */
+        @media (max-width: 1100px) { .cats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        @media (max-width: 900px) {
+            .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-top: var(--sp-7); padding-bottom: var(--sp-7); }
+            .mosaic { display: none; }
+            .catalog { grid-template-columns: minmax(0, 1fr); }
+            .filters { position: static; display: block; }
+            .filters > div:not(.filters__mobile) { display: none; }
+            .res, .feats, .how { grid-template-columns: minmax(0, 1fr); }
+            .site-foot .cols { grid-template-columns: minmax(0, 1fr); }
+        }
+        @media (max-width: 760px) {
+            .nav-links { display: none; }
+            .nav-menu { display: block; }
+            .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .toolbar .search { max-width: none; flex: 1 1 100%; order: 3; }
+            .sims.is-list .sim { flex-direction: column; }
+            .sims.is-list .sim__thumb { width: 100%; }
+            .block { padding: var(--sp-7) 0; }
+            /* Telefonda ham ikki ustun — ro'yxat qisqa va ko'rinarli */
+            .sims:not(.is-list) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4) var(--sp-3); }
+            .sims:not(.is-list) .sim__title { font-size: 0.88rem; }
+            .sims:not(.is-list) .tag--cat { display: none; }
+            .sim__play { width: 44px; height: 44px; margin: -22px 0 0 -22px; font-size: 1rem; }
+        }
+        @media (max-width: 420px) {
+            .wrap { padding: 0 var(--sp-4); }
+            .search button { padding: 10px 14px; }
+            .stat-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-2); }
+            .stat-strip div { font-size: 0.72rem; line-height: 1.3; }
+            .stat-strip b { font-size: 1.15rem; }
+        }
+        .filters__mobile { display: flex; gap: var(--sp-2); overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+        .filters__mobile .chip-m {
+            flex-shrink: 0; padding: 8px 14px; border-radius: var(--r-pill); border: 1px solid var(--h-line);
+            background: var(--h-bg); color: var(--h-ink); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        }
+        .filters__mobile .chip-m[aria-pressed="true"] { background: var(--h-blue); border-color: var(--h-blue); color: #fff; }
+        html.dark .filters__mobile .chip-m[aria-pressed="true"], body.dark .filters__mobile .chip-m[aria-pressed="true"] { color: #0d1520; }
+        @media (min-width: 901px) { .filters__mobile { display: none; } }
     </style>
 </head>
-<body>
-    <div class="container">
-        <!-- ===== HERO ===== -->
-        <header class="header">
-            <canvas id="headerFx" aria-hidden="true"></canvas>
-            <span class="hero-badge"><span class="dot"></span> 10–11 sinflar · Fizika va Astronomiya</span>
-            <h1>Fizikani ko'rib o'rganing</h1>
-            <p class="lead">
-                O'n beshta interaktiv model, yigirma ikkita tayyor dars ishlanma va avtomatik
-                baholanadigan onlayn testlar — bitta joyda, o'zbek tilida.
-            </p>
-            <div class="hero-actions">
-                <a href="#modellar" class="btn btn-white">🎮 Modellarni ko'rish</a>
-                <a href="testlar/testlar_online.html" class="btn btn-ghost">📝 Testni boshlash</a>
+<body class="home">
+    <!-- ===== Navigatsiya ===== -->
+    <nav class="site-nav" aria-label="Asosiy menyu">
+        <div class="wrap">
+            <a class="brand" href="index.html">
+                <img src="img/icons/icon-192.png" alt="" width="36" height="36">
+                <span>Fizika 10–11<small>Interaktiv simulyatsiyalar</small></span>
+            </a>
+            <div class="nav-links">
+                <a href="#modellar">Simulyatsiyalar</a>
+                <a href="#oqituvchi">O'qituvchilar uchun</a>
+                <a href="testlar/testlar_online.html">Testlar</a>
+                <a href="dars_ishlanmalar/index.html">Dars ishlanmalar</a>
             </div>
-        </header>
-
-        <main class="content">
-            <!-- ===== Interaktiv Modellar ===== -->
-            <section class="section" id="modellar">
-                <div class="section-head">
-                    <span class="section-eyebrow">Simulyatsiyalar</span>
-                    <h2>Interaktiv modellar</h2>
-                    <p class="section-sub">Har bir modelda tayyor topshiriq, jonli o'lchovlar va
-                       laboratoriya jurnali bor — natijalarni jadvalga yozib, hisobotga nusxalang.</p>
+            <details class="nav-menu">
+                <summary aria-label="Menyu">☰</summary>
+                <div class="nav-drop">
+                    <a href="#modellar">Simulyatsiyalar</a>
+                    <a href="#oqituvchi">O'qituvchilar uchun</a>
+                    <a href="testlar/testlar_online.html">Testlar</a>
+                    <a href="dars_ishlanmalar/index.html">Dars ishlanmalar</a>
                 </div>
-                <div class="cards">
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/rezerford.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">11-sinf</span>
-                        <div class="card-icon" aria-hidden="true">⚛️</div>
-                        <h3>Rezerford tajribasi</h3>
-                        <p>Alfa zarralarning oltin folgadan sochilishi. Zarra energiyasi va yadroga minimal yaqinlashuv masofasi jonli hisoblanadi.</p>
-                        <a href="modellar/rezerford_model.html" class="btn">Modelni ochish →</a>
-                    </article>
+            </details>
+        </div>
+    </nav>
 
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/kepler.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">11-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🪐</div>
-                        <h3>Kepler qonunlari</h3>
-                        <p>Uchala qonun alohida bo'limda: ellips orbita, teng yuzalar va T²=a³ munosabati. Sekkizta sayyora haqiqiy ma'lumotlar bilan.</p>
-                        <a href="modellar/kepler_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/mayatnik.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🕰️</div>
-                        <h3>Matematik mayatnik</h3>
-                        <p>Tebranish davri orqali erkin tushish tezlanishini aniqlang. Oltita osmoniy jismda sinab, o'lchov xatoligini baholang.</p>
-                        <a href="modellar/mayatnik_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/qiya_tekislik.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">📐</div>
-                        <h3>Qiya tekislik (FIK)</h3>
-                        <p>To'rtta kuch vektori bilan foydali ish koeffitsiyenti. Energiya balansi A=A<sub>f</sub>+A<sub>ishq</sub> jonli tekshiriladi.</p>
-                        <a href="modellar/qiya_tekislik_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/om_qonuni.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🔌</div>
-                        <h3>Om qonuni</h3>
-                        <p>I = U/R. Ampermetr ketma-ket, voltmetr parallel ulangan zanjir. Zarralar tezligi tokka, rezistor qizishi quvvatga bog'liq.</p>
-                        <a href="modellar/om_qonuni_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/induksiya.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🧲</div>
-                        <h3>Elektromagnit induksiya</h3>
-                        <p>Faradey qonuni va Lens qoidasi. Magnitni harakatlantiring — galvanometr strelkasi oqim o'zgarishiga javob beradi.</p>
-                        <a href="modellar/induksiya_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/prujinali_mayatnik.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🌀</div>
-                        <h3>Prujinali mayatnik</h3>
-                        <p>T = 2π√(m/k): massa va bikrlikni o'zgartirib davrni o'lchang. Kinetik va potensial energiya almashinuvi, so'nuvchi tebranish va x(t) grafigi.</p>
-                        <a href="modellar/prujinali_mayatnik_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/otilgan_jism.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🎯</div>
-                        <h3>Burchak ostida otilgan jism</h3>
-                        <p>Traektoriya, ko'tarilish balandligi H va uchish uzoqligi L. 30° va 60° da L tengligini, 45° da eng uzoqqa borishini tekshiring.</p>
-                        <a href="modellar/otilgan_jism_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/gaz_qonunlari.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🎈</div>
-                        <h3>Ideal gaz qonunlari</h3>
-                        <p>Izotermik, izobarik va izoxorik jarayonlar: porshenli silindr, manometr, molekulalar harakati va p–V diagramma. pV = νRT.</p>
-                        <a href="modellar/gaz_qonunlari_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/kondensator.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🔋</div>
-                        <h3>Yassi kondensator</h3>
-                        <p>C = εε₀S/d. Qoplamalar yuzasi, oralig'i va dielektrikni o'zgartiring; manbaga ulangan va uzilgan holatlarda q, U, E, W qanday o'zgaradi?</p>
-                        <a href="modellar/kondensator_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/impuls.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">10-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🎱</div>
-                        <h3>Impulsning saqlanish qonuni</h3>
-                        <p>Ikki aravachaning elastik, noelastik va qisman elastik to'qnashuvi: impuls saqlanishini tekshiring, kinetik energiyaning qancha qismi issiqlikka aylanishini o'lchang.</p>
-                        <a href="modellar/impuls_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/yoruglik_sinishi.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">11-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🌈</div>
-                        <h3>Yorug'likning sinishi</h3>
-                        <p>Snellius qonuni n₁·sinα = n₂·sinβ, chegaraviy burchak va to'liq ichki qaytish. Nurlar ravshanligi Frenel formulalari bo'yicha, yorug'lik tezligi v = c/n.</p>
-                        <a href="modellar/yoruglik_sinishi_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/linza.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">11-sinf</span>
-                        <div class="card-icon" aria-hidden="true">🔍</div>
-                        <h3>Yupqa linza</h3>
-                        <p>Yig'uvchi va sochuvchi linzada uchta xarakterli nur bilan tasvir yasash: 1/F = 1/d + 1/f, kattalashtirish va optik kuch. Buyumni sichqoncha bilan suring.</p>
-                        <a href="modellar/linza_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/fotoeffekt.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">11-sinf</span>
-                        <div class="card-icon" aria-hidden="true">💡</div>
-                        <h3>Fotoeffekt</h3>
-                        <p>Eynshteyn tenglamasi hν = A + E<sub>k</sub>: to'lqin uzunligi, metall va kuchlanishni o'zgartirib, qizil chegara va to'xtatuvchi kuchlanishni toping.</p>
-                        <a href="modellar/fotoeffekt_model.html" class="btn">Modelni ochish →</a>
-                    </article>
-
-                    <article class="card card--model">
-                        <img class="card-thumb" src="img/radioaktiv_yemirilish.jpg" alt="" width="480" height="300" loading="lazy" decoding="async">
-                        <span class="card-tag">11-sinf</span>
-                        <div class="card-icon" aria-hidden="true">☢️</div>
-                        <h3>Radioaktiv yemirilish</h3>
-                        <p>N = N₀·2<sup>−t/T½</sup>: yuzlab yadroning tasodifiy yemirilishi va statistik qonun. Yarim yemirilish davrini o'lchang, tebranishlarni kuzating.</p>
-                        <a href="modellar/radioaktiv_yemirilish_model.html" class="btn">Modelni ochish →</a>
-                    </article>
+    <!-- ===== Hero ===== -->
+    <header class="hero">
+        <div class="wrap">
+            <div>
+                <h1>Fizikani <em>interaktiv simulyatsiyalar</em> bilan o'rganing</h1>
+                <p class="lead">
+                    O'n beshta interaktiv model, yigirma ikkita tayyor dars ishlanma va avtomatik
+                    baholanadigan onlayn testlar — bitta joyda, o'zbek tilida.
+                </p>
+                <form class="search" id="heroSearch" role="search">
+                    <span aria-hidden="true">🔍</span>
+                    <input type="search" id="heroQ" placeholder="Simulyatsiyani qidiring: mayatnik, linza, tok…" aria-label="Simulyatsiyalarni qidirish" autocomplete="off">
+                    <button type="submit">Qidirish</button>
+                </form>
+                <div class="hero-links">
+                    <span>Mashhur:</span>
+                    <a href="modellar/mayatnik_model.html">Matematik mayatnik</a>
+                    <a href="modellar/linza_model.html">Yupqa linza</a>
+                    <a href="modellar/om_qonuni_model.html">Om qonuni</a>
+                    <a href="modellar/fotoeffekt_model.html">Fotoeffekt</a>
                 </div>
-            </section>
-
-            <!-- ===== Dars Ishlanmalar ===== -->
-            <section class="section">
-                <div class="section-head">
-                    <span class="section-eyebrow">O'qituvchilar uchun</span>
-                    <h2>Dars ishlanmalar</h2>
-                    <p class="section-sub">PDF formatda (ko'pchiligi tahrirlanadigan DOCX bilan) — sinfga tayyor holda.</p>
+                <div class="stat-strip">
+                    <div><b>15</b>Interaktiv model</div>
+                    <div><b>22</b>Dars ishlanma</div>
+                    <div><b>210+</b>Test savoli</div>
+                    <div><b>100%</b>Bepul va oflayn</div>
                 </div>
-                <div class="cards">
-                    <article class="card">
-                        <div class="card-icon" aria-hidden="true">🔟</div>
-                        <h3>10-sinf — 12 ta dars</h3>
-                        <p>Matematik va prujinali mayatnik, otilgan jism, impuls, gaz qonunlari, energiya aylanishi, qiya tekislik, kondensator, Om qonuni, ichki qarshilik, induksiya, yarim o'tkazgichli diod.</p>
-                        <a href="dars_ishlanmalar/index.html#sinf10" class="btn btn-secondary">Ochish →</a>
-                    </article>
+            </div>
+            <div class="mosaic" aria-hidden="true"><img src="img/yoruglik_sinishi.jpg" alt="" width="480" height="300"><img src="img/kepler.jpg" alt="" width="480" height="300"><img src="img/otilgan_jism.jpg" alt="" width="480" height="300"><img src="img/gaz_qonunlari.jpg" alt="" width="480" height="300"></div>
+        </div>
+    </header>
 
-                    <article class="card">
-                        <div class="card-icon" aria-hidden="true">1️⃣1️⃣</div>
-                        <h3>11-sinf — 10 ta dars</h3>
-                        <p>Rezonans, yorug'lik sinishi, yupqa linza, difraksion panjara, yorug'lik kuchi, fotoeffekt, Rezerford tajribasi, radioaktiv yemirilish, Kepler qonunlari, Xarita metodi.</p>
-                        <a href="dars_ishlanmalar/index.html#sinf11" class="btn btn-secondary">Ochish →</a>
-                    </article>
+    <main>
+        <!-- ===== Bo'limlar ===== -->
+        <section class="block">
+            <div class="wrap">
+                <h2>Fizika bo'limlari</h2>
+                <p class="sub">Bo'limni tanlang — pastdagi ro'yxat faqat shu mavzudagi simulyatsiyalarni ko'rsatadi.</p>
+                <div class="cats">
+                    <button type="button" class="cat-tile" data-cat="mexanika" style="--c:#1c7ed6">
+                        <span class="cat-tile__icon" aria-hidden="true">🚀</span>
+                        <span class="cat-tile__name">Mexanika</span>
+                        <span class="cat-tile__count">3 ta model</span>
+                    </button>
+                    <button type="button" class="cat-tile" data-cat="tebranish" style="--c:#9c36b5">
+                        <span class="cat-tile__icon" aria-hidden="true">〰️</span>
+                        <span class="cat-tile__name">Tebranishlar</span>
+                        <span class="cat-tile__count">2 ta model</span>
+                    </button>
+                    <button type="button" class="cat-tile" data-cat="molekulyar" style="--c:#e03131">
+                        <span class="cat-tile__icon" aria-hidden="true">🎈</span>
+                        <span class="cat-tile__name">Molekulyar fizika</span>
+                        <span class="cat-tile__count">1 ta model</span>
+                    </button>
+                    <button type="button" class="cat-tile" data-cat="elektr" style="--c:#f08c00">
+                        <span class="cat-tile__icon" aria-hidden="true">⚡</span>
+                        <span class="cat-tile__name">Elektr va magnetizm</span>
+                        <span class="cat-tile__count">3 ta model</span>
+                    </button>
+                    <button type="button" class="cat-tile" data-cat="optika" style="--c:#0ca678">
+                        <span class="cat-tile__icon" aria-hidden="true">🌈</span>
+                        <span class="cat-tile__name">Optika</span>
+                        <span class="cat-tile__count">2 ta model</span>
+                    </button>
+                    <button type="button" class="cat-tile" data-cat="atom" style="--c:#5f3dc4">
+                        <span class="cat-tile__icon" aria-hidden="true">⚛️</span>
+                        <span class="cat-tile__name">Atom va yadro</span>
+                        <span class="cat-tile__count">3 ta model</span>
+                    </button>
+                    <button type="button" class="cat-tile" data-cat="astronomiya" style="--c:#364fc7">
+                        <span class="cat-tile__icon" aria-hidden="true">🪐</span>
+                        <span class="cat-tile__name">Astronomiya</span>
+                        <span class="cat-tile__count">1 ta model</span>
+                    </button>
+                </div>
+            </div>
+        </section>
 
-                    <article class="card">
-                        <div class="card-icon" aria-hidden="true">📚</div>
-                        <h3>Metodika qo'llanma</h3>
-                        <p>Dars o'tish texnikasi, guruh ishlari va baholash mezonlari bo'yicha amaliy tavsiyalar.</p>
-                        <a href="hujjatlar/metodika_qollanma.pdf" class="btn btn-secondary" download>PDF yuklab olish</a>
-                    </article>
-                </div>
-            </section>
+        <!-- ===== Katalog ===== -->
+        <section class="block block--soft" id="modellar">
+            <div class="wrap">
+                <h2>Interaktiv simulyatsiyalar</h2>
+                <p class="sub">Har bir modelda tayyor topshiriq, jonli o'lchovlar va laboratoriya jurnali bor — natijalarni jadvalga yozib, hisobotga nusxalang.</p>
+                <div class="catalog">
+                    <aside class="filters" aria-label="Filtrlar">
+                        <div>
+                            <h3>Bo'lim</h3>
+                        <label class="check"><input type="checkbox" name="cat" value="mexanika"><span class="check__dot" style="--c:#1c7ed6"></span><span>Mexanika</span><span class="check__n">3</span></label>
+                        <label class="check"><input type="checkbox" name="cat" value="tebranish"><span class="check__dot" style="--c:#9c36b5"></span><span>Tebranishlar</span><span class="check__n">2</span></label>
+                        <label class="check"><input type="checkbox" name="cat" value="molekulyar"><span class="check__dot" style="--c:#e03131"></span><span>Molekulyar fizika</span><span class="check__n">1</span></label>
+                        <label class="check"><input type="checkbox" name="cat" value="elektr"><span class="check__dot" style="--c:#f08c00"></span><span>Elektr va magnetizm</span><span class="check__n">3</span></label>
+                        <label class="check"><input type="checkbox" name="cat" value="optika"><span class="check__dot" style="--c:#0ca678"></span><span>Optika</span><span class="check__n">2</span></label>
+                        <label class="check"><input type="checkbox" name="cat" value="atom"><span class="check__dot" style="--c:#5f3dc4"></span><span>Atom va yadro</span><span class="check__n">3</span></label>
+                        <label class="check"><input type="checkbox" name="cat" value="astronomiya"><span class="check__dot" style="--c:#364fc7"></span><span>Astronomiya</span><span class="check__n">1</span></label>
+                        </div>
+                        <div>
+                            <h3>Sinf</h3>
+                            <label class="check"><input type="checkbox" name="grade" value="10"><span>10-sinf</span></label>
+                            <label class="check"><input type="checkbox" name="grade" value="11"><span>11-sinf</span></label>
+                        </div>
+                        <div><button type="button" class="linkbtn" id="clearFilters">✕ Filtrlarni tozalash</button></div>
+                        <div class="filters__mobile" role="group" aria-label="Sinf">
+                            <button type="button" class="chip-m" data-g="" aria-pressed="true">Hammasi</button>
+                            <button type="button" class="chip-m" data-g="10" aria-pressed="false">10-sinf</button>
+                            <button type="button" class="chip-m" data-g="11" aria-pressed="false">11-sinf</button>
+                        </div>
+                    </aside>
+                    <div>
+                        <div class="toolbar">
+                            <span class="found" id="found" aria-live="polite">15 ta simulyatsiya</span>
+                            <label class="search" role="search">
+                                <span aria-hidden="true">🔍</span>
+                                <input type="search" id="q" placeholder="Qidirish…" aria-label="Simulyatsiyalarni qidirish" autocomplete="off">
+                            </label>
+                            <select id="sort" aria-label="Saralash">
+                                <option value="order">Tavsiya etilgan</option>
+                                <option value="name">Nomi bo'yicha (A–Z)</option>
+                                <option value="grade">Sinf bo'yicha</option>
+                            </select>
+                            <span class="viewsw" role="group" aria-label="Ko'rinish">
+                                <button type="button" data-view="grid" aria-pressed="true" title="To'r" aria-label="To'r ko'rinishi">▦</button>
+                                <button type="button" data-view="list" aria-pressed="false" title="Ro'yxat" aria-label="Ro'yxat ko'rinishi">☰</button>
+                            </span>
+                        </div>
+                        <div class="sims" id="sims">
+                    <a class="sim" href="modellar/rezerford_model.html" data-cat="atom" data-grade="11" data-order="0" data-name="Rezerford tajribasi" style="--c:#5f3dc4">
+                        <span class="sim__thumb"><img src="img/rezerford.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Rezerford tajribasi</span>
+                            <span class="sim__desc">Alfa zarralarning oltin folgadan sochilishi. Zarra energiyasi va yadroga minimal yaqinlashuv masofasi jonli hisoblanadi.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">⚛️ Atom va yadro</span><span class="tag">11-sinf</span></span>
+                        </span>
+                    </a>
 
-            <!-- ===== Testlar ===== -->
-            <section class="section">
-                <div class="section-head">
-                    <span class="section-eyebrow">Baholash</span>
-                    <h2>Test va o'z-o'zini tekshirish</h2>
-                    <p class="section-sub">Savollar va variantlar har safar aralashtiriladi — yod olib emas, tushunib yechiladi.</p>
-                </div>
-                <div class="cards">
-                    <article class="card">
-                        <div class="card-icon" aria-hidden="true">🎯</div>
-                        <h3>Onlayn interaktiv test</h3>
-                        <p>15 mavzu bo'yicha 170 ta test savoli va 48 ta hisoblash masalasi. Mavzu va savollar sonini tanlang — avtomatik baholash, izohlar va mavzular tahlili bilan.</p>
-                        <a href="testlar/testlar_online.html" class="btn">Testni boshlash →</a>
-                    </article>
-                    <article class="card">
-                        <div class="card-icon" aria-hidden="true">✅</div>
-                        <h3>Testlar to'plami</h3>
-                        <p>210+ savol va masala, 15 mavzu: asosiy bilimlar, chuqur tushunish va hisoblash masalalari, javoblar kaliti bilan — chop etishga tayyor PDF.</p>
-                        <a href="testlar/testlar.pdf" class="btn btn-success" download>PDF yuklab olish</a>
-                    </article>
-                    <article class="card">
-                        <div class="card-icon" aria-hidden="true">📄</div>
-                        <h3>Loyiha hujjatlari</h3>
-                        <p>To'liq yo'riqnoma: o'rnatish, foydalanish va texnik yordam bo'yicha ma'lumotlar.</p>
-                        <a href="hujjatlar/README.pdf" class="btn btn-secondary" download>PDF yuklab olish</a>
-                    </article>
-                </div>
-            </section>
+                    <a class="sim" href="modellar/kepler_model.html" data-cat="astronomiya" data-grade="11" data-order="1" data-name="Kepler qonunlari" style="--c:#364fc7">
+                        <span class="sim__thumb"><img src="img/kepler.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Kepler qonunlari</span>
+                            <span class="sim__desc">Uchala qonun alohida bo'limda: ellips orbita, teng yuzalar va T²=a³ munosabati. Sekkizta sayyora haqiqiy ma'lumotlar bilan.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">🪐 Astronomiya</span><span class="tag">11-sinf</span></span>
+                        </span>
+                    </a>
 
-            <!-- ===== Statistika ===== -->
-            <section class="section">
-                <div class="section-head">
-                    <span class="section-eyebrow">Qamrov</span>
-                    <h2>Platforma raqamlarda</h2>
-                </div>
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-number">15</div>
-                        <div class="stat-label">Interaktiv model</div>
+                    <a class="sim" href="modellar/mayatnik_model.html" data-cat="tebranish" data-grade="10" data-order="2" data-name="Matematik mayatnik" style="--c:#9c36b5">
+                        <span class="sim__thumb"><img src="img/mayatnik.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Matematik mayatnik</span>
+                            <span class="sim__desc">Tebranish davri orqali erkin tushish tezlanishini aniqlang. Oltita osmoniy jismda sinab, o'lchov xatoligini baholang.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">〰️ Tebranishlar</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/qiya_tekislik_model.html" data-cat="mexanika" data-grade="10" data-order="3" data-name="Qiya tekislik (FIK)" style="--c:#1c7ed6">
+                        <span class="sim__thumb"><img src="img/qiya_tekislik.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Qiya tekislik (FIK)</span>
+                            <span class="sim__desc">To'rtta kuch vektori bilan foydali ish koeffitsiyenti. Energiya balansi A=A<sub>f</sub>+A<sub>ishq</sub> jonli tekshiriladi.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">🚀 Mexanika</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/om_qonuni_model.html" data-cat="elektr" data-grade="10" data-order="4" data-name="Om qonuni" style="--c:#f08c00">
+                        <span class="sim__thumb"><img src="img/om_qonuni.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Om qonuni</span>
+                            <span class="sim__desc">I = U/R. Ampermetr ketma-ket, voltmetr parallel ulangan zanjir. Zarralar tezligi tokka, rezistor qizishi quvvatga bog'liq.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">⚡ Elektr va magnetizm</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/induksiya_model.html" data-cat="elektr" data-grade="10" data-order="5" data-name="Elektromagnit induksiya" style="--c:#f08c00">
+                        <span class="sim__thumb"><img src="img/induksiya.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Elektromagnit induksiya</span>
+                            <span class="sim__desc">Faradey qonuni va Lens qoidasi. Magnitni harakatlantiring — galvanometr strelkasi oqim o'zgarishiga javob beradi.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">⚡ Elektr va magnetizm</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/prujinali_mayatnik_model.html" data-cat="tebranish" data-grade="10" data-order="6" data-name="Prujinali mayatnik" style="--c:#9c36b5">
+                        <span class="sim__thumb"><img src="img/prujinali_mayatnik.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Prujinali mayatnik</span>
+                            <span class="sim__desc">T = 2π√(m/k): massa va bikrlikni o'zgartirib davrni o'lchang. Kinetik va potensial energiya almashinuvi, so'nuvchi tebranish va x(t) grafigi.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">〰️ Tebranishlar</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/otilgan_jism_model.html" data-cat="mexanika" data-grade="10" data-order="7" data-name="Burchak ostida otilgan jism" style="--c:#1c7ed6">
+                        <span class="sim__thumb"><img src="img/otilgan_jism.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Burchak ostida otilgan jism</span>
+                            <span class="sim__desc">Traektoriya, ko'tarilish balandligi H va uchish uzoqligi L. 30° va 60° da L tengligini, 45° da eng uzoqqa borishini tekshiring.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">🚀 Mexanika</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/gaz_qonunlari_model.html" data-cat="molekulyar" data-grade="10" data-order="8" data-name="Ideal gaz qonunlari" style="--c:#e03131">
+                        <span class="sim__thumb"><img src="img/gaz_qonunlari.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Ideal gaz qonunlari</span>
+                            <span class="sim__desc">Izotermik, izobarik va izoxorik jarayonlar: porshenli silindr, manometr, molekulalar harakati va p–V diagramma. pV = νRT.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">🎈 Molekulyar fizika</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/kondensator_model.html" data-cat="elektr" data-grade="10" data-order="9" data-name="Yassi kondensator" style="--c:#f08c00">
+                        <span class="sim__thumb"><img src="img/kondensator.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Yassi kondensator</span>
+                            <span class="sim__desc">C = εε₀S/d. Qoplamalar yuzasi, oralig'i va dielektrikni o'zgartiring; manbaga ulangan va uzilgan holatlarda q, U, E, W qanday o'zgaradi?</span>
+                            <span class="sim__meta"><span class="tag tag--cat">⚡ Elektr va magnetizm</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/impuls_model.html" data-cat="mexanika" data-grade="10" data-order="10" data-name="Impulsning saqlanish qonuni" style="--c:#1c7ed6">
+                        <span class="sim__thumb"><img src="img/impuls.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Impulsning saqlanish qonuni</span>
+                            <span class="sim__desc">Ikki aravachaning elastik, noelastik va qisman elastik to'qnashuvi: impuls saqlanishini tekshiring, kinetik energiyaning qancha qismi issiqlikka aylanishini o'lchang.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">🚀 Mexanika</span><span class="tag">10-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/yoruglik_sinishi_model.html" data-cat="optika" data-grade="11" data-order="11" data-name="Yorug&#x27;likning sinishi" style="--c:#0ca678">
+                        <span class="sim__thumb"><img src="img/yoruglik_sinishi.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Yorug'likning sinishi</span>
+                            <span class="sim__desc">Snellius qonuni n₁·sinα = n₂·sinβ, chegaraviy burchak va to'liq ichki qaytish. Nurlar ravshanligi Frenel formulalari bo'yicha, yorug'lik tezligi v = c/n.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">🌈 Optika</span><span class="tag">11-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/linza_model.html" data-cat="optika" data-grade="11" data-order="12" data-name="Yupqa linza" style="--c:#0ca678">
+                        <span class="sim__thumb"><img src="img/linza.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Yupqa linza</span>
+                            <span class="sim__desc">Yig'uvchi va sochuvchi linzada uchta xarakterli nur bilan tasvir yasash: 1/F = 1/d + 1/f, kattalashtirish va optik kuch. Buyumni sichqoncha bilan suring.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">🌈 Optika</span><span class="tag">11-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/fotoeffekt_model.html" data-cat="atom" data-grade="11" data-order="13" data-name="Fotoeffekt" style="--c:#5f3dc4">
+                        <span class="sim__thumb"><img src="img/fotoeffekt.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Fotoeffekt</span>
+                            <span class="sim__desc">Eynshteyn tenglamasi hν = A + E<sub>k</sub>: to'lqin uzunligi, metall va kuchlanishni o'zgartirib, qizil chegara va to'xtatuvchi kuchlanishni toping.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">⚛️ Atom va yadro</span><span class="tag">11-sinf</span></span>
+                        </span>
+                    </a>
+
+                    <a class="sim" href="modellar/radioaktiv_yemirilish_model.html" data-cat="atom" data-grade="11" data-order="14" data-name="Radioaktiv yemirilish" style="--c:#5f3dc4">
+                        <span class="sim__thumb"><img src="img/radioaktiv_yemirilish.jpg" alt="" width="480" height="300" loading="lazy" decoding="async"><span class="sim__play" aria-hidden="true">▶</span></span>
+                        <span class="sim__body">
+                            <span class="sim__title">Radioaktiv yemirilish</span>
+                            <span class="sim__desc">N = N₀·2<sup>−t/T½</sup>: yuzlab yadroning tasodifiy yemirilishi va statistik qonun. Yarim yemirilish davrini o'lchang, tebranishlarni kuzating.</span>
+                            <span class="sim__meta"><span class="tag tag--cat">⚛️ Atom va yadro</span><span class="tag">11-sinf</span></span>
+                        </span>
+                    </a>
+                        </div>
+                        <p class="empty" id="empty">Hech narsa topilmadi. Boshqa so'z bilan qidirib ko'ring yoki filtrlarni tozalang.</p>
                     </div>
-                    <div class="stat">
-                        <div class="stat-number">22</div>
-                        <div class="stat-label">Dars ishlanma</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">210+</div>
-                        <div class="stat-label">Test savoli</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">45</div>
-                        <div class="stat-label">Daqiqalik dars</div>
-                    </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- ===== Xususiyatlar ===== -->
-            <section class="section">
-                <div class="section-head">
-                    <span class="section-eyebrow">Nima uchun</span>
-                    <h2>Asosiy xususiyatlar</h2>
+        <!-- ===== O'qituvchilar uchun ===== -->
+        <section class="block" id="oqituvchi">
+            <div class="wrap">
+                <h2>O'qituvchilar uchun</h2>
+                <p class="sub">Darsga tayyor materiallar: dars ishlanmalar, testlar va kutilgan natijalar.</p>
+                <div class="res">
+                    <a href="dars_ishlanmalar/index.html">
+                        <span class="res__icon" aria-hidden="true">📚</span>
+                        <span><h3>Dars ishlanmalar</h3><p>10-sinf uchun 12 ta, 11-sinf uchun 10 ta dars — PDF va tahrirlanadigan DOCX.</p><span class="go">Ochish →</span></span>
+                    </a>
+                    <a href="testlar/testlar_online.html">
+                        <span class="res__icon" aria-hidden="true">🎯</span>
+                        <span><h3>Onlayn interaktiv test</h3><p>15 mavzu bo'yicha 170 ta test savoli va 48 ta hisoblash masalasi. Mavzu va savollar sonini tanlang — avtomatik baholash, izohlar va mavzular tahlili bilan.</p><span class="go">Testni boshlash →</span></span>
+                    </a>
+                    <a href="testlar/testlar.pdf" download>
+                        <span class="res__icon" aria-hidden="true">✅</span>
+                        <span><h3>Testlar to'plami</h3><p>210+ savol va masala, 15 mavzu: asosiy bilimlar, chuqur tushunish va hisoblash masalalari, javoblar kaliti bilan — chop etishga tayyor PDF.</p><span class="go">PDF yuklab olish</span></span>
+                    </a>
+                    <a href="?oqituvchi=1">
+                        <span class="res__icon" aria-hidden="true">👩‍🏫</span>
+                        <span><h3>O'qituvchi rejimi</h3><p>Har bir modelda topshiriqning kutilgan natijalari ko'rinadi. O'quvchilar ekraniga ko'rsatmang.</p><span class="go">Yoqish →</span></span>
+                    </a>
+                    <a href="hujjatlar/metodika_qollanma.pdf" download>
+                        <span class="res__icon" aria-hidden="true">🧭</span>
+                        <span><h3>Metodika qo'llanma</h3><p>Dars o'tish texnikasi, guruh ishlari va baholash mezonlari bo'yicha amaliy tavsiyalar.</p><span class="go">PDF yuklab olish</span></span>
+                    </a>
+                    <a href="hujjatlar/README.pdf" download>
+                        <span class="res__icon" aria-hidden="true">📄</span>
+                        <span><h3>Loyiha hujjatlari</h3><p>To'liq yo'riqnoma: o'rnatish, foydalanish va texnik yordam bo'yicha ma'lumotlar.</p><span class="go">PDF yuklab olish</span></span>
+                    </a>
                 </div>
-                <div class="features">
+            </div>
+        </section>
+
+        <!-- ===== Qanday foydalanish ===== -->
+        <section class="block block--soft">
+            <div class="wrap">
+                <h2>💡 Qanday foydalanish kerak</h2>
+                <ol class="how">
+                    <li>Mavzuga mos interaktiv modelni oching</li>
+                    <li>Panel tepasidagi <strong>🎯 Topshiriq</strong> qadamlarini bajaring</li>
+                    <li>Har o'lchovdan keyin <strong>«O'lchovni yozish»</strong> ni bosing (yoki <kbd>S</kbd>)</li>
+                    <li>Jurnal ostidagi <strong>grafik</strong>da bog'lanishni tahlil qiling va <strong>«Hisobot (PDF)»</strong> ni saqlang</li>
+                    <li>Natijalarni nazariy formula bilan solishtirib xulosa chiqaring</li>
+                    <li>Onlayn test bilan bilimingizni tekshiring</li>
+                </ol>
+                <p class="kbd-line">⌨️ Modellarda: <kbd>Space</kbd> boshlash/pauza · <kbd>R</kbd> qayta · <kbd>S</kbd> o'lchovni yozish</p>
+            </div>
+        </section>
+
+        <!-- ===== Afzalliklar ===== -->
+        <section class="block">
+            <div class="wrap">
+                <h2>Asosiy xususiyatlar</h2>
+                <p class="sub">Maktab sharoitiga moslab yaratilgan — kompyuter sinfida ham, telefonda ham.</p>
+                <div class="feats">
                     <div class="feature">
                         <h3>🔬 Haqiqiy fizika</h3>
                         <p>Animatsiyalar emas — differensial tenglamalar real vaqtda yechiladi</p>
@@ -607,185 +645,163 @@
                         <p>O'lchovlar jadvali, grafik va chiziqli tahlil, CSV (Excel) va PDF hisobot</p>
                     </div>
                     <div class="feature">
-                        <h3>🎯 Tayyor topshiriqlar</h3>
-                        <p>Har bir modelda qadam-baqadam tajriba rejasi</p>
-                    </div>
-                    <div class="feature">
                         <h3>💻 Oflayn ishlaydi</h3>
                         <p>Bir marta ochilgach internetsiz ishlaydi; telefonga ilova sifatida o'rnatiladi</p>
-                    </div>
-                    <div class="feature">
-                        <h3>📱 Har qanday ekranda</h3>
-                        <p>Telefon, planshet va kompyuterda bir xil qulay</p>
-                    </div>
-                    <div class="feature">
-                        <h3>🌙 Qorong'i rejim</h3>
-                        <p>Ko'z charchamasligi uchun kunduzgi va tungi rejim</p>
-                    </div>
-                    <div class="feature">
-                        <h3>👩‍🏫 O'qituvchi rejimi</h3>
-                        <p>Har bir modelda kutilgan natijalar: <a href="?oqituvchi=1" id="teacherLink">yoqish</a> / <a href="?oqituvchi=0">o'chirish</a></p>
                     </div>
                     <div class="feature">
                         <h3>⛶ Proyektor uchun</h3>
                         <p>Modelni bir tugma bilan to'liq ekranda ko'rsating</p>
                     </div>
+                    <div class="feature">
+                        <h3>🌙 Qorong'i rejim</h3>
+                        <p>Ko'z charchamasligi uchun kunduzgi va tungi rejim</p>
+                    </div>
                 </div>
-            </section>
+            </div>
+        </section>
+    </main>
 
-            <!-- ===== Ko'rsatma ===== -->
-            <section class="section">
-                <div class="info-box">
-                    <h3>💡 Qanday foydalanish kerak</h3>
-                    <ol class="steps">
-                        <li><span class="num">1</span> Mavzuga mos interaktiv modelni oching</li>
-                        <li><span class="num">2</span> Panel tepasidagi <strong>🎯 Topshiriq</strong> qadamlarini bajaring</li>
-                        <li><span class="num">3</span> Har o'lchovdan keyin <strong>«O'lchovni yozish»</strong> ni bosing (yoki <kbd>S</kbd>)</li>
-                        <li><span class="num">4</span> Jurnal ostidagi <strong>grafik</strong>da bog'lanishni tahlil qiling va <strong>«Hisobot (PDF)»</strong> ni saqlang</li>
-                        <li><span class="num">5</span> Natijalarni nazariy formula bilan solishtirib xulosa chiqaring</li>
-                        <li><span class="num">6</span> Onlayn test bilan bilimingizni tekshiring</li>
-                    </ol>
-                    <p style="margin-top: var(--sp-4); font-size: 0.85rem; color: var(--text-muted);">
-                        ⌨️ Modellarda: <kbd>Space</kbd> boshlash/pauza · <kbd>R</kbd> qayta · <kbd>S</kbd> o'lchovni yozish
-                    </p>
+    <!-- ===== Futer ===== -->
+    <footer class="site-foot">
+        <div class="wrap">
+            <div class="cols">
+                <div>
+                    <a class="brand" href="index.html">
+                        <img src="img/icons/icon-192.png" alt="" width="36" height="36">
+                        <span>Fizika 10–11<small>Interaktiv simulyatsiyalar</small></span>
+                    </a>
+                    <p>Fizik jarayonlarni modellashtirishning dasturiy ta'minoti</p>
+                    <p class="quote">"Bilim — yorug'lik, bilim olish — eng ulug' maqsad"</p>
                 </div>
-            </section>
-        </main>
+                <div>
+                    <h4>Simulyatsiyalar</h4>
+                    <ul>
+                    <li><a href="#modellar" data-cat-link="mexanika">Mexanika</a></li>
+                    <li><a href="#modellar" data-cat-link="tebranish">Tebranishlar</a></li>
+                    <li><a href="#modellar" data-cat-link="molekulyar">Molekulyar fizika</a></li>
+                    <li><a href="#modellar" data-cat-link="elektr">Elektr va magnetizm</a></li>
+                    <li><a href="#modellar" data-cat-link="optika">Optika</a></li>
+                    <li><a href="#modellar" data-cat-link="atom">Atom va yadro</a></li>
+                    <li><a href="#modellar" data-cat-link="astronomiya">Astronomiya</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Resurslar</h4>
+                    <ul>
+                        <li><a href="dars_ishlanmalar/index.html">Dars ishlanmalar</a></li>
+                        <li><a href="testlar/testlar_online.html">Onlayn interaktiv test</a></li>
+                        <li><a href="testlar/testlar.pdf" download>Testlar to'plami</a></li>
+                        <li><a href="hujjatlar/loyiha_algoritmi.html">Loyiha algoritmi</a></li>
+                        <li><a href="tekshiruv.html">Fayllar tekshiruvi</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="bottom">
+                <span>10–11 sinflar uchun · Versiya 2.0 · 2026-yil</span>
+                <span>Ta'lim maqsadida bepul foydalanish uchun</span>
+            </div>
+        </div>
+    </footer>
 
-        <footer class="footer">
-            <p><strong>Fizik jarayonlarni modellashtirishning dasturiy ta'minoti</strong></p>
-            <p class="meta">10–11 sinflar uchun · Versiya 1.2 · 2026-yil</p>
-            <p class="meta">Ta'lim maqsadida bepul foydalanish uchun</p>
-            <p class="quote">"Bilim — yorug'lik, bilim olish — eng ulug' maqsad"</p>
-        </footer>
-    </div>
-
-    <script src="theme.js?v=20261029d"></script>
+    <script src="theme.js?v=20261029f"></script>
     <script>
-        // ===== Header foni: zarralar tarmog'i =====
-        (function() {
-            const fx = document.getElementById('headerFx');
-            const header = fx.parentElement;
-            const c = fx.getContext('2d');
-            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // ===== Katalog: qidiruv, bo'lim/sinf filtrlari, saralash, ko'rinish =====
+        (function () {
+            var grid = document.getElementById('sims');
+            var sims = Array.prototype.slice.call(grid.querySelectorAll('.sim'));
+            var q = document.getElementById('q'), heroQ = document.getElementById('heroQ');
+            var catBoxes = document.querySelectorAll('input[name="cat"]');
+            var gradeBoxes = document.querySelectorAll('input[name="grade"]');
+            var tiles = document.querySelectorAll('.cat-tile');
+            var mobileChips = document.querySelectorAll('.chip-m');
+            var found = document.getElementById('found');
+            var empty = document.getElementById('empty');
 
-            let particles = [];
+            // Apostrof va katta-kichik harf farqsiz qidiruv
+            function norm(t) { return t.toLowerCase().replace(/[ʻʼ‘’'`]/g, '').replace(/\s+/g, ' '); }
+            sims.forEach(function (s) { s._text = norm(s.textContent); });
 
-            function init() {
-                fx.width = header.clientWidth;
-                fx.height = header.clientHeight;
-                particles = [];
-                const count = Math.min(46, Math.floor(fx.width / 28));
-                for (let i = 0; i < count; i++) {
-                    particles.push({
-                        x: Math.random() * fx.width,
-                        y: Math.random() * fx.height,
-                        r: 1 + Math.random() * 1.8,
-                        vx: (Math.random() - 0.5) * 0.32,
-                        vy: (Math.random() - 0.5) * 0.32
-                    });
-                }
+            function checked(list) {
+                return Array.prototype.filter.call(list, function (b) { return b.checked; }).map(function (b) { return b.value; });
             }
-
-            function render() {
-                c.clearRect(0, 0, fx.width, fx.height);
-                c.lineWidth = 1;
-                for (let i = 0; i < particles.length; i++) {
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const dx = particles[i].x - particles[j].x;
-                        const dy = particles[i].y - particles[j].y;
-                        const d = Math.hypot(dx, dy);
-                        if (d < 110) {
-                            c.strokeStyle = 'rgba(255,255,255,' + (0.13 * (1 - d / 110)).toFixed(3) + ')';
-                            c.beginPath();
-                            c.moveTo(particles[i].x, particles[i].y);
-                            c.lineTo(particles[j].x, particles[j].y);
-                            c.stroke();
-                        }
-                    }
-                }
-                c.fillStyle = 'rgba(255,255,255,0.5)';
-                particles.forEach(p => {
-                    c.beginPath();
-                    c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                    c.fill();
+            function apply() {
+                var text = norm(q.value.trim());
+                var cats = checked(catBoxes), grades = checked(gradeBoxes);
+                var n = 0;
+                sims.forEach(function (s) {
+                    var ok = (!text || s._text.indexOf(text) > -1) &&
+                             (!cats.length || cats.indexOf(s.dataset.cat) > -1) &&
+                             (!grades.length || grades.indexOf(s.dataset.grade) > -1);
+                    s.hidden = !ok;
+                    if (ok) n++;
+                });
+                found.textContent = n + ' ta simulyatsiya';
+                empty.style.display = n ? 'none' : 'block';
+                tiles.forEach(function (t) { t.setAttribute('aria-pressed', String(cats.length === 1 && cats[0] === t.dataset.cat)); });
+                mobileChips.forEach(function (c) {
+                    c.setAttribute('aria-pressed', String(c.dataset.g === (grades.length === 1 ? grades[0] : '')));
                 });
             }
-
-            // Header ekranda ko'rinmasa yoki tab yashirin bo'lsa animatsiya to'xtaydi
-            // (aks holda sahifa pastida ham 60 fps da bekor chizilib, batareyani yeydi)
-            let visible = true, rafId = null, last = null;
-
-            function step(ts) {
-                rafId = null;
-                const k = last === null ? 1 : Math.min(3, (ts - last) / (1000 / 60));
-                last = ts;
-                particles.forEach(p => {
-                    p.x += p.vx * k; p.y += p.vy * k;
-                    if (p.x < 0 || p.x > fx.width) p.vx *= -1;
-                    if (p.y < 0 || p.y > fx.height) p.vy *= -1;
+            function sortBy(mode) {
+                var arr = sims.slice();
+                arr.sort(function (a, b) {
+                    if (mode === 'name') return a.dataset.name.localeCompare(b.dataset.name, 'uz');
+                    if (mode === 'grade') return (a.dataset.grade - b.dataset.grade) || (a.dataset.order - b.dataset.order);
+                    return a.dataset.order - b.dataset.order;
                 });
-                render();
-                schedule();
+                arr.forEach(function (s) { grid.appendChild(s); });
             }
-            function schedule() {
-                if (reduced || !visible || document.hidden || rafId !== null) return;
-                rafId = requestAnimationFrame(step);
-            }
-            function halt() {
-                if (rafId !== null) cancelAnimationFrame(rafId);
-                rafId = null; last = null;
+            function setCat(cat) {
+                catBoxes.forEach(function (b) { b.checked = b.value === cat; });
+                apply();
+                document.getElementById('modellar').scrollIntoView({ behavior: 'smooth' });
             }
 
-            if ('IntersectionObserver' in window) {
-                new IntersectionObserver(function (en) {
-                    visible = en[0].isIntersecting;
-                    if (visible) schedule(); else halt();
-                }).observe(header);
-            }
-            document.addEventListener('visibilitychange', function () {
-                if (document.hidden) halt(); else schedule();
+            q.addEventListener('input', function () { heroQ.value = q.value; apply(); });
+            document.getElementById('heroSearch').addEventListener('submit', function (e) {
+                e.preventDefault();
+                q.value = heroQ.value;
+                apply();
+                document.getElementById('modellar').scrollIntoView({ behavior: 'smooth' });
             });
-
-            // Faqat kenglik o'zgarganda qayta yaratamiz: mobilda manzil paneli
-            // yashiringanda balandlik o'zgaradi va rasm "sakrab" ketardi
-            let lastW = header.clientWidth;
-            window.addEventListener('resize', function() {
-                if (header.clientWidth === lastW) return;
-                lastW = header.clientWidth;
-                init();
-                if (reduced) render();
+            heroQ.addEventListener('input', function () { q.value = heroQ.value; apply(); });
+            catBoxes.forEach(function (b) { b.addEventListener('change', apply); });
+            gradeBoxes.forEach(function (b) { b.addEventListener('change', apply); });
+            tiles.forEach(function (t) {
+                t.addEventListener('click', function () {
+                    // Tanlangan bo'limni qayta bossa — filtr olib tashlanadi
+                    setCat(t.getAttribute('aria-pressed') === 'true' ? '' : t.dataset.cat);
+                });
             });
-            init();
-            render();
-            schedule();
+            document.querySelectorAll('[data-cat-link]').forEach(function (a) {
+                a.addEventListener('click', function (e) { e.preventDefault(); setCat(a.dataset.catLink); });
+            });
+            mobileChips.forEach(function (c) {
+                c.addEventListener('click', function () {
+                    gradeBoxes.forEach(function (b) { b.checked = b.value === c.dataset.g; });
+                    apply();
+                });
+            });
+            document.getElementById('clearFilters').addEventListener('click', function () {
+                catBoxes.forEach(function (b) { b.checked = false; });
+                gradeBoxes.forEach(function (b) { b.checked = false; });
+                q.value = heroQ.value = '';
+                apply();
+            });
+            document.getElementById('sort').addEventListener('change', function () { sortBy(this.value); });
+            document.querySelectorAll('.viewsw button').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var list = b.dataset.view === 'list';
+                    grid.classList.toggle('is-list', list);
+                    document.querySelectorAll('.viewsw button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+                    try { localStorage.setItem('fizika-view', b.dataset.view); } catch (e) {}
+                });
+            });
+            try {
+                if (localStorage.getItem('fizika-view') === 'list') document.querySelector('.viewsw [data-view="list"]').click();
+            } catch (e) {}
+            apply();
         })();
-
-        // ===== Statistika sanog'i =====
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.stat-number').forEach(stat => {
-                const raw = stat.textContent;
-                const hasPlus = raw.includes('+');
-                const target = parseInt(raw);
-                let current = 0;
-                const increment = target / 45;
-
-                const tick = () => {
-                    if (current < target) {
-                        current += increment;
-                        stat.textContent = Math.min(target, Math.ceil(current));
-                        setTimeout(tick, 28);
-                    } else {
-                        stat.textContent = target + (hasPlus ? '+' : '');
-                    }
-                };
-
-                const observer = new IntersectionObserver(entries => {
-                    if (entries[0].isIntersecting) { tick(); observer.disconnect(); }
-                });
-                observer.observe(stat);
-            });
-        });
     </script>
 </body>
 </html>
