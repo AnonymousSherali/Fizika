@@ -6,6 +6,12 @@
 (function () {
     'use strict';
 
+    // Sayt ildizi (theme.js shu papkada turadi) — har qanday chuqurlikdagi sahifadan
+    var ROOT = (function () {
+        var src = document.currentScript && document.currentScript.src;
+        return src ? src.replace(/theme\.js(\?.*)?$/, '') : '';
+    })();
+
     // Miltillashning oldini olish: rejim <body> tayyor bo'lishidan oldin
     // <html> elementiga qo'llanadi (styles.css uni ham hisobga oladi)
     try {
@@ -95,6 +101,32 @@
         });
     }
 
+    // ----- Oflayn ishlash (PWA) -----
+    // Manifest (telefonga "ilova" sifatida o'rnatish) va Service Worker (internetsiz ishlash).
+    // file:// orqali ochilganda Service Worker ishlamaydi — u holda jim o'tkazib yuboramiz.
+    function initPwa() {
+        if (!ROOT || !/^https?:/.test(location.protocol)) return;
+        if (!document.querySelector('link[rel="manifest"]')) {
+            var m = document.createElement('link');
+            m.rel = 'manifest';
+            m.href = ROOT + 'manifest.webmanifest';
+            document.head.appendChild(m);
+            var t = document.createElement('meta');
+            t.name = 'theme-color';
+            t.content = '#4338ca';
+            document.head.appendChild(t);
+            var a = document.createElement('link');
+            a.rel = 'apple-touch-icon';
+            a.href = ROOT + 'img/icons/apple-touch-icon.png';
+            document.head.appendChild(a);
+        }
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register(ROOT + 'sw.js', { scope: ROOT }).catch(function () {});
+            });
+        }
+    }
+
     // ----- Ishga tushirish -----
     // Rejimni iloji boricha erta qo'llaymiz (miltillashning oldini olish)
     function boot() {
@@ -104,6 +136,7 @@
         applyTheme(saved);
         initScrollTop();
         initReveal();
+        initPwa();
     }
 
     if (document.readyState === 'loading') {
