@@ -7,8 +7,8 @@
     <meta name="description" content="Gorizontga burchak ostida otilgan jism interaktiv modeli - uchish uzoqligi, ko'tarilish balandligi va parvoz vaqtini o'rganish. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎯%3C/text%3E%3C/svg%3E">
     <title>Otilgan Jism - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261029">
-    <link rel="stylesheet" href="../model-tools.css?v=20261029">
+    <link rel="stylesheet" href="../styles.css?v=20261029b">
+    <link rel="stylesheet" href="../model-tools.css?v=20261029b">
     <style>
         :root {
             --primary: #2563eb;
@@ -199,7 +199,7 @@
                 <p style="margin-top: 10px;">
                     💡 <strong>Kuzating:</strong> sin 2α = sin(180° − 2α) bo'lgani uchun α va 90° − α
                     burchaklarda (masalan 30° va 60°) uchish uzoqligi <strong>bir xil</strong>, lekin
-                    60° da jism balandroq ko'tariladi va uzoqroq uchadi. Eng katta uzoqlik
+                    60° da jism balandroq ko'tariladi va havoda uzoqroq vaqt bo'ladi (t_p katta). Eng katta uzoqlik
                     <strong>α = 45°</strong> da (sin 2α = 1) erishiladi. Balandlikdan otilganda esa
                     eng qulay burchak 45° dan kichik bo'ladi. Eng yuqori nuqtada v_y = 0, lekin tezlik
                     nolga teng emas: |v| = vₓ.
@@ -208,8 +208,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261029"></script>
-    <script src="../model-tools.js?v=20261029"></script>
+    <script src="../theme.js?v=20261029b"></script>
+    <script src="../model-tools.js?v=20261029b"></script>
     <script>
         const canvas = document.getElementById('projectileCanvas');
         const ctx = canvas.getContext('2d');
@@ -347,13 +347,18 @@
             const th = theory();
             const prevT = state.t;
             let t = prevT + dt * state.timeScale;
-            // Cho'qqidan o'tilgan bo'lsa — aniq H ni yozamiz (kadrlar oralig'ida qolib ketmasin)
-            if (state.hMax === null && t >= th.tPeak) state.hMax = th.H;
+            // "O'lchov" — formuladan emas, kadrlarda kuzatilgan holatlardan olinadi
+            // (xuddi video tahlilidagidek): H — kuzatilgan eng katta y,
+            // qo'nish — y ishorasi o'zgargan ikki kadr orasida chiziqli interpolyatsiya.
+            const yNow = posAt(state, th, Math.min(t, th.tf)).y;
+            state.ySeen = Math.max(state.ySeen == null ? state.h0 : state.ySeen, yNow);
+            if (state.hMax === null && t >= th.tPeak) state.hMax = state.ySeen;
             if (t >= th.tf) {
-                // Qo'nish payti analitik topiladi: L nazariya bilan aynan mos keladi
+                const y1 = posAt(state, th, prevT).y, y2 = posAt(state, th, t).y;
+                const tl = y1 - y2 > 1e-12 ? prevT + (t - prevT) * y1 / (y1 - y2) : th.tf;
+                state.landed = { t: tl, x: th.vx * tl };
+                if (state.hMax === null) state.hMax = state.ySeen;
                 t = th.tf;
-                state.landed = { t: th.tf, x: th.vx * th.tf };
-                if (state.hMax === null) state.hMax = th.H;
                 finishThrow();
             }
             state.t = t;
@@ -392,7 +397,7 @@
                 document.getElementById('tMeas').textContent = state.landed.t.toFixed(3) + ' s';
                 document.getElementById('lMeas').textContent = fmt(state.landed.x, 2) + ' m';
                 document.getElementById('lErr').textContent = th.L > 0.01
-                    ? ((state.landed.x - th.L) / th.L * 100).toFixed(2) + '%' : '-';
+                    ? fmt((state.landed.x - th.L) / th.L * 100, 2) + '%' : '-';
             } else {
                 document.getElementById('tMeas').textContent = '-';
                 document.getElementById('lMeas').textContent = '-';
@@ -783,6 +788,7 @@
             state.t = 0;
             state.phase = 'ready';
             state.hMax = null;
+            state.ySeen = null;
             state.landed = null;
             rescale();
             updateStats();

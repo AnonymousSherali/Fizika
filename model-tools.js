@@ -59,7 +59,9 @@
             // Brauzer yorliqlari (Ctrl+R yangilash, Ctrl+S, Cmd+C ...) ga aralashmaymiz
             if (e.ctrlKey || e.metaKey || e.altKey) return;
             var t = e.target;
-            if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' ||
+            // Slayder (range) istisno: Space/R/S unda hech narsa qilmaydi, aks holda
+            // slayderni surgandan keyin yorliqlar "o'lib" qolardi
+            if (t && ((t.tagName === 'INPUT' && t.type !== 'range') || t.tagName === 'TEXTAREA' ||
                       t.tagName === 'SELECT' || t.isContentEditable)) return;
             var c = window.modelControls;
             if (!c) return;

@@ -7,7 +7,7 @@
     <meta name="description" content="Rezerford va Kepler bo'yicha onlayn interaktiv test - avtomatik baholash bilan. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20261029">
+    <link rel="stylesheet" href="../styles.css?v=20261029b">
     <style>
         :root {
             --primary: #4f46e5;
@@ -228,7 +228,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261029"></script>
+    <script src="../theme.js?v=20261029b"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -238,7 +238,7 @@
             { tag: "Rezerford · Asosiy", q: "Tajribada qanday zarralar ishlatilgan?", o: ["Elektronlar","Protonlar","Alfa zarralar","Beta zarralar"], correct: 2,
               ex: "Radioaktiv manbadan chiqqan alfa zarralar (geliy yadrolari) ishlatilgan — ular og'ir va tez bo'lgani uchun atom ichini \"zondlash\"ga qulay." },
             { tag: "Rezerford · Asosiy", q: "Nishon sifatida nimadan foydalanilgan?", o: ["Alyuminiy folga","Oltin folga","Kumush folga","Mis folga"], correct: 1,
-              ex: "Oltin folga ishlatilgan: oltinni juda yupqa (bir necha yuz atom qalinlikda) qilib yoyish mumkin." },
+              ex: "Oltin folga ishlatilgan: oltinni juda yupqa (taxminan 0,4 mkm — mingdan ortiq atom qatlami) qilib yoyish mumkin." },
             { tag: "Rezerford · Asosiy", q: "Alfa zarra qanday zaryadga ega?", o: ["Manfiy","Neytral","Musbat","O'zgaruvchan"], correct: 2,
               ex: "Alfa zarra — 2 proton va 2 neytrondan iborat geliy yadrosi, shuning uchun musbat zaryadlangan." },
             { tag: "Rezerford · Asosiy", q: "Alfa zarraning zaryadi nechaga teng?", o: ["+e","+2e","+3e","-2e"], correct: 1,
@@ -265,13 +265,13 @@
             { tag: "Rezerford · Chuqur", q: "Rezerford modeli qanday nomlanadi?", o: ["Planeta (sayyorasimon) modeli","Qaymoqli tort modeli","Kvant modeli","Bulutsimon model"], correct: 0,
               ex: "Elektronlar markazdagi yadro atrofida sayyoralar Quyosh atrofida aylangandek harakatlanadi — shuning uchun planetar model deyiladi." },
             { tag: "Rezerford · Chuqur", q: "Minimal yaqinlashuv masofasi qanday topiladi?", o: ["E_k = E_p","F = ma","p = mv","E = mc²"], correct: 0,
-              ex: "Eng yaqin nuqtada zarra to'xtaydi: butun kinetik energiya Kulon potensial energiyasiga aylanadi, E_k = kq₁q₂/r." },
+              ex: "Markaziy (to'g'ri) yo'nalishda uchgan zarra eng yaqin nuqtada to'xtaydi: butun kinetik energiya Kulon potensial energiyasiga aylanadi, E_k = kq₁q₂/r_min." },
             { tag: "Rezerford · Chuqur", q: "Nima uchun oltin tanlangan?", o: ["Arzon","Yumshoq, yupqa qatlam yasash oson","Radioaktiv","Magnit xossasi bor"], correct: 1,
               ex: "Oltin juda yumshoq va cho'ziluvchan, uni juda yupqa varaq qilish oson; yadrosi og'ir va zaryadi katta (Z = 79)." },
             { tag: "Rezerford · Chuqur", q: "Atomning qaysi qismi eng og'ir?", o: ["Elektronlar","Yadro","Neytronlar alohida","Barcha teng"], correct: 1,
               ex: "Atom massasining 99,9% dan ortig'i yadroda — proton va neytronlar elektrondan ~1840 marta og'ir." },
             { tag: "Rezerford · Chuqur", q: "Tajriba natijasi qanday atom modeliga olib keldi?", o: ["Tomson modeli","Rezerford modeli","Bor modeli","Kvant modeli"], correct: 1,
-              ex: "Tajriba Tomsonning \"mayizli pudding\" modelini rad etib, Rezerfordning yadroli (planetar) modeliga olib keldi." },
+              ex: "Tajriba Tomsonning \"qaymoqli tort\" (mayizli pudding) modelini rad etib, Rezerfordning yadroli (planetar) modeliga olib keldi." },
             { tag: "Rezerford · Chuqur", q: "Rezerford tajribasida alfa zarralar manbai sifatida qaysi element ishlatilgan?", o: ["Uran","Radiy","Plutoniy","Toriy"], correct: 1,
               ex: "Manba sifatida radiy (va uning parchalanish mahsulotlari) ishlatilgan — u kuchli alfa nurlanish manbai." },
             // ===== Kepler - Asosiy =====
@@ -389,7 +389,11 @@
 
         function selectOption(i) {
             answers[current] = i;
+            // Variantlar qayta chiziladi — klaviatura fokusini tanlangan variantga qaytaramiz
+            const hadFocus = document.activeElement && document.activeElement.closest &&
+                             document.activeElement.closest('#options');
             renderQuestion();
+            if (hadFocus) document.getElementById('options').children[i].focus();
         }
 
         // Butun sahifada: A-D bilan javob tanlash, o'q tugmalari bilan navigatsiya
@@ -551,6 +555,9 @@
             document.getElementById('pNextBtn').disabled = true;
             document.getElementById('pNextBtn').textContent = pCurrent === problems.length - 1 ? '\u2713 Yakunlash' : 'Keyingi \u2192';
             document.getElementById('progressBar').style.width = (pCurrent / problems.length * 100) + '%';
+            // Keyingi masalaga o'tilganda yozishni darhol davom ettirish mumkin bo'lsin
+            // (birinchi masalada emas — telefonda klaviatura o'z-o'zidan ochilmasin)
+            if (pCurrent > 0) document.getElementById('pInput').focus();
         }
 
         function checkProblem() {
@@ -560,9 +567,14 @@
             // Vergul ham, nuqta ham qabul qilinadi (o'zbek yozuvida o'nli vergul odatiy)
             // Unicode minus (−) ham qabul qilinadi; oxiridagi birlik ("45 fm") e'tiborsiz,
             // lekin son davom etsa ("1.2.3") javob noaniq deb rad etiladi
-            const raw = inp.value.trim().replace(/\s+/g, '').replace(/[\u2212\u2013]/g, '-').replace(',', '.');
-            const m = raw.match(/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?/i);
-            const val = m && !/^[.\d]/.test(raw.slice(m[0].length)) ? parseFloat(m[0]) : NaN;
+            // Darajali yozuv ham: 4,22·10^7, 4.22×10⁷, 4.5*10^-3, 4.5e7
+            const SUP = { '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-','⁺':'+' };
+            const raw = inp.value.trim().replace(/\s+/g, '').replace(/[\u2212\u2013]/g, '-').replace(',', '.')
+                .replace(/10([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, e) => '10^' + e.replace(/./g, c => SUP[c]));
+            const m = raw.match(/^([-+]?(?:\d+\.?\d*|\.\d+))(?:e([-+]?\d+)|[·×x*]10\^?([-+]?\d+))?/i);
+            const rest = m ? raw.slice(m[0].length) : '';
+            const val = m && !/^[.\d·×*^]/.test(rest)
+                ? parseFloat(m[1] + 'e' + (m[2] || m[3] || '0')) : NaN;
             if (isNaN(val)) {
                 // Jim qaytish o'rniga aniq ko'rsatma beramiz
                 document.getElementById('pFeedback').innerHTML =
@@ -612,6 +624,8 @@
 
         function showCalcResult() {
             const pct = Math.round(pScore / problems.length * 100);
+            // Oldingi testdan qolgan mavzular tahlili masalalar natijasida ko'rinmasin
+            document.getElementById('topicStats').innerHTML = '';
             document.getElementById('calcScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.remove('hidden');
             document.getElementById('progressBar').style.width = '100%';
