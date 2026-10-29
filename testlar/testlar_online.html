@@ -120,6 +120,18 @@
         .review-item .rq { font-weight: bold; margin-bottom: 6px; color: #222; }
         .review-item .ra { font-size: 0.92em; color: #444; }
 
+        .review-item .rx { font-size: 0.9em; margin-top: 8px; padding-top: 8px;
+                           border-top: 1px dashed rgba(0,0,0,0.15); color: #334155; line-height: 1.55; }
+        html.dark .review-item .rx, body.dark .review-item .rx { color: var(--text-muted); border-top-color: rgba(255,255,255,0.15); }
+
+        /* Mavzular bo'yicha natija */
+        .topic-stats { text-align: left; margin: 10px auto 6px; max-width: 520px; display: grid; gap: 10px; }
+        .topic-row__head { display: flex; justify-content: space-between; gap: 10px; font-size: 0.9rem;
+                           font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .topic-row__head span:last-child { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .topic-bar { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+        .topic-bar > i { display: block; height: 100%; border-radius: inherit; }
+
         .hidden { display: none; }
 
         @media (max-width: 600px) {
@@ -209,6 +221,7 @@
                 </div>
                 <div class="grade" id="gradeText"></div>
                 <div class="result-detail" id="resultDetail"></div>
+                <div class="topic-stats" id="topicStats" aria-label="Mavzular bo'yicha natija"></div>
                 <div class="review-list" id="reviewList"></div>
                 <button class="btn" onclick="restartQuiz()">🔄 Qaytadan Yechish</button>
             </div>
@@ -220,49 +233,89 @@
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
             // ===== Rezerford - Asosiy =====
-            { tag: "Rezerford · Asosiy", q: "Rezerford tajribasi qaysi yilda o'tkazilgan?", o: ["1905","1909","1915","1920"], correct: 1 },
-            { tag: "Rezerford · Asosiy", q: "Tajribada qanday zarralar ishlatilgan?", o: ["Elektronlar","Protonlar","Alfa zarralar","Beta zarralar"], correct: 2 },
-            { tag: "Rezerford · Asosiy", q: "Nishon sifatida nimadan foydalanilgan?", o: ["Alyuminiy folga","Oltin folga","Kumush folga","Mis folga"], correct: 1 },
-            { tag: "Rezerford · Asosiy", q: "Alfa zarra qanday zaryadga ega?", o: ["Manfiy","Neytral","Musbat","O'zgaruvchan"], correct: 2 },
-            { tag: "Rezerford · Asosiy", q: "Alfa zarraning zaryadi nechaga teng?", o: ["+e","+2e","+3e","-2e"], correct: 1 },
-            { tag: "Rezerford · Asosiy", q: "Oltin atomi yadrosining zaryad soni (Z)?", o: ["47","79","82","92"], correct: 1 },
-            { tag: "Rezerford · Asosiy", q: "Tajribada alfa zarralarning taxminan qancha qismi orqaga qaytdi?", o: ["1/2","1/100","1/1000","1/8000"], correct: 3 },
-            { tag: "Rezerford · Asosiy", q: "Rezerford qanday xulosaga keldi?", o: ["Atom bo'sh","Atomda yadro bor","Elektronlar yadro ichida","Atom bo'linmaydi"], correct: 1 },
-            { tag: "Rezerford · Asosiy", q: "Alfa zarralar qanday energiyaga ega edi?", o: ["1-2 MeV","3-4 MeV","5-7 MeV","10-15 MeV"], correct: 2 },
-            { tag: "Rezerford · Asosiy", q: "Tajribada qanday detektor ishlatilgan?", o: ["Fotoplenka","Geiger hisoblagichi","Sink sulfid ekrani","Ionizatsion kamera"], correct: 2 },
+            { tag: "Rezerford · Asosiy", q: "Rezerford tajribasi qaysi yilda o'tkazilgan?", o: ["1905","1909","1915","1920"], correct: 1,
+              ex: "Tajribani 1909-yilda Rezerford rahbarligida H. Geyger va E. Marsden o'tkazgan; natijalar 1911-yilda yadro modeli sifatida e'lon qilingan." },
+            { tag: "Rezerford · Asosiy", q: "Tajribada qanday zarralar ishlatilgan?", o: ["Elektronlar","Protonlar","Alfa zarralar","Beta zarralar"], correct: 2,
+              ex: "Radioaktiv manbadan chiqqan alfa zarralar (geliy yadrolari) ishlatilgan — ular og'ir va tez bo'lgani uchun atom ichini \"zondlash\"ga qulay." },
+            { tag: "Rezerford · Asosiy", q: "Nishon sifatida nimadan foydalanilgan?", o: ["Alyuminiy folga","Oltin folga","Kumush folga","Mis folga"], correct: 1,
+              ex: "Oltin folga ishlatilgan: oltinni juda yupqa (bir necha yuz atom qalinlikda) qilib yoyish mumkin." },
+            { tag: "Rezerford · Asosiy", q: "Alfa zarra qanday zaryadga ega?", o: ["Manfiy","Neytral","Musbat","O'zgaruvchan"], correct: 2,
+              ex: "Alfa zarra — 2 proton va 2 neytrondan iborat geliy yadrosi, shuning uchun musbat zaryadlangan." },
+            { tag: "Rezerford · Asosiy", q: "Alfa zarraning zaryadi nechaga teng?", o: ["+e","+2e","+3e","-2e"], correct: 1,
+              ex: "Alfa zarrada 2 ta proton bor: q = +2e = 3,2·10⁻¹⁹ C." },
+            { tag: "Rezerford · Asosiy", q: "Oltin atomi yadrosining zaryad soni (Z)?", o: ["47","79","82","92"], correct: 1,
+              ex: "Oltinning tartib raqami 79 — yadrosida 79 ta proton bor (Z = 79)." },
+            { tag: "Rezerford · Asosiy", q: "Tajribada alfa zarralarning taxminan qancha qismi orqaga qaytdi?", o: ["1/2","1/100","1/1000","1/8000"], correct: 3,
+              ex: "Juda kam — taxminan 8000 tadan bittasi 90° dan katta burchakka qaytgan. Bu yadroning juda kichikligini ko'rsatdi." },
+            { tag: "Rezerford · Asosiy", q: "Rezerford qanday xulosaga keldi?", o: ["Atom bo'sh","Atomda yadro bor","Elektronlar yadro ichida","Atom bo'linmaydi"], correct: 1,
+              ex: "Atom massasi va musbat zaryadi juda kichik hajmdagi yadroda to'plangan degan xulosaga kelindi." },
+            { tag: "Rezerford · Asosiy", q: "Alfa zarralar qanday energiyaga ega edi?", o: ["1-2 MeV","3-4 MeV","5-7 MeV","10-15 MeV"], correct: 2,
+              ex: "Tabiiy radioaktiv manbalar alfa zarralarni taxminan 5–7 MeV energiya bilan chiqaradi." },
+            { tag: "Rezerford · Asosiy", q: "Tajribada qanday detektor ishlatilgan?", o: ["Fotoplenka","Geiger hisoblagichi","Sink sulfid ekrani","Ionizatsion kamera"], correct: 2,
+              ex: "Alfa zarra sink sulfid (ZnS) ekranga urilganda chaqnash (sintillyatsiya) hosil bo'lgan; ular mikroskop orqali sanalgan." },
             // ===== Rezerford - Chuqur =====
-            { tag: "Rezerford · Chuqur", q: "Nima uchun ko'pchilik alfa zarralar to'g'ri o'tdi?", o: ["Yadro juda kichik va atom asosan bo'sh","Alfa zarralar juda tez harakat qiladi","Oltin folga juda yupqa","Elektronlar to'sqinlik qilmaydi"], correct: 0 },
-            { tag: "Rezerford · Chuqur", q: "Alfa zarrani orqaga qaytarish uchun nima kerak?", o: ["To'qnashish katta musbat zaryadli yadro bilan","Elektronlar bilan to'qnashish","Juda qalin folga","Yuqori harorat"], correct: 0 },
-            { tag: "Rezerford · Chuqur", q: "Kulonning qanday kuchi ta'sir qiladi?", o: ["Itaruvchanlik kuchi","Tortishish kuchi","Magnit kuchi","Yadro kuchi"], correct: 0 },
-            { tag: "Rezerford · Chuqur", q: "Sochilish burchagi nimaga bog'liq?", o: ["Faqat tezlikka","Faqat masofaga","Tezlik va yadrodan o'tish masofasiga","Faqat zaryadga"], correct: 2 },
-            { tag: "Rezerford · Chuqur", q: "Rezerford modeli qanday nomlanadi?", o: ["Planeta (sayyorasimon) modeli","Qaymoqli tort modeli","Kvant modeli","Bulutsimon model"], correct: 0 },
-            { tag: "Rezerford · Chuqur", q: "Minimal yaqinlashuv masofasi qanday topiladi?", o: ["E_k = E_p","F = ma","p = mv","E = mc²"], correct: 0 },
-            { tag: "Rezerford · Chuqur", q: "Nima uchun oltin tanlangan?", o: ["Arzon","Yumshoq, yupqa qatlam yasash oson","Radioaktiv","Magnit xossasi bor"], correct: 1 },
-            { tag: "Rezerford · Chuqur", q: "Atomning qaysi qismi eng og'ir?", o: ["Elektronlar","Yadro","Neytronlar alohida","Barcha teng"], correct: 1 },
-            { tag: "Rezerford · Chuqur", q: "Tajriba natijasi qanday atom modeliga olib keldi?", o: ["Tomson modeli","Rezerford modeli","Bor modeli","Kvant modeli"], correct: 1 },
-            { tag: "Rezerford · Chuqur", q: "Rezerford tajribasida alfa zarralar manbai sifatida qaysi element ishlatilgan?", o: ["Uran","Radiy","Plutoniy","Toriy"], correct: 1 },
+            { tag: "Rezerford · Chuqur", q: "Nima uchun ko'pchilik alfa zarralar to'g'ri o'tdi?", o: ["Yadro juda kichik va atom asosan bo'sh","Alfa zarralar juda tez harakat qiladi","Oltin folga juda yupqa","Elektronlar to'sqinlik qilmaydi"], correct: 0,
+              ex: "Yadro atomdan ~100 000 marta kichik, atomning qolgan qismi deyarli bo'sh — shuning uchun ko'p zarralar og'masdan o'tadi." },
+            { tag: "Rezerford · Chuqur", q: "Alfa zarrani orqaga qaytarish uchun nima kerak?", o: ["To'qnashish katta musbat zaryadli yadro bilan","Elektronlar bilan to'qnashish","Juda qalin folga","Yuqori harorat"], correct: 0,
+              ex: "Faqat og'ir va katta musbat zaryadli yadroga juda yaqin (deyarli to'qnashib) kelgan zarra kuchli itarilib orqaga qaytadi." },
+            { tag: "Rezerford · Chuqur", q: "Kulonning qanday kuchi ta'sir qiladi?", o: ["Itaruvchanlik kuchi","Tortishish kuchi","Magnit kuchi","Yadro kuchi"], correct: 0,
+              ex: "Alfa zarra ham, yadro ham musbat — bir xil ishorali zaryadlar Kulon qonuniga ko'ra bir-birini itaradi." },
+            { tag: "Rezerford · Chuqur", q: "Sochilish burchagi nimaga bog'liq?", o: ["Faqat tezlikka","Faqat masofaga","Tezlik va yadrodan o'tish masofasiga","Faqat zaryadga"], correct: 2,
+              ex: "Og'ish burchagi zarra energiyasi (tezligi) va nishon parametriga — zarra yo'nalishi yadrodan qanchalik uzoqdan o'tishiga bog'liq." },
+            { tag: "Rezerford · Chuqur", q: "Rezerford modeli qanday nomlanadi?", o: ["Planeta (sayyorasimon) modeli","Qaymoqli tort modeli","Kvant modeli","Bulutsimon model"], correct: 0,
+              ex: "Elektronlar markazdagi yadro atrofida sayyoralar Quyosh atrofida aylangandek harakatlanadi — shuning uchun planetar model deyiladi." },
+            { tag: "Rezerford · Chuqur", q: "Minimal yaqinlashuv masofasi qanday topiladi?", o: ["E_k = E_p","F = ma","p = mv","E = mc²"], correct: 0,
+              ex: "Eng yaqin nuqtada zarra to'xtaydi: butun kinetik energiya Kulon potensial energiyasiga aylanadi, E_k = kq₁q₂/r." },
+            { tag: "Rezerford · Chuqur", q: "Nima uchun oltin tanlangan?", o: ["Arzon","Yumshoq, yupqa qatlam yasash oson","Radioaktiv","Magnit xossasi bor"], correct: 1,
+              ex: "Oltin juda yumshoq va cho'ziluvchan, uni juda yupqa varaq qilish oson; yadrosi og'ir va zaryadi katta (Z = 79)." },
+            { tag: "Rezerford · Chuqur", q: "Atomning qaysi qismi eng og'ir?", o: ["Elektronlar","Yadro","Neytronlar alohida","Barcha teng"], correct: 1,
+              ex: "Atom massasining 99,9% dan ortig'i yadroda — proton va neytronlar elektrondan ~1840 marta og'ir." },
+            { tag: "Rezerford · Chuqur", q: "Tajriba natijasi qanday atom modeliga olib keldi?", o: ["Tomson modeli","Rezerford modeli","Bor modeli","Kvant modeli"], correct: 1,
+              ex: "Tajriba Tomsonning \"mayizli pudding\" modelini rad etib, Rezerfordning yadroli (planetar) modeliga olib keldi." },
+            { tag: "Rezerford · Chuqur", q: "Rezerford tajribasida alfa zarralar manbai sifatida qaysi element ishlatilgan?", o: ["Uran","Radiy","Plutoniy","Toriy"], correct: 1,
+              ex: "Manba sifatida radiy (va uning parchalanish mahsulotlari) ishlatilgan — u kuchli alfa nurlanish manbai." },
             // ===== Kepler - Asosiy =====
-            { tag: "Kepler · Asosiy", q: "Kepler nechta qonun kashf etdi?", o: ["2","3","4","5"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "Kepler qonunlari nimaga tegishli?", o: ["Atom tuzilishi","Sayyoralar harakati","Yorug'lik","Elektr toki"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "Birinchi qonunga ko'ra, sayyoralar qanday orbitada harakat qiladi?", o: ["Aylana","Ellips","Parabola","Giperbola"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "Quyosh ellipsning qayerida joylashgan?", o: ["Markazda","Fokuslaridan birida","Ellips tashqarisida","Yarim katta o'qda"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "Ekssentrisitet (e) nimani bildiradi?", o: ["Orbitaning cho'zilganlik darajasi","Sayyora tezligi","Massa","Harorat"], correct: 0 },
-            { tag: "Kepler · Asosiy", q: "e = 0 bo'lsa, orbita qanday shaklda?", o: ["Ellips","Aylana","Parabola","To'g'ri chiziq"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "Ikkinchi qonun nimani ta'kidlaydi?", o: ["Tezlik o'zgarmas","Yuza tezligi o'zgarmas","Tezlanish o'zgarmas","Kuch o'zgarmas"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "Sayyora Quyoshga yaqinroq bo'lganda qanday harakat qiladi?", o: ["Sekinroq","Tezroq","O'zgarmas tezlikda","To'xtaydi"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "Uchinchi qonun formulasi qanday?", o: ["T = a","T² = a³","T³ = a²","T = a²"], correct: 1 },
-            { tag: "Kepler · Asosiy", q: "1 AU (Astronomik Birlik) nimaga teng?", o: ["Oy-Yer masofasi","Quyosh-Yer masofasi","Yer diametri","Yorug'lik yili"], correct: 1 },
+            { tag: "Kepler · Asosiy", q: "Kepler nechta qonun kashf etdi?", o: ["2","3","4","5"], correct: 1,
+              ex: "Kepler 1609–1619-yillarda sayyoralar harakatining 3 ta qonunini kashf etgan." },
+            { tag: "Kepler · Asosiy", q: "Kepler qonunlari nimaga tegishli?", o: ["Atom tuzilishi","Sayyoralar harakati","Yorug'lik","Elektr toki"], correct: 1,
+              ex: "Kepler qonunlari sayyoralarning (umuman, markaziy jism atrofidagi jismlarning) orbital harakatini tavsiflaydi." },
+            { tag: "Kepler · Asosiy", q: "Birinchi qonunga ko'ra, sayyoralar qanday orbitada harakat qiladi?", o: ["Aylana","Ellips","Parabola","Giperbola"], correct: 1,
+              ex: "1-qonun: har bir sayyora ellips bo'ylab harakatlanadi, Quyosh esa uning fokuslaridan birida turadi." },
+            { tag: "Kepler · Asosiy", q: "Quyosh ellipsning qayerida joylashgan?", o: ["Markazda","Fokuslaridan birida","Ellips tashqarisida","Yarim katta o'qda"], correct: 1,
+              ex: "Quyosh ellips markazida emas, fokuslaridan birida joylashgan." },
+            { tag: "Kepler · Asosiy", q: "Ekssentrisitet (e) nimani bildiradi?", o: ["Orbitaning cho'zilganlik darajasi","Sayyora tezligi","Massa","Harorat"], correct: 0,
+              ex: "e = c/a — fokus bilan markaz orasidagi masofaning yarim katta o'qqa nisbati; e qancha katta bo'lsa, orbita shuncha cho'zilgan." },
+            { tag: "Kepler · Asosiy", q: "e = 0 bo'lsa, orbita qanday shaklda?", o: ["Ellips","Aylana","Parabola","To'g'ri chiziq"], correct: 1,
+              ex: "e = 0 da ikkala fokus markazga tushadi — ellips aylanaga aylanadi." },
+            { tag: "Kepler · Asosiy", q: "Ikkinchi qonun nimani ta'kidlaydi?", o: ["Tezlik o'zgarmas","Yuza tezligi o'zgarmas","Tezlanish o'zgarmas","Kuch o'zgarmas"], correct: 1,
+              ex: "2-qonun: Quyosh-sayyora radius-vektori teng vaqtlarda teng yuzalarni chizadi (yuza tezligi o'zgarmas)." },
+            { tag: "Kepler · Asosiy", q: "Sayyora Quyoshga yaqinroq bo'lganda qanday harakat qiladi?", o: ["Sekinroq","Tezroq","O'zgarmas tezlikda","To'xtaydi"], correct: 1,
+              ex: "Yuza tezligi o'zgarmas bo'lgani uchun Quyoshga yaqinda (radius kichik) sayyora tezroq harakatlanadi." },
+            { tag: "Kepler · Asosiy", q: "Uchinchi qonun formulasi qanday?", o: ["T = a","T² = a³","T³ = a²","T = a²"], correct: 1,
+              ex: "3-qonun: T²/a³ = const. Yil va AU birliklarida T² = a³." },
+            { tag: "Kepler · Asosiy", q: "1 AU (Astronomik Birlik) nimaga teng?", o: ["Oy-Yer masofasi","Quyosh-Yer masofasi","Yer diametri","Yorug'lik yili"], correct: 1,
+              ex: "1 AU ≈ 1,496·10⁸ km — Yerdan Quyoshgacha bo'lgan o'rtacha masofa." },
             // ===== Kepler - Chuqur =====
-            { tag: "Kepler · Chuqur", q: "Nima uchun sayyoralar ellips bo'ylab harakat qiladi?", o: ["Gravitatsiya kuchi tufayli","Magnit kuchi tufayli","Elektr kuchi tufayli","Yadro kuchi tufayli"], correct: 0 },
-            { tag: "Kepler · Chuqur", q: "Perigeliy nima?", o: ["Quyoshdan eng uzoq nuqta","Quyoshga eng yaqin nuqta","Ellips markazi","Fokus"], correct: 1 },
-            { tag: "Kepler · Chuqur", q: "Afeliy nima?", o: ["Quyoshga eng yaqin nuqta","Quyoshdan eng uzoq nuqta","Ellips markazi","Fokus"], correct: 1 },
-            { tag: "Kepler · Chuqur", q: "Ikkinchi qonun qanday qonunga asoslangan?", o: ["Energiya saqlanish qonuni","Impuls momenti saqlanish qonuni","Massa saqlanish qonuni","Zaryad saqlanish qonuni"], correct: 1 },
-            { tag: "Kepler · Chuqur", q: "L = mvr nima deyiladi?", o: ["Energiya","Impuls","Impuls momenti","Kuch"], correct: 2 },
-            { tag: "Kepler · Chuqur", q: "Qaysi sayyora eng katta ekssentrisitetga ega?", o: ["Yer","Venera","Merkuriy","Mars"], correct: 2 },
-            { tag: "Kepler · Chuqur", q: "Qaysi sayyora orbitasi aylanaga eng yaqin?", o: ["Merkuriy","Venera","Yer","Mars"], correct: 1 },
-            { tag: "Kepler · Chuqur", q: "T²/a³ qiymati nechaga teng (Quyosh sistemasi, yil va AU)?", o: ["0","1","π","e"], correct: 1 },
-            { tag: "Kepler · Chuqur", q: "Yer perigeliyda qachon bo'ladi?", o: ["Mart","Iyun","Sentyabr","Yanvar"], correct: 3 },
-            { tag: "Kepler · Chuqur", q: "Uchinchi qonunni kim nazariy asoslab berdi?", o: ["Galiley","Kepler","Nyuton","Eynshteyn"], correct: 2 }
+            { tag: "Kepler · Chuqur", q: "Nima uchun sayyoralar ellips bo'ylab harakat qiladi?", o: ["Gravitatsiya kuchi tufayli","Magnit kuchi tufayli","Elektr kuchi tufayli","Yadro kuchi tufayli"], correct: 0,
+              ex: "Quyoshning tortishish kuchi masofa kvadratiga teskari proporsional (1/r²); bunday kuch ta'sirida yopiq orbita ellips bo'ladi (Nyuton isbotlagan)." },
+            { tag: "Kepler · Chuqur", q: "Perigeliy nima?", o: ["Quyoshdan eng uzoq nuqta","Quyoshga eng yaqin nuqta","Ellips markazi","Fokus"], correct: 1,
+              ex: "Perigeliy — orbitaning Quyoshga eng yaqin nuqtasi: r_p = a(1 − e)." },
+            { tag: "Kepler · Chuqur", q: "Afeliy nima?", o: ["Quyoshga eng yaqin nuqta","Quyoshdan eng uzoq nuqta","Ellips markazi","Fokus"], correct: 1,
+              ex: "Afeliy — orbitaning Quyoshdan eng uzoq nuqtasi: r_a = a(1 + e)." },
+            { tag: "Kepler · Chuqur", q: "Ikkinchi qonun qanday qonunga asoslangan?", o: ["Energiya saqlanish qonuni","Impuls momenti saqlanish qonuni","Massa saqlanish qonuni","Zaryad saqlanish qonuni"], correct: 1,
+              ex: "Gravitatsiya kuchi markaziy, shuning uchun impuls momenti L = mvr saqlanadi — bu teng yuzalar qonunining o'zi." },
+            { tag: "Kepler · Chuqur", q: "L = mvr nima deyiladi?", o: ["Energiya","Impuls","Impuls momenti","Kuch"], correct: 2,
+              ex: "L = mvr — impuls momenti (harakat miqdori momenti); markaziy kuch maydonida u o'zgarmaydi." },
+            { tag: "Kepler · Chuqur", q: "Qaysi sayyora eng katta ekssentrisitetga ega?", o: ["Yer","Venera","Merkuriy","Mars"], correct: 2,
+              ex: "Sayyoralar orasida Merkuriy orbitasi eng cho'zilgan: e ≈ 0,206." },
+            { tag: "Kepler · Chuqur", q: "Qaysi sayyora orbitasi aylanaga eng yaqin?", o: ["Merkuriy","Venera","Yer","Mars"], correct: 1,
+              ex: "Venera orbitasi deyarli aylana: e ≈ 0,007 (Yerniki ≈ 0,017)." },
+            { tag: "Kepler · Chuqur", q: "T²/a³ qiymati nechaga teng (Quyosh sistemasi, yil va AU)?", o: ["0","1","π","e"], correct: 1,
+              ex: "Yil va AU da Yer uchun T = 1, a = 1, demak T²/a³ = 1 — bu barcha sayyoralar uchun bir xil." },
+            { tag: "Kepler · Chuqur", q: "Yer perigeliyda qachon bo'ladi?", o: ["Mart","Iyun","Sentyabr","Yanvar"], correct: 3,
+              ex: "Yer perigeliydan har yili taxminan 3–4 yanvarda o'tadi. Fasllar esa masofaga emas, Yer o'qining og'ishiga bog'liq." },
+            { tag: "Kepler · Chuqur", q: "Uchinchi qonunni kim nazariy asoslab berdi?", o: ["Galiley","Kepler","Nyuton","Eynshteyn"], correct: 2,
+              ex: "Nyuton butun olam tortishish qonunidan T² = 4π²a³/(GM) ni keltirib chiqarib, 3-qonunni nazariy asoslagan." }
         ];
 
         let current = 0;
@@ -287,7 +340,7 @@
             quiz = shuffled(questions).map(q => {
                 const correctText = q.o[q.correct];
                 const opts = shuffled(q.o);
-                return { tag: q.tag, q: q.q, o: opts, correct: opts.indexOf(correctText) };
+                return { tag: q.tag, q: q.q, o: opts, correct: opts.indexOf(correctText), ex: q.ex };
             });
         }
 
@@ -391,6 +444,24 @@
             document.getElementById('gradeText').textContent = grade;
             document.getElementById('resultDetail').textContent = msg;
 
+            // Mavzular bo'yicha natija: qaysi bo'limni takrorlash kerakligini ko'rsatadi
+            const groups = {};
+            quiz.forEach((q, i) => {
+                const g = groups[q.tag] || (groups[q.tag] = { ok: 0, all: 0 });
+                g.all++;
+                if (answers[i] === q.correct) g.ok++;
+            });
+            const ts = document.getElementById('topicStats');
+            ts.innerHTML = '';
+            Object.keys(groups).sort().forEach(tag => {
+                const g = groups[tag], pc = Math.round(g.ok / g.all * 100);
+                const col = pc >= 75 ? '#10b981' : pc >= 50 ? '#f59e0b' : '#ef4444';
+                const row = document.createElement('div');
+                row.innerHTML = `<div class="topic-row__head"><span>${tag}</span><span>${g.ok}/${g.all} · ${pc}%</span></div>
+                    <div class="topic-bar"><i style="width:${pc}%;background:${col}"></i></div>`;
+                ts.appendChild(row);
+            });
+
             const letters = ['A', 'B', 'C', 'D'];
             const reviewEl = document.getElementById('reviewList');
             reviewEl.innerHTML = '';
@@ -409,7 +480,8 @@
                     const yourAns = answers[i] === null ? 'belgilanmagan' : `${letters[answers[i]]}) ${q.o[answers[i]]}`;
                     div.innerHTML = `<div class="rq">${i + 1}. ${q.q}</div>
                         <div class="ra">❌ Sizning javobingiz: ${yourAns}<br>
-                        ✅ To'g'ri javob: ${letters[q.correct]}) ${q.o[q.correct]}</div>`;
+                        ✅ To'g'ri javob: ${letters[q.correct]}) ${q.o[q.correct]}</div>
+                        ${q.ex ? `<div class="rx">💡 ${q.ex}</div>` : ''}`;
                     reviewEl.appendChild(div);
                 });
             }

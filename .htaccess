@@ -14,6 +14,7 @@
     AddType text/css                      .css
     AddType application/javascript        .js
     AddType image/svg+xml                 .svg
+    AddType font/woff2                    .woff2
     AddType application/pdf               .pdf
     AddType application/vnd.openxmlformats-officedocument.wordprocessingml.document .docx
     AddType text/html                     .html .htm
@@ -41,7 +42,7 @@
     <FilesMatch "\.(css|js)$">
         Header set Cache-Control "max-age=86400"
     </FilesMatch>
-    <FilesMatch "\.(pdf|docx|svg)$">
+    <FilesMatch "\.(pdf|docx|svg|woff2)$">
         Header set Cache-Control "max-age=604800"
     </FilesMatch>
     Header set X-Content-Type-Options "nosniff"

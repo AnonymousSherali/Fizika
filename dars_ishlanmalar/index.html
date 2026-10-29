@@ -47,12 +47,12 @@
             margin-top: 22px;
         }
         .card {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: var(--card-bg);
             border-radius: var(--r-lg);
             padding: var(--sp-5);
             box-shadow: var(--shadow-sm);
             transition: all 0.3s;
-            border: 2px solid transparent;
+            border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
         }
@@ -61,9 +61,34 @@
             box-shadow: var(--shadow-lg);
             border-color: var(--accent);
         }
-        html.dark .card, body.dark .card { background: linear-gradient(135deg, #232838 0%, #2c3447 100%); }
+        .card-icon {
+            font-size: 1.9em; width: 56px; height: 56px; margin-bottom: 14px;
+            display: grid; place-items: center; border-radius: var(--r-md);
+            background: color-mix(in srgb, var(--primary) 10%, var(--panel-bg));
+        }
 
-        .card-icon { font-size: 2.6em; margin-bottom: 12px; }
+        /* Qidiruv va filtrlar */
+        .toolbar {
+            display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center;
+            margin-bottom: var(--sp-6); padding: var(--sp-4);
+            background: var(--panel-bg); border: 1px solid var(--border); border-radius: var(--r-lg);
+        }
+        .toolbar input[type="search"] {
+            flex: 1 1 260px; min-width: 0; padding: 10px 14px;
+            border: 1px solid var(--border); border-radius: var(--r-sm);
+            background: var(--card-bg); color: var(--text); font: inherit; font-size: 0.95rem;
+        }
+        .toolbar input[type="search"]:focus { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); border-color: var(--accent); }
+        .chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+        .chip {
+            padding: 8px 14px; border-radius: var(--r-pill); border: 1px solid var(--border);
+            background: var(--card-bg); color: var(--text-muted); font: inherit; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; transition: all 0.2s var(--ease);
+        }
+        .chip:hover { border-color: var(--primary); color: var(--primary); }
+        .chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .card[hidden], .section[hidden] { display: none; }
+        .no-result { text-align: center; color: var(--text-muted); padding: var(--sp-6) 0; }
         .card h3 { color: var(--primary-dark); font-size: 1.25em; margin-bottom: 10px; line-height: 1.35; }
         html.dark .card h3, body.dark .card h3 { color: var(--text); }
         .card .meta { color: var(--text-muted); font-size: 0.88em; margin-bottom: 16px; }
@@ -142,6 +167,19 @@
         </div>
 
         <div class="content">
+            <div class="toolbar" role="search">
+                <input type="search" id="darsSearch" placeholder="🔍 Mavzu bo'yicha qidirish (masalan: mayatnik, tok, Kepler)"
+                       aria-label="Dars ishlanmalarni qidirish" autocomplete="off">
+                <div class="chips" role="group" aria-label="Filtr">
+                    <button type="button" class="chip" data-f="all" aria-pressed="true">Hammasi</button>
+                    <button type="button" class="chip" data-f="sinf10" aria-pressed="false">10-sinf</button>
+                    <button type="button" class="chip" data-f="sinf11" aria-pressed="false">11-sinf</button>
+                    <button type="button" class="chip" data-f="model" aria-pressed="false">🎮 Modeli bor</button>
+                    <button type="button" class="chip" data-f="docx" aria-pressed="false">✏️ DOCX bor</button>
+                </div>
+            </div>
+            <p class="no-result" id="noResult" hidden>Hech narsa topilmadi. Boshqa so'z bilan qidirib ko'ring.</p>
+
             <!-- ============ 10-SINF ============ -->
             <div class="section" id="sinf10">
                 <h2>🔟 10-sinf</h2>
@@ -294,5 +332,45 @@
     </div>
 
     <script src="../theme.js?v=20261028b"></script>
+    <script>
+        // Qidiruv + filtr: kartalar matni bo'yicha (katta-kichik harf va apostrof farqsiz)
+        (function () {
+            var input = document.getElementById('darsSearch');
+            var chips = document.querySelectorAll('.chip');
+            var filter = 'all';
+            function norm(t) { return t.toLowerCase().replace(/[ʻʼ‘’'`]/g, ''); }
+            function apply() {
+                var q = norm(input.value.trim());
+                var total = 0;
+                document.querySelectorAll('.section[id^="sinf"]').forEach(function (sec) {
+                    var shown = 0;
+                    sec.querySelectorAll('.card').forEach(function (card) {
+                        var ok = (!q || norm(card.textContent).indexOf(q) > -1) &&
+                            (filter === 'all' ||
+                             (filter === sec.id) ||
+                             (filter === 'model' && card.querySelector('.model-badge')) ||
+                             (filter === 'docx' && card.querySelector('.docx-link')));
+                        card.hidden = !ok;
+                        if (ok) shown++;
+                    });
+                    sec.hidden = shown === 0;
+                    var c = sec.querySelector('.count');
+                    var all = sec.querySelectorAll('.card').length;
+                    c.textContent = shown === all ? all + ' ta dars ishlanma' : shown + ' / ' + all + ' ta dars ishlanma';
+                    total += shown;
+                });
+                document.getElementById('noResult').hidden = total > 0;
+            }
+            input.addEventListener('input', apply);
+            chips.forEach(function (ch) {
+                ch.addEventListener('click', function () {
+                    filter = ch.dataset.f;
+                    chips.forEach(function (x) { x.setAttribute('aria-pressed', String(x === ch)); });
+                    apply();
+                });
+            });
+            // #sinf10 / #sinf11 havolasi bilan kelinganda ham hammasi ko'rinadi — faqat aylantiriladi
+        })();
+    </script>
 </body>
 </html>

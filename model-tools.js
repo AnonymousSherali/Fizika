@@ -121,6 +121,7 @@
             '<div class="lab-log__actions">' +
               '<button type="button" class="lab-btn lab-btn--main" id="labCapture">➕ O\'lchovni yozish</button>' +
               '<button type="button" class="lab-btn" id="labCopy">📄 Nusxalash</button>' +
+              '<button type="button" class="lab-btn" id="labCsv">⬇️ CSV (Excel)</button>' +
               '<button type="button" class="lab-btn" id="labClear">🗑️ Tozalash</button>' +
             '</div>' +
             '<div class="lab-log__wrap"><table class="lab-table"><thead><tr>' +
@@ -199,6 +200,30 @@
             } else {
                 fallbackCopy(text, done);
             }
+        };
+
+        // CSV fayl: ";" ajratuvchi va o'nli vergul — rus/o'zbek tilidagi Excel shu
+        // formatni to'g'ridan-to'g'ri ustunlarga ajratadi. BOM — kirill/lotin harflar
+        // (o', Φ, Ω) buzilmasligi uchun.
+        host.querySelector('#labCsv').onclick = function () {
+            if (!rows.length) { flash('Avval kamida bitta o\'lchov yozing'); return; }
+            function cell(v) {
+                var t = String(v);
+                // Son (yoki "6.0" kabi son-matn) bo'lsa o'nli nuqta vergulga almashadi
+                if (/^[-+]?\d+(\.\d+)?(e[-+]?\d+)?$/i.test(t)) t = t.replace('.', ',');
+                return /[;"\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+            }
+            var lines = [['#'].concat(fields.map(function (f) { return f.label; })).map(cell).join(';')];
+            rows.forEach(function (r, i) { lines.push([i + 1].concat(r).map(cell).join(';')); });
+            var blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+            var a = document.createElement('a');
+            var d = new Date();
+            var stamp = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+            a.href = URL.createObjectURL(blob);
+            a.download = (currentFile().replace(/_model\.html$|\.html$/, '') || 'jurnal') + '_jurnal_' + stamp + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
         };
 
         function fallbackCopy(text, done) {
