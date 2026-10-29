@@ -71,6 +71,12 @@
             busy = false;
         }).observe(document.body, { childList: true, subtree: true, characterData: true,
                                     attributes: true, attributeFilter: ATTRS });
+        // Kanvaslar lug'at yuklanishidan oldin chizilgan — qayta chizdiramiz
+        // (modellar "fizika:theme" hodisasida to'xtab turgan holatini qayta chizadi)
+        try {
+            window.dispatchEvent(new CustomEvent('fizika:theme', {
+                detail: { dark: document.body.classList.contains('dark') } }));
+        } catch (e) {}
     }
 
     // Kanvasga chiziladigan matnlar (model yozuvlari) ham lug'at bo'yicha
