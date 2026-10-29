@@ -9,7 +9,7 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from apps.labs.models import LabJournal
-from apps.schools.models import ClassroomMember
+from apps.notifications import services as notifications
 
 from . import services
 from .models import Assignment, Submission
@@ -62,7 +62,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(teacher=self.request.user)
+        a = serializer.save(teacher=self.request.user)
+        notifications.on_assignment_created(a)
 
     def perform_update(self, serializer):
         self._require_owner(serializer.instance)
@@ -80,25 +81,19 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         a = self.get_object()
         if not is_staff(request.user):
             raise PermissionDenied("Faqat o'qituvchi uchun")
-        subs = {s.student_id: s for s in a.submissions.select_related("student")}
-        rows = []
-        members = (ClassroomMember.objects.filter(classroom__in=a.classrooms.all(), role=ClassroomMember.Role.STUDENT)
-                   .select_related("user", "classroom").order_by("classroom__name", "user__last_name"))
-        seen = set()
-        for m in members:
-            if m.user_id in seen:
-                continue
-            seen.add(m.user_id)
-            s = subs.get(m.user_id)
-            rows.append({
-                "student": {"id": str(m.user_id), "username": m.user.username,
-                            "name": f"{m.user.last_name} {m.user.first_name}".strip()},
-                "classroom": m.classroom.name, "status": services.student_status(a, s),
-                "submission_id": s.id if s else None, "submitted_at": s.submitted_at if s else None,
-                "is_late": bool(s and s.is_late), "suggested_grade": s.suggested_grade if s else None,
-                "grade": s.grade if s else None,
-            })
+        rows = services.build_roster(a)
         return Response(RosterRowSerializer(rows, many=True).data)
+
+    @extend_schema(responses={(200, "text/csv"): bytes})
+    @action(detail=True, methods=["get"])
+    def export(self, request, pk=None):
+        """FT-8.3: topshiriq natijalari CSV (Excel uchun ';' ajratuvchi)."""
+        a = self.get_object()
+        if not is_staff(request.user):
+            raise PermissionDenied("Faqat o'qituvchi uchun")
+        from apps.analytics.exports import assignment_csv
+
+        return assignment_csv(a, services.build_roster(a))
 
     # ----- O'quvchi: laboratoriya ishini topshirish -----
     @extend_schema(request=SubmitLabSerializer, responses={200: SubmissionSerializer})
@@ -164,6 +159,7 @@ class SubmissionViewSet(viewsets.GenericViewSet):
         sub.graded_by = request.user
         sub.graded_at = timezone.now()
         sub.save()
+        notifications.on_graded(sub)
         return Response(SubmissionSerializer(sub, context={"request": request}).data)
 
     @extend_schema(request=ReturnSerializer, responses={200: SubmissionSerializer})
@@ -181,4 +177,5 @@ class SubmissionViewSet(viewsets.GenericViewSet):
         sub.graded_by = request.user
         sub.graded_at = timezone.now()
         sub.save()
+        notifications.on_returned(sub)
         return Response(SubmissionSerializer(sub, context={"request": request}).data)

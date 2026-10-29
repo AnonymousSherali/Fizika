@@ -95,6 +95,9 @@ def submit_lab(assignment: Assignment, student, journal, conclusion: str, image=
     sub.submitted_at = timezone.now()
     sub.is_late = assignment.is_past_due
     sub.save()
+    from apps.notifications.services import on_submitted
+
+    on_submitted(sub)
     return sub
 
 
@@ -162,3 +165,25 @@ def student_status(assignment: Assignment, sub: Submission | None) -> str:
     if sub.status == Submission.Status.IN_PROGRESS and assignment.is_past_due and not assignment.allow_late:
         return "overdue"
     return sub.status
+
+
+def build_roster(a: Assignment) -> list[dict]:
+    """O'qituvchi uchun: topshiriq berilgan sinflardagi har bir o'quvchi va holati (topshirmaganlar ham)."""
+    subs = {s.student_id: s for s in a.submissions.select_related("student")}
+    rows, seen = [], set()
+    members = (ClassroomMember.objects.filter(classroom__in=a.classrooms.all(), role=ClassroomMember.Role.STUDENT)
+               .select_related("user", "classroom").order_by("classroom__name", "user__last_name"))
+    for m in members:
+        if m.user_id in seen:
+            continue
+        seen.add(m.user_id)
+        s = subs.get(m.user_id)
+        rows.append({
+            "student": {"id": str(m.user_id), "username": m.user.username,
+                        "name": f"{m.user.last_name} {m.user.first_name}".strip()},
+            "classroom": m.classroom.name, "status": student_status(a, s),
+            "submission_id": s.id if s else None, "submitted_at": s.submitted_at if s else None,
+            "is_late": bool(s and s.is_late), "suggested_grade": s.suggested_grade if s else None,
+            "grade": s.grade if s else None,
+        })
+    return rows

@@ -54,6 +54,7 @@
             </section>
 
             <section data-pane="tests" hidden>
+                <div id="myStats"></div>
                 <div class="tbl-wrap"><table class="tbl">
                     <thead><tr><th>Sana</th><th>Natija</th><th>Baho</th><th></th></tr></thead>
                     <tbody id="tests"></tbody>
@@ -76,7 +77,7 @@
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
-        var tasks = [];
+        var tasks = [], me = null;
 
         document.querySelectorAll('[data-tab]').forEach(function (b) {
             b.onclick = function () {
@@ -88,6 +89,7 @@
         });
 
         FA.boot({ login: true, role: 'student', active: 'oquvchi/index.html' }).then(function (u) {
+            me = u;
             $('hello').textContent = '📋 Salom, ' + u.first_name + '!';
             loadClasses();
             loadTasks();
@@ -166,7 +168,23 @@
             });
         }
 
+        function loadMyStats() {
+            api.get('analytics/students/' + me.id + '/').then(function (d) {
+                if (!d.topics.length) { $('myStats').innerHTML = ''; return; }
+                $('myStats').innerHTML = '<div class="panel" style="margin-bottom:var(--sp-4)"><h2>📈 Mavzular bo\'yicha natijam</h2>' +
+                    (d.weak_topics.length ? '<div class="msg err">Takrorlash kerak: ' + d.weak_topics.map(function (t) {
+                        return FA.esc(t.title) + ' (' + t.percent + '%)'; }).join(', ') + ' — tegishli modelni oching va mashq testini yeching.</div>' : '') +
+                    '<div style="display:grid;gap:10px">' + d.topics.map(function (t) {
+                        var c = t.percent >= 75 ? 'var(--a-ok)' : t.percent >= 50 ? 'var(--a-warn)' : 'var(--a-bad)';
+                        return '<div><div style="display:flex;justify-content:space-between;font-size:0.88rem;font-weight:600"><span>' + FA.esc(t.title) +
+                            '</span><span>' + t.percent + '%</span></div><div style="height:8px;border-radius:999px;background:var(--a-line);overflow:hidden">' +
+                            '<i style="display:block;height:100%;width:' + t.percent + '%;background:' + c + '"></i></div></div>';
+                    }).join('') + '</div></div>';
+            }, function () {});
+        }
+
         function loadTests() {
+            loadMyStats();
             api.get('quiz/attempts/?page_size=50').then(function (r) {
                 $('tests').innerHTML = r.results.map(function (a) {
                     return '<tr><td>' + FA.date(a.finished_at) + '</td><td>' + a.score + ' / ' + a.max_score + ' (' +

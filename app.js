@@ -64,11 +64,66 @@
         else links.push(['kirish.html', '👤 Kirish']);
         el.innerHTML = links.map(function (l) {
             return '<a href="' + ROOT + l[0] + '"' + (l[0] === active ? ' aria-current="page"' : '') + '>' + l[1] + '</a>';
-        }).join('') + (u ? '<button type="button" id="navLogout">Chiqish</button>' : '');
+        }).join('') + (u ? '<button type="button" id="navBell" class="bell" aria-haspopup="true" aria-expanded="false" ' +
+            'title="Bildirishnomalar">🔔<span class="bell__n" id="bellN" hidden></span></button>' +
+            '<button type="button" id="navLogout">Chiqish</button>' : '');
+        if (u) initBell();
         var lo = document.getElementById('navLogout');
         if (lo) lo.onclick = function () { api.logout().then(function () { location.href = ROOT + 'index.html'; }); };
         var mb = document.querySelector('.app-nav .menu-btn');
         if (mb) mb.onclick = function () { document.querySelector('.app-nav').classList.toggle('open'); };
+    }
+
+    // ---------- Bildirishnomalar (FT-9.1) ----------
+    var bellTimer = null;
+    function initBell() {
+        var btn = document.getElementById('navBell');
+        if (!btn) return;
+        var panel = document.getElementById('bellPanel');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'bellPanel';
+            panel.className = 'bell-panel';
+            panel.hidden = true;
+            document.body.appendChild(panel);
+        }
+        function count() {
+            api.get('notifications/unread-count/').then(function (r) {
+                var n = document.getElementById('bellN');
+                if (!n) return;
+                n.hidden = !r.count;
+                n.textContent = r.count > 9 ? '9+' : r.count;
+            }, function () {});
+        }
+        function open() {
+            api.get('notifications/?page_size=15').then(function (r) {
+                panel.innerHTML = '<div class="bell-panel__head"><b>Bildirishnomalar</b>' +
+                    '<button type="button" class="linkish" id="bellAll">Hammasini o\'qilgan qilish</button></div>' +
+                    (r.results.length ? r.results.map(function (x) {
+                        return '<a class="bell-item' + (x.is_read ? '' : ' unread') + '" data-id="' + x.id + '" href="' +
+                            (x.url ? ROOT + esc(x.url) : '#') + '"><b>' + esc(x.title) + '</b>' +
+                            (x.body ? '<span>' + esc(x.body) + '</span>' : '') + '<small>' + date(x.created_at) + '</small></a>';
+                    }).join('') : '<p class="muted" style="padding:12px">Bildirishnoma yo\'q</p>');
+                panel.hidden = false;
+                btn.setAttribute('aria-expanded', 'true');
+                panel.querySelectorAll('.bell-item').forEach(function (a) {
+                    a.onclick = function () { api.post('notifications/' + a.dataset.id + '/read/').catch(function () {}); };
+                });
+                document.getElementById('bellAll').onclick = function () {
+                    api.post('notifications/read-all/').then(function () { count(); open(); });
+                };
+            });
+        }
+        btn.onclick = function (e) {
+            e.stopPropagation();
+            if (panel.hidden) open(); else { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+        };
+        document.addEventListener('click', function (e) {
+            if (!panel.hidden && !panel.contains(e.target)) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+        });
+        count();
+        clearInterval(bellTimer);
+        bellTimer = setInterval(count, 60000);
     }
 
     /**

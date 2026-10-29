@@ -43,6 +43,7 @@ class User(AbstractUser):
     theme = models.CharField("mavzu", max_length=5, choices=Theme.choices, default=Theme.LIGHT)
     is_verified = models.BooleanField("tasdiqlangan", default=False)
     must_change_password = models.BooleanField("parolni almashtirishi kerak", default=False)
+    notify_email = models.BooleanField("email bildirishnomalar", default=True)  # FT-9.3
     deletion_requested_at = models.DateTimeField("o'chirish so'ralgan", null=True, blank=True)
 
     objects = UserManager()

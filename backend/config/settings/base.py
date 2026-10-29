@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "apps.labs",
     "apps.quizzes",
     "apps.assignments",
+    "apps.analytics",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
@@ -173,6 +175,10 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Fizika 10–11 <noreply@
 LOGIN_MAX_FAILURES = 10
 LOGIN_LOCK_MINUTES = 15
 ACCOUNT_DELETION_GRACE_DAYS = 30
+
+# ---------- Statistika va bildirishnomalar (3-bosqich) ----------
+ANALYTICS_CACHE_SECONDS = 600            # FT-8.5: 10 daqiqa
+SITE_URL = env("SITE_URL", default="http://localhost:8000/")   # emaildagi havolalar uchun
 
 # ---------- Celery ----------
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")

@@ -16,4 +16,9 @@ app.conf.beat_schedule = {
         "task": "apps.accounts.tasks.purge_deleted_accounts",
         "schedule": crontab(hour=3, minute=17),
     },
+    # FT-5.8: muddatga 24 soat va 1 soat qolganda eslatma
+    "deadline-reminders": {
+        "task": "apps.notifications.tasks.send_deadline_reminders",
+        "schedule": crontab(minute="*/15"),
+    },
 }

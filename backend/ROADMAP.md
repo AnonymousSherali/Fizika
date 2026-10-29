@@ -109,17 +109,21 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-1.7 davomi: o'chirilgan foydalanuvchi test natijalari anonim saqlanadi | ✅ | |
 | Savollarning ruscha tarjimasi | ⬜ | bazada maydon bor, matnlar hali tarjima qilinmagan (4-bosqich) |
 
-## 3-bosqich — Statistika va bildirishnomalar ⬜
-- ⬜ FT-8.1 O'qituvchi paneli, mavzular issiqlik xaritasi
-- ⬜ FT-8.2 O'quvchi kartasi
-- ⬜ FT-8.3 Eksport: sinf jurnali (.xlsx), o'quvchi hisoboti (PDF), natijalar (CSV)
-- ⬜ FT-8.4 Administrator statistikasi
-- ⬜ FT-8.5 Og'ir hisoblar Celery'da, 10 daqiqa kesh
-- ⬜ FT-9.1 Bildirishnomalar: sayt ichida + email (Telegram ➖)
-- ⬜ FT-9.2 Hodisalar: yangi topshiriq, muddat, baho, qaytarish, yangi o'quvchi
-- ⬜ FT-9.3 Kanallarni yoqish/o'chirish
-- ⬜ FT-5.8 Muddatga 24 soat / 1 soat qolganda eslatma
-- ⬜ FT-4.4 jurnal PDF eksporti
+## 3-bosqich — Statistika va bildirishnomalar ✅
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-8.1 Sinf paneli: topshiriqlar holati, o'rtacha baho, testlar o'rtachasi, 7 kunlik faollik | ✅ | `analytics/classrooms/{id}/` |
+| FT-8.1 «O'quvchi × mavzu» issiqlik xaritasi | ✅ | `analytics/classrooms/{id}/heatmap/` |
+| FT-8.2 O'quvchi kartasi: topshiriqlar, test dinamikasi, zaif mavzular, jurnallar | ✅ | o'quvchining o'zi ham ko'radi |
+| FT-8.3 Sinf jurnali Excel (.xlsx: baholar + mavzular), topshiriq natijalari CSV | ✅ | |
+| FT-8.3 O'quvchi hisoboti PDF | 🟡 | brauzerda chop etish → PDF (model sahifasidagi hisobot); server PDF — kerak bo'lsa 5-bosqich |
+| FT-8.4 Administrator statistikasi | ✅ | `analytics/platform/` (sahifa — admin panel orqali, keyin) |
+| FT-8.5 Kesh (10 daqiqa), yangi baho/urinishda o'zi yangilanadi | ✅ | Celery shart emas — hisoblar yengil |
+| FT-9.1 Sayt ichidagi bildirishnomalar (🔔) + email | ✅ | Telegram ➖ |
+| FT-9.2 Hodisalar: yangi topshiriq, muddat, baho, qaytarish, yangi o'quvchi, ish topshirildi | ✅ | |
+| FT-9.3 Email kanalini yoqish/o'chirish (profil) | ✅ | |
+| FT-5.8 Muddatga 24 soat / 1 soat qolganda eslatma (har 15 daqiqada, takrorlanmaydi) | ✅ | Celery Beat |
+| FT-4.4 Jurnal PDF eksporti | 🟡 | model sahifasidagi «Hisobot (PDF)» (brauzer) |
 
 ## 4-bosqich — Kontent va tarjimalar ⬜
 - ⬜ FT-7.1–7.4 Dars ishlanmalar: yuklash, moderatsiya, fayl tekshiruvi, yuklab olishlar soni

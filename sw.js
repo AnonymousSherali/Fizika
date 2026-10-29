@@ -8,7 +8,7 @@
    Yangilash: fayllar o'zgarganda pastdagi VERSION ni o'zgartiring —
    eski kesh o'chiriladi va yangi fayllar yuklanadi.
    ============================================================ */
-var VERSION = 'fizika-20261031a';
+var VERSION = 'fizika-20261031b';
 var CORE = [
     './',
     './api.js',

@@ -43,7 +43,8 @@
                             <select id="pTheme"><option value="light">Yorug'</option><option value="dark">Qorong'i</option></select>
                         </div>
                     </div>
-                    <p class="muted small">Til va mavzu barcha qurilmalaringizda bir xil bo'ladi.</p>
+                    <div class="checks" style="margin-bottom:10px"><label><input type="checkbox" id="pMail"> Bildirishnomalarni emailga ham yuborish</label></div>
+                    <p class="muted small">Til va mavzu barcha qurilmalaringizda bir xil bo'ladi. Email bildirishnomalar faqat profilida emaili bor foydalanuvchilarga yuboriladi.</p>
                     <button class="btn-a" type="submit">Saqlash</button>
                 </form>
 
@@ -83,7 +84,8 @@
             var roles = { student: 'O\'quvchi', teacher: 'O\'qituvchi', school_admin: 'Maktab administratori', admin: 'Administrator' };
             $('who').textContent = (roles[u.role] || u.role) + ' · login: ' + u.username + (u.school_name ? ' · ' + u.school_name : '');
             $('pFirst').value = u.first_name; $('pLast').value = u.last_name;
-            $('pLang').value = u.language; $('pTheme').value = u.theme;
+            $('pLang').value = u.language; $('pTheme').value = u.theme; $('pMail').checked = u.notify_email;
+            if (!u.email) { $('pMail').disabled = true; $('pMail').parentNode.title = 'Profilingizda email yo\'q'; }
             if (u.must_change_password || /parol=1/.test(location.search)) {
                 $('passTitle').textContent = '🔑 Avval parolingizni o\'zgartiring';
                 FA.msg('msg', 'info', 'Siz o\'qituvchi bergan vaqtinchalik parol bilan kirdingiz. Xavfsizlik uchun o\'zingizning parolingizni o\'rnating.');
@@ -100,7 +102,7 @@
         $('fProfile').onsubmit = function (e) {
             e.preventDefault();
             api.patch('me/', { first_name: $('pFirst').value.trim(), last_name: $('pLast').value.trim(),
-                               language: $('pLang').value, theme: $('pTheme').value }).then(function (u) {
+                               language: $('pLang').value, theme: $('pTheme').value, notify_email: $('pMail').checked }).then(function (u) {
                 try {
                     localStorage.setItem('fizika-lang', u.language);
                     localStorage.setItem('fizika-theme', u.theme);

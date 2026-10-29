@@ -38,6 +38,7 @@
             <div class="tabs-a" role="tablist">
                 <button type="button" role="tab" data-route="sinflar">🏫 Sinflar</button>
                 <button type="button" role="tab" data-route="topshiriqlar">📋 Topshiriqlar</button>
+                <button type="button" role="tab" data-route="statistika">📊 Statistika</button>
                 <button type="button" role="tab" data-route="savollar">❓ Savollarim</button>
             </div>
             <div class="msg" id="msg" role="status" aria-live="polite"></div>
@@ -65,11 +66,13 @@
         function route() {
             clearMsg();
             var h = (location.hash || '#sinflar').slice(1).split('/');
-            var tab = { sinf: 'sinflar', topshiriq: 'topshiriqlar', yangi: 'topshiriqlar', javob: 'topshiriqlar' }[h[0]] || h[0];
+            var tab = { sinf: 'sinflar', topshiriq: 'topshiriqlar', yangi: 'topshiriqlar', javob: 'topshiriqlar',
+                        oquvchi: 'statistika' }[h[0]] || h[0];
             document.querySelectorAll('[data-route]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.route === tab)); });
             view.innerHTML = '<p class="muted">⏳ Yuklanmoqda…</p>';
             var r = { sinflar: classes, sinf: classroom, topshiriqlar: assignments, yangi: newAssignment,
-                      topshiriq: assignment, javob: submission, savollar: questions }[h[0]] || classes;
+                      topshiriq: assignment, javob: submission, savollar: questions, statistika: stats,
+                      oquvchi: studentCard }[h[0]] || classes;
             var tok = ++seq;
             Promise.resolve(r(h[1], tok)).catch(err);
         }
@@ -136,7 +139,8 @@
                         '<p class="muted small" style="margin-top:12px">O\'qituvchilar: ' + c.teachers.map(function (t) { return E(t.name); }).join(', ') + '</p>' +
                         '<form id="fTeacher" class="row"><div class="field"><label for="tLogin">Yordamchi o\'qituvchi qo\'shish</label>' +
                         '<input id="tLogin" placeholder="telefon yoki email"></div><button class="btn-a ghost small" style="margin-bottom:12px">Qo\'shish</button></form>' +
-                        '<div class="actions"><button class="btn-a ghost small danger" id="archive">🗄 Sinfni arxivlash</button></div></div>' +
+                        '<div class="actions"><a class="btn-a ghost small" href="#statistika/' + c.id + '">📊 Statistika</a>' +
+                        '<button class="btn-a ghost small danger" id="archive">🗄 Sinfni arxivlash</button></div></div>' +
 
                         '<form class="panel" id="fImport"><h2>👥 O\'quvchilarni qo\'shish</h2>' +
                         '<p class="muted small">Har qatorga bitta o\'quvchi: <b>Familiya Ism</b>. Yoki Excel/CSV fayl (ustunlar: Familiya, Ism). ' +
@@ -335,7 +339,8 @@
                           ' masala · ' + (a.quiz_config.time_limit_min ? a.quiz_config.time_limit_min + ' daqiqa' : 'vaqtsiz') + ' · ' + a.max_attempts + ' urinish</span>') +
                     '<b>Muddat</b><span>' + (a.due_at ? FA.date(a.due_at) : '—') + (a.allow_late ? ' (kech topshirish mumkin, jarima ' + a.late_penalty_pct + '%)' : '') + '</span>' +
                     '<b>Shkala</b><span>' + a.grading_scale + ' ballik</span></div>' +
-                    '<div class="actions"><button class="btn-a ghost small danger" id="delA">O\'chirish</button></div></div>' +
+                    '<div class="actions"><button class="btn-a ghost small" id="csvA">⬇️ Natijalar (CSV)</button>' +
+                    '<button class="btn-a ghost small danger" id="delA">O\'chirish</button></div></div>' +
                     '<div class="panel"><h2>O\'quvchilar</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>O\'quvchi</th><th>Sinf</th><th>Holat</th>' +
                     '<th>Topshirdi</th><th>Tavsiya</th><th>Baho</th></tr></thead><tbody>' +
                     roster.map(function (r) {
@@ -345,6 +350,11 @@
                             '</td><td><b>' + (r.grade != null ? r.grade : '—') + '</b></td></tr>';
                     }).join('') + '</tbody></table></div><p class="muted small" style="margin-top:8px">Qatorni bosib, ishni ko\'ring va baholang.</p></div>';
                 document.querySelectorAll('[data-sub]').forEach(function (tr) { tr.onclick = function () { go('javob/' + tr.dataset.sub); }; });
+                $('csvA').onclick = function () {
+                    api.get('assignments/' + id + '/export/', { blob: true }).then(function (b) {
+                        FA.download(b, 'topshiriq_' + a.title.replace(/[^\w\u0400-\u04ff]+/g, '_') + '.csv');
+                    }, err);
+                };
                 $('delA').onclick = function () {
                     if (confirm('Topshiriq va barcha topshirishlar o\'chiriladi. Davom etasizmi?')) api.del('assignments/' + id + '/').then(function () { go('topshiriqlar'); }, err);
                 };
@@ -409,6 +419,85 @@
         function axis(label, p) {
             var l = E(label);
             return p === 1 ? l : p === 2 ? l + '²' : p === 3 ? l + '³' : p === 0.5 ? '√(' + l + ')' : '1/' + l;
+        }
+
+        // ================= Statistika (FT-8.1 – FT-8.3) =================
+        function pctColor(p) {
+            if (p == null) return '';
+            var c = p >= 75 ? 'var(--a-ok)' : p >= 50 ? 'var(--a-warn)' : 'var(--a-bad)';
+            return ' style="background:color-mix(in srgb, ' + c + ' ' + Math.round(14 + p / 5) + '%, var(--a-bg))"';
+        }
+        function stats(classId, tok) {
+            return getClasses().then(function (cl) {
+                if (stale(tok)) return;
+                if (!cl.length) { view.innerHTML = '<div class="empty-a">Avval <a href="#sinflar">sinf yarating</a></div>'; return; }
+                var id = +classId || cl[0].id;
+                return Promise.all([api.get('analytics/classrooms/' + id + '/'), api.get('analytics/classrooms/' + id + '/heatmap/')]).then(function (res) {
+                    if (stale(tok)) return;
+                    var d = res[0], h = res[1];
+                    view.innerHTML = '<div class="row" style="margin-bottom:var(--sp-3)"><div class="field" style="max-width:260px"><label for="stCls">Sinf</label>' +
+                        '<select id="stCls">' + cl.map(function (c) { return '<option value="' + c.id + '"' + (c.id === id ? ' selected' : '') + '>' + E(c.name) + '</option>'; }).join('') +
+                        '</select></div><button class="btn-a ghost" id="xlsx" style="margin-bottom:12px">⬇️ Sinf jurnali (Excel)</button></div>' +
+                        '<div class="kpis"><div class="kpi"><b>' + d.students + '</b><span>o\'quvchi</span></div>' +
+                        '<div class="kpi"><b>' + d.assignments.length + '</b><span>topshiriq</span></div>' +
+                        '<div class="kpi"><b>' + (d.avg_test_percent != null ? d.avg_test_percent + '%' : '—') + '</b><span>testlarda o\'rtacha</span></div>' +
+                        '<div class="kpi"><b>' + d.activity_7d.active_students + '</b><span>7 kunda faol (' + d.activity_7d.labs + ' jurnal, ' + d.activity_7d.tests + ' test)</span></div></div>' +
+                        '<div class="panel"><h2>Topshiriqlar</h2>' + (d.assignments.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Topshiriq</th><th>Topshirdi</th><th>Baholandi</th><th>O\'rtacha baho</th></tr></thead><tbody>' +
+                        d.assignments.map(function (a) {
+                            return '<tr class="clickable" data-a="' + a.id + '"><td>' + (a.type === 'lab' ? '🔬 ' : '📝 ') + E(a.title) + '</td><td>' + a.submitted + '/' + d.students +
+                                '</td><td>' + a.graded + '</td><td><b>' + (a.avg_grade != null ? a.avg_grade : '—') + '</b>' + (a.scale === 100 ? ' <span class="muted small">/100</span>' : '') + '</td></tr>';
+                        }).join('') + '</tbody></table></div>' : '<p class="muted">Topshiriq berilmagan</p>') + '</div>' +
+                        '<div class="panel"><h2>Mavzular bo\'yicha o\'zlashtirish</h2><p class="muted small">Testlardagi to\'g\'ri javoblar ulushi (%). Qizil — qayta tushuntirish kerak.</p>' +
+                        (h.topics.length ? '<div class="tbl-wrap"><table class="tbl heat"><thead><tr><th>O\'quvchi</th>' +
+                            h.topics.map(function (t) { return '<th class="v">' + E(t.title) + '</th>'; }).join('') +
+                            '<th>O\'rtacha baho</th><th>Topshirgan</th></tr></thead><tbody>' +
+                            h.students.map(function (s) {
+                                return '<tr class="clickable" data-s="' + s.id + '"><td>' + E(s.name) + '</td>' + h.topics.map(function (t) {
+                                    var v = s.cells[t.key];
+                                    return '<td class="c"' + pctColor(v) + '>' + (v != null ? v : '·') + '</td>';
+                                }).join('') + '<td><b>' + (s.avg_grade != null ? s.avg_grade : '—') + '</b></td><td>' + s.submitted + '</td></tr>';
+                            }).join('') + '<tr><td><b>Sinf bo\'yicha</b></td>' + h.topics.map(function (t) {
+                                var x = d.topics.filter(function (y) { return y.key === t.key; })[0];
+                                return '<td class="c"' + pctColor(x && x.percent) + '>' + (x && x.percent != null ? Math.round(x.percent) : '·') + '</td>';
+                            }).join('') + '<td></td><td></td></tr></tbody></table></div>'
+                            : '<p class="muted">Hali test natijalari yo\'q</p>') + '</div>';
+                    $('stCls').onchange = function () { go('statistika/' + this.value); };
+                    $('xlsx').onclick = function () {
+                        api.get('analytics/classrooms/' + id + '/export.xlsx', { blob: true }).then(function (b) {
+                            FA.download(b, 'sinf_' + d.classroom.name + '.xlsx');
+                        }, err);
+                    };
+                    document.querySelectorAll('[data-a]').forEach(function (tr) { tr.onclick = function () { go('topshiriq/' + tr.dataset.a); }; });
+                    document.querySelectorAll('[data-s]').forEach(function (tr) { tr.onclick = function () { go('oquvchi/' + tr.dataset.s); }; });
+                });
+            });
+        }
+
+        function studentCard(uid, tok) {
+            return api.get('analytics/students/' + uid + '/').then(function (d) {
+                if (stale(tok)) return;
+                view.innerHTML = '<p class="crumbs"><a href="#statistika">← Statistika</a></p>' +
+                    '<div class="panel"><h2>👤 ' + E(d.student.name) + ' <span class="muted small">' + E(d.student.username) + '</span></h2>' +
+                    '<div class="kpis"><div class="kpi"><b>' + (d.avg_grade != null ? d.avg_grade : '—') + '</b><span>o\'rtacha baho</span></div>' +
+                    '<div class="kpi"><b>' + d.assignments.filter(function (a) { return a.status === 'graded' || a.status === 'submitted'; }).length + '/' + d.assignments.length +
+                    '</b><span>topshiriq bajarilgan</span></div><div class="kpi"><b>' + d.attempts.length + '</b><span>test topshirgan</span></div>' +
+                    '<div class="kpi"><b>' + d.labs.reduce(function (n, l) { return n + l.count; }, 0) + '</b><span>laboratoriya jurnali</span></div></div>' +
+                    (d.weak_topics.length ? '<div class="msg err">⚠️ Zaif mavzular: ' + d.weak_topics.map(function (t) { return E(t.title) + ' (' + t.percent + '%)'; }).join(', ') + '</div>' : '') +
+                    (d.attempts.length ? '<h3>Test natijalari dinamikasi</h3><div class="spark">' + d.attempts.map(function (a) {
+                        return '<i style="height:' + Math.max(3, a.percent) + '%" title="' + FA.date(a.finished_at) + ': ' + a.percent + '%"></i>';
+                    }).join('') + '</div>' : '') + '</div>' +
+                    '<div class="panel"><h2>Topshiriqlar</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Topshiriq</th><th>Muddat</th><th>Holat</th><th>Baho</th></tr></thead><tbody>' +
+                    d.assignments.map(function (a) {
+                        return '<tr><td>' + (a.type === 'lab' ? '🔬 ' : '📝 ') + E(a.title) + '</td><td>' + FA.date(a.due_at) + '</td><td>' + FA.badge(a.status) +
+                            (a.is_late ? ' <span class="badge overdue">kech</span>' : '') + '</td><td><b>' + (a.grade != null ? a.grade : '—') + '</b></td></tr>';
+                    }).join('') + '</tbody></table></div></div>' +
+                    (d.topics.length ? '<div class="panel"><h2>Mavzular</h2><div class="bars" style="display:grid;gap:10px">' + d.topics.map(function (t) {
+                        var c = t.percent >= 75 ? 'var(--a-ok)' : t.percent >= 50 ? 'var(--a-warn)' : 'var(--a-bad)';
+                        return '<div><div style="display:flex;justify-content:space-between;font-size:0.88rem;font-weight:600"><span>' + E(t.title) + '</span><span>' + t.ok + '/' + t.all +
+                            ' · ' + t.percent + '%</span></div><div style="height:8px;border-radius:999px;background:var(--a-line);overflow:hidden"><i style="display:block;height:100%;width:' +
+                            t.percent + '%;background:' + c + '"></i></div></div>';
+                    }).join('') + '</div></div>' : '');
+            });
         }
 
         // ================= Savollarim =================

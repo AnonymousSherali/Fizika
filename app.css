@@ -172,3 +172,28 @@ html.dark .btn-a, body.dark .btn-a { color: #0d1520; }
 .app-nav.open nav { display: flex; position: absolute; top: 60px; right: 12px; flex-direction: column; background: var(--a-bg);
                     border: 1px solid var(--a-line); border-radius: var(--r-md); padding: 6px; box-shadow: var(--shadow-xl); }
 .app [hidden] { display: none !important; }
+
+/* ----- Bildirishnomalar ----- */
+.bell { position: relative; font-size: 1.05rem !important; }
+.bell__n { position: absolute; top: 0; right: 2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+           background: var(--a-bad); color: #fff; font-size: 0.68rem; font-weight: 800; line-height: 18px; }
+.bell-panel { position: fixed; top: 64px; right: max(12px, calc((100vw - 1160px) / 2)); z-index: 60; width: min(380px, calc(100vw - 24px));
+              max-height: 70vh; overflow: auto; background: var(--a-bg); border: 1px solid var(--a-line); border-radius: var(--r-md);
+              box-shadow: var(--shadow-xl); }
+.bell-panel__head { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--a-line); }
+.linkish { background: none; border: 0; color: var(--a-blue); font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.bell-item { display: grid; gap: 2px; padding: 10px 12px; border-bottom: 1px solid var(--a-line); text-decoration: none; color: var(--a-ink); font-size: 0.88rem; }
+.bell-item:hover { background: var(--a-soft); }
+.bell-item.unread { background: color-mix(in srgb, var(--a-blue) 7%, var(--a-bg)); }
+.bell-item span { color: var(--a-muted); }
+.bell-item small { color: var(--a-muted); font-size: 0.75rem; }
+/* ----- Issiqlik xaritasi ----- */
+.heat td.c { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.heat th.v { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-size: 0.75rem; padding: 8px 4px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); margin-bottom: var(--sp-4); }
+.kpi { background: var(--a-bg); border: 1px solid var(--a-line); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); }
+.kpi b { display: block; font-size: 1.5rem; letter-spacing: -0.02em; }
+.kpi span { color: var(--a-muted); font-size: 0.82rem; }
+.spark { display: flex; align-items: flex-end; gap: 4px; height: 70px; padding: 6px 0; }
+.spark i { flex: 1; max-width: 26px; border-radius: 4px 4px 0 0; background: var(--a-blue); min-height: 3px; }
+@media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

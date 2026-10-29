@@ -278,6 +278,9 @@ class JoinClassroomView(APIView):
         _, created = ClassroomMember.objects.get_or_create(classroom=classroom, user=request.user)
         if not created:
             raise Conflict("Siz allaqachon shu sinfdasiz")
+        from apps.notifications.services import on_student_joined
+
+        on_student_joined(classroom, request.user)
         if not request.user.school_id and classroom.school_id:
             request.user.school = classroom.school
             request.user.save(update_fields=["school"])

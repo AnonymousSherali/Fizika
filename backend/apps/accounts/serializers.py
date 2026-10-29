@@ -21,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "first_name", "last_name", "role", "phone", "email",
-                  "school", "school_name", "language", "theme", "is_verified", "must_change_password"]
+                  "school", "school_name", "language", "theme", "notify_email", "is_verified", "must_change_password"]
         read_only_fields = ["id", "username", "role", "phone", "email", "school", "is_verified",
                             "must_change_password"]
 
@@ -29,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
 class MeUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "language", "theme"]
+        fields = ["first_name", "last_name", "language", "theme", "notify_email"]
 
 
 class PasswordField(serializers.CharField):
@@ -147,6 +147,9 @@ class StudentRegisterSerializer(serializers.Serializer):
         user.set_password(data["password"])
         user.save()
         ClassroomMember.objects.create(classroom=classroom, user=user, role=ClassroomMember.Role.STUDENT)
+        from apps.notifications.services import on_student_joined
+
+        on_student_joined(classroom, user)
         return user
 
 
