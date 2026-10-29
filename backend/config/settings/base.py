@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     "apps.schools",
     "apps.simulations",
     "apps.labs",
+    "apps.quizzes",
+    "apps.assignments",
 ]
 
 MIDDLEWARE = [
@@ -143,6 +145,10 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {
+        "SubmissionStatusEnum": "apps.assignments.models.Submission.Status",
+        "BankStatusEnum": "apps.quizzes.models.Status",
+    },
 }
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
