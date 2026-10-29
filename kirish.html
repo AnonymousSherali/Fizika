@@ -7,8 +7,8 @@
     <meta name="description" content="Fizika 10–11 platformasiga kirish va ro'yxatdan o'tish">
     <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Kirish — Fizika 10–11</title>
-    <link rel="stylesheet" href="styles.css?v=20261031a">
-    <link rel="stylesheet" href="app.css?v=20261031a">
+    <link rel="stylesheet" href="styles.css?v=20261101a">
+    <link rel="stylesheet" href="app.css?v=20261101a">
     <style>
         .auth { max-width: 480px; margin: var(--sp-7) auto; }
         .auth .panel { padding: var(--sp-6); }
@@ -78,6 +78,8 @@
                         <input id="sPass" type="password" required autocomplete="new-password">
                         <span class="hint">Kamida 8 belgi, faqat raqamlardan iborat bo'lmasin</span>
                     </div>
+                    <div class="checks" style="margin-bottom:12px"><label><input type="checkbox" id="sPriv" required>
+                        <span><a href="maxfiylik.html" target="_blank">Maxfiylik siyosati</a> bilan tanishdim va roziman</span></label></div>
                     <button class="btn-a" type="submit">Ro'yxatdan o'tish</button>
                     <p class="muted small" style="margin-top:10px">Telefon va email so'ralmaydi. Shaxsiy ma'lumotlar faqat ta'lim maqsadida ishlatiladi.</p>
                 </form>
@@ -113,6 +115,8 @@
                         <label for="tPass">Parol</label>
                         <input id="tPass" type="password" required autocomplete="new-password">
                     </div>
+                    <div class="checks" style="margin-bottom:12px"><label><input type="checkbox" id="tPriv" required>
+                        <span><a href="maxfiylik.html" target="_blank">Maxfiylik siyosati</a> bilan tanishdim va roziman</span></label></div>
                     <button class="btn-a" type="submit">Ro'yxatdan o'tish</button>
                 </form>
 
@@ -147,9 +151,9 @@
         </div>
     </main>
 
-    <script src="theme.js?v=20261031a"></script>
-    <script src="api.js?v=20261031a"></script>
-    <script src="app.js?v=20261031a"></script>
+    <script src="theme.js?v=20261101a"></script>
+    <script src="api.js?v=20261101a"></script>
+    <script src="app.js?v=20261101a"></script>
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
@@ -207,7 +211,8 @@
             var f = this; busy(f, true);
             api.post('auth/register/student/', {
                 join_code: $('sCode').value.trim().toUpperCase(), first_name: $('sFirst').value.trim(),
-                last_name: $('sLast').value.trim(), username: $('sUser').value.trim(), password: $('sPass').value
+                last_name: $('sLast').value.trim(), username: $('sUser').value.trim(), password: $('sPass').value,
+                accept_privacy: $('sPriv').checked
             }).then(function (r) { api.setAuth(r); done(r.user); }, fail).then(function () { busy(f, false); });
         };
 
@@ -215,7 +220,8 @@
             e.preventDefault();
             var f = this, body = {
                 first_name: $('tFirst').value.trim(), last_name: $('tLast').value.trim(),
-                phone: $('tPhone').value.trim(), email: $('tEmail').value.trim(), password: $('tPass').value
+                phone: $('tPhone').value.trim(), email: $('tEmail').value.trim(), password: $('tPass').value,
+                accept_privacy: $('tPriv').checked
             };
             if ($('tSchool').value) body.school_id = +$('tSchool').value;
             else body.new_school = { name: $('tSchoolName').value.trim(), region: $('tRegion').value,

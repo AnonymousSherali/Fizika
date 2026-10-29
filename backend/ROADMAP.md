@@ -22,7 +22,7 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | `/api/v1/health/` (NF-10) | ✅ | baza + kesh |
 | Docker, docker-compose, Nginx | ✅ | `Dockerfile`, `docker-compose.yml`, `deploy/nginx.conf` |
 | CI: ruff, migratsiya tekshiruvi, pytest + qamrov ≥ 75%, pip-audit | ✅ | `.github/workflows/backend.yml` |
-| Sentry | ⬜ | 5-bosqich |
+| Sentry | ✅ | `SENTRY_DSN` bo'lsa yoqiladi (shaxsiy ma'lumotlarsiz) |
 | CD (teg → production deploy) | ⬜ | 5-bosqich |
 
 ## 1-bosqich — MVP ✅
@@ -75,7 +75,7 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Band | Holat | Izoh |
 |---|---|---|
 | FT-10.1 Django Admin (o'zbekcha) | ✅ | foydalanuvchi, maktab, sinf, model, jurnal |
-| FT-10.4 Admin uchun 2FA (TOTP) | ⬜ | 5-bosqich (django-otp) |
+| FT-10.4 Admin uchun 2FA (TOTP) | ✅ | django-otp, `manage.py admin_2fa_setup` |
 
 ---
 
@@ -141,15 +141,24 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-11.3 O'zgarmas (tahrir/o'chirish taqiqlangan), 1 yil saqlanadi | ✅ | haftalik tozalash (Celery Beat) |
 | Savollarning ruscha tarjimasi (170 + 48) | ⬜ | maydonlar tayyor; matnlarni tarjima qilish kerak |
 
-## 5-bosqich — Sifat va ishga tushirish ⬜
-- ⬜ Yuklama testi (k6/Locust): 500 foydalanuvchi, p95 ≤ 300 ms (NF-1, NF-2)
-- ⬜ OWASP ZAP skanerlash, qo'lda IDOR tekshiruvi
-- ⬜ E2E Playwright: sinf → topshiriq → baho
-- ⬜ Sentry, JSON loglar (✅ production settings'da), monitoring ogohlantirishlari
-- ⬜ Backup (kunlik pg_dump, 30 kun) + tiklashni sinash (NF-4)
-- ⬜ Admin 2FA
-- ⬜ O'qituvchi va administrator qo'llanmasi (uz/ru), maxfiylik siyosati
-- ⬜ Production (O'zbekistondagi server, TZ 11.1)
+## 5-bosqich — Sifat va ishga tushirish 🟡
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-10.4 Admin 2FA (TOTP, Google Authenticator) | ✅ | production'da standart yoqilgan (`ADMIN_2FA`) |
+| Sentry (xatolar monitoringi) | ✅ | `SENTRY_DSN`; `send_default_pii=False` |
+| Maxfiylik siyosati (`maxfiylik.html`), ro'yxatda rozilik belgisi (`accept_privacy`, sana saqlanadi) | ✅ | O'RQ-547 |
+| NF-4 Backup: kunlik `pg_dump`, media haftalik, 30 kun / 8 hafta saqlash | ✅ | `scripts/backup.sh` |
+| NF-4 Tiklashni sinash | ✅ | `scripts/restore.sh` — sinovda jadval sonlari to'liq mos keldi |
+| Statik xavfsizlik tahlili (bandit) | ✅ | yuqori/o'rta xavf yo'q; CI'da ham |
+| Yuklama testi (Locust) | 🟡 | 200 foyd.: median 20 ms; 500 foyd.: p95 ≈ 490 ms, 330 so'rov/s, server xatosi 0. Mezon (p95 ≤ 300 ms) umumiy 4 yadroli sinov muhitida (yuklama generatori ham shu mashinada) bajarilmadi — alohida server (≥ 4 vCPU) va alohida generator bilan qayta o'lchash kerak |
+| Yuklama testidan keyingi tuzatishlar | ✅ | test yakunidagi deadlock (tartiblangan F() yangilash, variant hisoblagichlari), Argon2 parametrlari (~30 ms), DB ulanishlarini qayta ishlatish, katalog keshi, gunicorn gthread |
+| E2E Playwright: sinf → topshiriq → baho | ✅ | `e2e/flow.js` |
+| O'qituvchi va administrator qo'llanmasi | ✅ | `hujjatlar/qollanma_oqituvchi.md`, `hujjatlar/qollanma_admin.md` (uz) |
+| Qo'llanmalarning ruscha varianti | ⬜ | |
+| OWASP ZAP skanerlash | ⬜ | staging serverda (`zap-baseline.py -t https://...`) |
+| CD (teg → production deploy) | ⬜ | server tanlangach |
+| ClamAV (yuklangan fayllarni antivirus tekshiruvi) | ⬜ | ixtiyoriy |
+| Production (O'zbekistondagi server, TZ 11.1) | ⬜ | buyurtmachi serveri kerak |
 
 ## F-bosqich — Frontendni ulash (TZ 9) ✅
 Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shildi,

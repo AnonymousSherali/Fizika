@@ -88,6 +88,8 @@ body.app::before { display: none; }
     border-radius: var(--r-pill); font-size: 0.85rem; cursor: pointer; background: var(--a-bg); white-space: nowrap;
 }
 .checks input { accent-color: var(--a-blue); }
+.checks label span a { color: var(--a-blue); font-weight: 600; }
+.auth .checks label { white-space: normal; border-radius: var(--r-sm); }
 .row { display: flex; gap: var(--sp-3); flex-wrap: wrap; align-items: end; }
 .row > .field { flex: 1 1 180px; }
 

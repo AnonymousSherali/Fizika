@@ -8,7 +8,7 @@
    Yangilash: fayllar o'zgarganda pastdagi VERSION ni o'zgartiring —
    eski kesh o'chiriladi va yangi fayllar yuklanadi.
    ============================================================ */
-var VERSION = 'fizika-20261031c';
+var VERSION = 'fizika-20261101a';
 var CORE = [
     './',
     './api.js',
@@ -42,6 +42,7 @@ var CORE = [
     './index.html',
     './kirish.html',
     './manifest.webmanifest',
+    './maxfiylik.html',
     './model-tools.css',
     './model-tools.js',
     './modellar/fotoeffekt_model.html',

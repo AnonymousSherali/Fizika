@@ -1,5 +1,8 @@
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -32,6 +35,8 @@ class TopicListView(APIView):
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(responses={200: TopicSerializer(many=True)})
+    @method_decorator(cache_page(300))
+    @method_decorator(vary_on_headers("Accept-Language"))
     def get(self, request):
         qs = Topic.objects.annotate(
             n_questions=Count("questions", filter=Q(questions__status=Status.APPROVED), distinct=True),

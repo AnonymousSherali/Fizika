@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "corsheaders",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
     # Loyiha ilovalari
     "apps.core",
     "apps.accounts",
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -78,10 +81,18 @@ TEMPLATES = [
 
 # PostgreSQL (TZ 4.3). DATABASE_URL berilmasa — lokal SQLite (tez boshlash uchun)
 DATABASES = {"default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")}
+# Ulanishni qayta ishlatish: har so'rovda yangi ulanish ochish yuklamada sezilarli sekinlashtirardi
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = ["apps.accounts.backends.LoginBackend"]
+# TZ 11.3: Argon2 (OWASP tavsiyasi) — PBKDF2'dan kam CPU, xavfsizroq. Eski xeshlar kirishda avtomatik yangilanadi
+PASSWORD_HASHERS = [
+    "apps.accounts.hashers.FizikaArgon2Hasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
@@ -184,6 +195,20 @@ AUDIT_RETENTION_DAYS = 365            # FT-11.3
 LESSON_PDF_MAX_MB = 15                # FT-7.3
 LESSON_DOCX_MAX_MB = 10
 SITE_URL = env("SITE_URL", default="http://localhost:8000/")   # emaildagi havolalar uchun
+
+# ---------- Admin uchun ikki bosqichli kirish (TZ FT-10.4) ----------
+# true bo'lsa admin panelga kirishda TOTP kodi (Google Authenticator va h.k.) so'raladi.
+# Qurilma ulash: python manage.py admin_2fa_setup <login>
+ADMIN_2FA = env.bool("ADMIN_2FA", default=False)
+OTP_TOTP_ISSUER = "Fizika 10–11"
+
+# ---------- Sentry (TZ NF-10): DSN berilsa xatolar yuboriladi ----------
+SENTRY_DSN = env("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(dsn=SENTRY_DSN, send_default_pii=False, traces_sample_rate=0.05,
+                    environment=env("SENTRY_ENVIRONMENT", default="production"))
 
 # ---------- Celery ----------
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")

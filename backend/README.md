@@ -121,8 +121,36 @@ Sayt (statik HTML) API'ga `api.js` orqali murojaat qiladi:
 - **Lokal sinov:** sayt `python3 -m http.server 8080`, backend `runserver 8000`; brauzer konsolida bir marta:
   `localStorage.setItem('fizika-api', 'http://127.0.0.1:8000/api/v1/')`.
 
-Yangi sahifalar: `kirish.html`, `profil.html`, `oquvchi/`, `oqituvchi/`, `testlar/nazorat.html`.
+Yangi sahifalar: `kirish.html`, `profil.html`, `oquvchi/`, `oqituvchi/`, `testlar/nazorat.html`, `maxfiylik.html`.
 Backend ishlamasa ular «Server bilan aloqa yo'q» deydi, qolgan sayt esa odatdagidek ishlaydi.
+
+## Ishga tushirish (production) — xavfsizlik va zaxira
+
+**Admin 2FA.** Production'da admin panelga kirish uchun parol + 6 xonali kod (Google Authenticator) so'raladi:
+```bash
+docker compose exec api python manage.py admin_2fa_setup admin   # QR-kod chiqadi — ilovada skanerlang
+docker compose exec api python manage.py admin_2fa_setup admin --reset   # telefon yo'qolsa
+```
+O'chirish (tavsiya etilmaydi): `.env` da `ADMIN_2FA=false`.
+
+**Xatolar monitoringi:** `.env` da `SENTRY_DSN=...` — server xatolari Sentry'ga yuboriladi (shaxsiy ma'lumotlarsiz).
+
+**Zaxira nusxa (har kecha):**
+```bash
+# crontab -e
+15 2 * * *  COMPOSE=1 /srv/fizika/backend/scripts/backup.sh >> /var/log/fizika-backup.log 2>&1
+```
+Baza 30 kun, yuklangan fayllar 8 hafta saqlanadi. Nusxani boshqa serverga ham ko'chirib turing (masalan, `rsync`).
+Tiklash: `scripts/restore.sh /var/backups/fizika/db/fizika_YYYY-MM-DD_HHMM.dump` (tasdiq so'raydi; oyiga bir marta
+sinov bazasida tiklab ko'rish tavsiya etiladi).
+
+**Yuklama testi:** `loadtest/locustfile.py` boshidagi ko'rsatmaga qarang (sinov bazasida
+`create_load_users --count 500`, keyin `--delete`).
+
+**Xavfsizlik tahlili:** `bandit -r apps config -x '*/migrations/*,*/tests/*'` va `pip-audit -r requirements.txt`.
+
+Qo'llanmalar: [`hujjatlar/qollanma_oqituvchi.md`](../hujjatlar/qollanma_oqituvchi.md),
+[`hujjatlar/qollanma_admin.md`](../hujjatlar/qollanma_admin.md).
 
 ## Muhim kelishuvlar
 - **Bolalar ma'lumotlari:** o'quvchidan faqat ism, familiya va login olinadi. Production server **O'zbekistonda**

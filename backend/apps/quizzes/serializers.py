@@ -29,13 +29,14 @@ class QuestionSerializer(serializers.ModelSerializer):
     topic = serializers.SlugRelatedField(slug_field="key", queryset=Topic.objects.all())
     options = OptionSerializer(many=True)
     author_name = serializers.SerializerMethodField()
+    stats_choices = serializers.ListField(child=serializers.IntegerField(), read_only=True)
 
     class Meta:
         model = Question
         fields = ["id", "topic", "level", "difficulty", "text_uz", "text_ru", "options", "correct_index",
                   "explanation_uz", "explanation_ru", "status", "author_name",
                   "stats_total", "stats_correct", "stats_choices", "created_at"]
-        read_only_fields = ["stats_total", "stats_correct", "stats_choices", "created_at"]
+        read_only_fields = ["stats_total", "stats_correct", "created_at"]
 
     def get_author_name(self, obj) -> str | None:
         return f"{obj.author.last_name} {obj.author.first_name}".strip() if obj.author else None

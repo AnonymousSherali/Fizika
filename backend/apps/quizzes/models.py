@@ -73,7 +73,12 @@ class Question(TimeStampedModel):
     # FT-6.8: savol statistikasi (har variant necha marta tanlangan)
     stats_total = models.PositiveIntegerField(default=0)
     stats_correct = models.PositiveIntegerField(default=0)
-    stats_choices = models.JSONField(default=list, blank=True)
+    # Har variant necha marta tanlangan — alohida ustunlar: F() bilan atomik oshiriladi
+    # (JSON ro'yxatni o'qib-yozish parallel yakunlashda yo'qolishlar va deadlock'ga olib kelardi)
+    choice_0 = models.PositiveIntegerField(default=0)
+    choice_1 = models.PositiveIntegerField(default=0)
+    choice_2 = models.PositiveIntegerField(default=0)
+    choice_3 = models.PositiveIntegerField(default=0)
     source_key = models.CharField("import kaliti", max_length=64, blank=True, db_index=True)
 
     class Meta:
@@ -88,6 +93,10 @@ class Question(TimeStampedModel):
     @property
     def points(self):
         return POINTS[self.level]
+
+    @property
+    def stats_choices(self):
+        return [self.choice_0, self.choice_1, self.choice_2, self.choice_3]
 
     def text(self, lang):
         return self.text_ru if lang == "ru" and self.text_ru else self.text_uz

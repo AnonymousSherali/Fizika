@@ -45,7 +45,9 @@ def _round_robin(items_by_topic: "OrderedDict[int, list]", count: int | None, rn
 
 
 def select_items(topic_keys, count, problems_count, author=None, seed=None):
-    rng = random.Random(seed)
+    # seed berilmasa — tizimning kriptografik generatori: variantlar tartibini oldindan bilib bo'lmaydi
+    # Urug'li tanlov — takrorlanuvchanlik uchun (xavfsizlik emas)
+    rng = random.Random(seed) if seed is not None else random.SystemRandom()  # nosec B311
     topics = list(Topic.objects.filter(key__in=topic_keys).order_by("order"))
     if not topics:
         raise ValueError("Mavzu tanlanmagan")
@@ -148,7 +150,14 @@ def answer_item(attempt: Attempt, item: AttemptItem, answer) -> bool:
 def finish_attempt(attempt: Attempt) -> Attempt:
     if attempt.is_finished:
         return attempt
+    # Bir urinishni ikki so'rov bir vaqtda yakunlasa — statistika ikki marta yozilmasin
+    locked = Attempt.objects.select_for_update().get(pk=attempt.pk)
+    if locked.is_finished:
+        attempt.refresh_from_db()
+        return attempt
     items = list(attempt.items.select_related("question__topic", "problem__topic"))
+    q_inc: dict[int, dict] = {}
+    p_inc: dict[int, dict] = {}
     score = 0
     breakdown: dict[str, dict] = {}
     for it in items:
@@ -160,21 +169,27 @@ def finish_attempt(attempt: Attempt) -> Attempt:
         if it.is_correct:
             b["ok"] += 1
             score += it.points
-        # FT-6.8: savol statistikasi
+        # FT-6.8: savol statistikasi — avval yig'amiz, keyin tartib bilan yozamiz
         if it.question_id:
-            stats = list(it.question.stats_choices or [0, 0, 0, 0])
+            d = q_inc.setdefault(it.question_id, {"total": 0, "correct": 0, "choices": [0, 0, 0, 0]})
             if it.answered_at is not None:
-                stats[it.option_order[int(it.given_answer)]] += 1
-            Question.objects.filter(pk=it.question_id).update(
-                stats_total=F("stats_total") + 1,
-                stats_correct=F("stats_correct") + (1 if it.is_correct else 0),
-                stats_choices=stats,
-            )
+                d["choices"][it.option_order[int(it.given_answer)]] += 1
         else:
-            Problem.objects.filter(pk=it.problem_id).update(
-                stats_total=F("stats_total") + 1,
-                stats_correct=F("stats_correct") + (1 if it.is_correct else 0),
-            )
+            d = p_inc.setdefault(it.problem_id, {"total": 0, "correct": 0})
+        d["total"] += 1
+        d["correct"] += 1 if it.is_correct else 0
+    # Qatorlar doim id bo'yicha bir xil tartibda qulflanadi — parallel yakunlashda deadlock bo'lmaydi
+    for qid in sorted(q_inc):
+        d = q_inc[qid]
+        upd = {"stats_total": F("stats_total") + d["total"], "stats_correct": F("stats_correct") + d["correct"]}
+        for i, n in enumerate(d["choices"]):
+            if n:
+                upd[f"choice_{i}"] = F(f"choice_{i}") + n
+        Question.objects.filter(pk=qid).update(**upd)
+    for pid in sorted(p_inc):
+        d = p_inc[pid]
+        Problem.objects.filter(pk=pid).update(stats_total=F("stats_total") + d["total"],
+                                              stats_correct=F("stats_correct") + d["correct"])
     attempt.score = score
     attempt.percent = round(score / attempt.max_score * 100, 1) if attempt.max_score else 0
     attempt.grade = grade_from_percent(attempt.percent)

@@ -70,7 +70,7 @@ def test_email_channel_and_opt_out(api, auth, teacher, classroom, school, django
 
 
 def test_student_join_notifies_teacher(api, classroom, teacher):
-    api.post("/api/v1/auth/register/student/", {"join_code": classroom.join_code, "first_name": "Yangi",
+    api.post("/api/v1/auth/register/student/", {"accept_privacy": True,"join_code": classroom.join_code, "first_name": "Yangi",
                                                 "last_name": "Oquvchi", "username": "yangi.oq", "password": "Fizika-2026!"},
              format="json")
     n = Notification.objects.get(user=teacher, type="new_student")

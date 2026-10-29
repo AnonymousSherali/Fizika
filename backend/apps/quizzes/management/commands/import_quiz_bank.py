@@ -45,7 +45,8 @@ def grab(text: str, name: str):
 
 
 def source_key(*parts) -> str:
-    return hashlib.sha1("|".join(parts).encode()).hexdigest()
+    # Faqat takrorlanmaslik kaliti (xavfsizlik uchun emas); algoritm o'zgarsa qayta importda dublikat bo'lardi
+    return hashlib.sha1("|".join(parts).encode(), usedforsecurity=False).hexdigest()
 
 
 class Command(BaseCommand):

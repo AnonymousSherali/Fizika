@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_teacher_register_verify_login(api, school, codes):
-    r = api.post("/api/v1/auth/register/teacher/", {
+    r = api.post("/api/v1/auth/register/teacher/", {"accept_privacy": True,
         "first_name": "Dilnoza", "last_name": "Karimova", "phone": "90 123-45-67",
         "password": PASSWORD, "school_id": school.id}, format="json")
     assert r.status_code == 201, r.data
@@ -35,7 +35,7 @@ def test_teacher_register_verify_login(api, school, codes):
 
 
 def test_teacher_register_with_new_school_and_email(api, codes):
-    r = api.post("/api/v1/auth/register/teacher/", {
+    r = api.post("/api/v1/auth/register/teacher/", {"accept_privacy": True,
         "first_name": "Aziz", "last_name": "Rahimov", "email": "Aziz@Mail.UZ", "password": PASSWORD,
         "new_school": {"name": "5-maktab", "region": "samarqand", "district": "Urgut"}}, format="json")
     assert r.status_code == 201, r.data
@@ -45,7 +45,7 @@ def test_teacher_register_with_new_school_and_email(api, codes):
 
 
 def test_teacher_register_validation(api, teacher):
-    r = api.post("/api/v1/auth/register/teacher/", {
+    r = api.post("/api/v1/auth/register/teacher/", {"accept_privacy": True,
         "first_name": "A", "last_name": "B", "phone": "+998901112233", "password": "123"}, format="json")
     assert r.status_code == 400
     f = r.data["error"]["fields"]
@@ -53,7 +53,7 @@ def test_teacher_register_validation(api, teacher):
 
 
 def test_student_register_with_join_code(api, classroom):
-    r = api.post("/api/v1/auth/register/student/", {
+    r = api.post("/api/v1/auth/register/student/", {"accept_privacy": True,
         "join_code": classroom.join_code.lower(), "first_name": "Vali", "last_name": "Aliyev",
         "username": "Vali.Aliyev", "password": PASSWORD}, format="json")
     assert r.status_code == 201, r.data
@@ -64,7 +64,7 @@ def test_student_register_with_join_code(api, classroom):
 def test_student_register_bad_code(api, classroom):
     classroom.join_code = None
     classroom.save()
-    r = api.post("/api/v1/auth/register/student/", {
+    r = api.post("/api/v1/auth/register/student/", {"accept_privacy": True,
         "join_code": "FZ-XXXX", "first_name": "A", "last_name": "B", "username": "abc", "password": PASSWORD},
         format="json")
     assert r.status_code == 400 and "join_code" in r.data["error"]["fields"]
@@ -181,3 +181,15 @@ def test_error_format_unauthenticated(api):
 def test_russian_error_language(api):
     r = api.get("/api/v1/me/", HTTP_ACCEPT_LANGUAGE="ru")
     assert r.status_code == 401
+
+
+def test_registration_requires_privacy_consent(api, classroom):
+    r = api.post("/api/v1/auth/register/student/", {
+        "join_code": classroom.join_code, "first_name": "A", "last_name": "B", "username": "rozi.emas",
+        "password": PASSWORD, "accept_privacy": False}, format="json")
+    assert r.status_code == 400 and "accept_privacy" in r.data["error"]["fields"]
+    r = api.post("/api/v1/auth/register/student/", {"accept_privacy": True,
+        "join_code": classroom.join_code, "first_name": "A", "last_name": "B", "username": "rozi.bor",
+        "password": PASSWORD}, format="json")
+    assert r.status_code == 201
+    assert User.objects.get(username="rozi.bor").privacy_accepted_at is not None

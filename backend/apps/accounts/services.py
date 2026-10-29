@@ -33,7 +33,8 @@ def send_sms(phone: str, text: str) -> None:
             "https://notify.eskiz.uz/api/message/sms/send", data=data,
             headers={"Authorization": f"Bearer {settings.SMS_API_TOKEN}"},
         )
-        urlrequest.urlopen(req, timeout=10)  # noqa: S310 — manzil qat'iy
+        # Manzil qat'iy (https, o'zgarmas)
+        urlrequest.urlopen(req, timeout=10)  # noqa: S310  # nosec B310
         return
     raise RuntimeError(f"Noma'lum SMS provayder: {provider}")
 
@@ -84,7 +85,7 @@ def check_code(user: User, purpose: str, code: str) -> bool:
 
 # ---------- Kirishni bloklash (FT-1.8) ----------
 def _lock_key(login: str) -> str:
-    return "login-fail:" + hashlib.sha1(login.strip().lower().encode()).hexdigest()
+    return "login-fail:" + hashlib.sha256(login.strip().lower().encode()).hexdigest()
 
 
 def is_locked(login: str) -> bool:

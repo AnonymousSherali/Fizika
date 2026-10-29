@@ -44,6 +44,7 @@ class User(AbstractUser):
     is_verified = models.BooleanField("tasdiqlangan", default=False)
     must_change_password = models.BooleanField("parolni almashtirishi kerak", default=False)
     notify_email = models.BooleanField("email bildirishnomalar", default=True)  # FT-9.3
+    privacy_accepted_at = models.DateTimeField("maxfiylik siyosatiga rozilik", null=True, blank=True)  # TZ 11.1
     deletion_requested_at = models.DateTimeField("o'chirish so'ralgan", null=True, blank=True)
 
     objects = UserManager()

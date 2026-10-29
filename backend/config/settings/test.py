@@ -1,7 +1,8 @@
 from .base import *  # noqa: F403
 from .base import REST_FRAMEWORK
 
-SECRET_KEY = "test-secret-key-for-pytest-only-0123456789abcdef"
+# Faqat testlar uchun
+SECRET_KEY = "test-secret-key-for-pytest-only-0123456789abcdef"  # nosec B105
 DEBUG = False
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]  # testlar tez ishlasin
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
