@@ -3,11 +3,15 @@
 
 | | |
 |---|---|
-| **Hujjat versiyasi** | 1.0 |
+| **Hujjat versiyasi** | 1.1 |
 | **Sana** | 2026-yil oktabr |
 | **Loyiha** | Fizik jarayonlarni modellashtirishning dasturiy ta'minoti (10–11-sinflar) |
 | **Frontend** | Statik HTML/CSS/JS (mavjud, ushbu repozitoriy) |
 | **Backend** | Yangi ishlab chiqiladi (ushbu TZ predmeti) |
+
+> **O'zgarishlar (v1.1, 2026-10-30):** buyurtmachi qarori bilan **Telegram bot olib tashlandi**
+> (FT-1.4, FT-9.4 va bildirishnomalarning Telegram kanali). Bildirishnomalar — sayt ichida va email orqali.
+> Bajarilish holati: [`backend/ROADMAP.md`](../backend/ROADMAP.md).
 
 ---
 

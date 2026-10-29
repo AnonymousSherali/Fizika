@@ -1,0 +1,8 @@
+# Backend manba kodi statik hostingda (ahost public_html) ochiq ko'rinmasin.
+# Eng yaxshisi — backend/ papkasini public_html ga umuman yuklamang.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>
