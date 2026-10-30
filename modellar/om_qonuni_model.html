@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Om qonuni interaktiv modeli - zanjirning bir qismi uchun I = U/R. 10-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔌%3C/text%3E%3C/svg%3E">
     <title>Om Qonuni - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101h">
     <style>
         :root {
             --primary: #b45309;
@@ -76,9 +76,9 @@
                     <input type="range" id="resistanceSlider" min="2" max="100" step="1" value="10" aria-label="Qarshilik omda">
                 </div>
 
-                <button class="action btn-primary" onclick="startCircuit()">▶️ Tokni Yoqish</button>
-                <button class="action btn-secondary" onclick="pauseCircuit()">⏸️ To'xtatish</button>
-                <button class="action btn-secondary" onclick="resetCircuit()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startCircuit()">▶️ Tokni Yoqish</button>
+                <button class="action btn-secondary" data-click="pauseCircuit()">⏸️ To'xtatish</button>
+                <button class="action btn-secondary" data-click="resetCircuit()">🔄 Qayta</button>
 
                 <div class="stats">
                     <h3>📊 O'lchovlar</h3>
@@ -129,8 +129,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="om_qonuni_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101h"></script>
+    <script src="../model-tools.js?v=20261101h"></script>
+    <script src="om_qonuni_model.js?v=20261101h"></script>
 </body>
 </html>

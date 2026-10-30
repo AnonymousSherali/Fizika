@@ -153,6 +153,10 @@ o'zgartirgach `python scripts/compile_po.py` (gettext o'rnatilmagan bo'lsa ham i
 `/etc/letsencrypt` papkasini ulang. HTTPS ishlamaguncha `.env` da `SECURE_SSL_REDIRECT=false` qoldiring
 (aks holda API so'rovlari mavjud bo'lmagan https manzilga yo'naltiriladi).
 
+**CSP (brauzer xavfsizlik siyosati).** `deploy/snippets/fizika-csp-map.conf` — statik sayt uchun
+`script-src 'self'`: XSS bo'lgan taqdirda ham begona skript ishlamaydi. Admin panel va Swagger'ga qo'llanmaydi.
+Apache hostingda xuddi shu siyosat `.htaccess` da (ikkalasi bir xilligini test tekshiradi).
+
 **Proksi va fayllar.** `NUM_PROXIES=1` (nginx ortida; mijoz IP si soxtalashtirilmaydi),
 `MEDIA_X_ACCEL=true` (o'quvchi ishlari va ishlanmalar faqat ruxsat bilan, nginx orqali beriladi).
 

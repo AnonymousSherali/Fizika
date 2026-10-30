@@ -2,12 +2,12 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="10-11-sinf fizikasi bo'yicha onlayn interaktiv test: 15 mavzu (mayatniklar, qiya tekislik, impuls, gaz qonunlari, Om qonuni, kondensator, induksiya, optika, fotoeffekt, radioaktivlik, Rezerford, Kepler) — mavzu tanlash va avtomatik baholash bilan.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
     <style>
         :root {
             --primary: #4f46e5;
@@ -266,8 +266,8 @@
                    ⌨️ Klaviatura: <strong>A–D</strong> javob tanlash, <strong>← →</strong> navigatsiya.</p>
                 <br>
                 <div class="start-actions">
-                    <button class="btn" id="startBtn" onclick="startQuiz()">▶️ Test Savollari</button>
-                    <button class="btn" id="calcBtn" style="background: linear-gradient(135deg, var(--accent-2), #db2777);" onclick="startCalc()">🧮 Hisoblash Masalalari</button>
+                    <button class="btn" id="startBtn" data-click="startQuiz()">▶️ Test Savollari</button>
+                    <button class="btn" id="calcBtn" style="background: linear-gradient(135deg, var(--accent-2), #db2777);" data-click="startCalc()">🧮 Hisoblash Masalalari</button>
                 </div>
             </div>
 
@@ -278,8 +278,8 @@
                 <div class="q-text" id="qText"></div>
                 <div class="options" id="options" role="radiogroup" aria-label="Javob variantlari"></div>
                 <div class="nav-row">
-                    <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()">← Oldingi</button>
-                    <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Keyingi →</button>
+                    <button class="btn btn-outline" id="prevBtn" data-click="prevQuestion()">← Oldingi</button>
+                    <button class="btn" id="nextBtn" data-click="nextQuestion()" disabled>Keyingi →</button>
                 </div>
             </div>
 
@@ -294,12 +294,12 @@
                                   border-radius:12px; background:var(--panel-bg); color:var(--text);"
                            aria-label="Raqamli javob">
                     <span id="pUnit" style="font-weight:bold; font-size:1.1em;"></span>
-                    <button class="btn" id="pCheckBtn" onclick="checkProblem()">Tekshirish</button>
+                    <button class="btn" id="pCheckBtn" data-click="checkProblem()">Tekshirish</button>
                 </div>
                 <div id="pFeedback" style="margin-top:18px;"></div>
                 <div class="nav-row">
-                    <button class="btn btn-outline" onclick="exitCalc()">← Chiqish</button>
-                    <button class="btn" id="pNextBtn" onclick="nextProblem()" disabled>Keyingi →</button>
+                    <button class="btn btn-outline" data-click="exitCalc()">← Chiqish</button>
+                    <button class="btn" id="pNextBtn" data-click="nextProblem()" disabled>Keyingi →</button>
                 </div>
             </div>
 
@@ -314,13 +314,13 @@
                 <div class="result-detail" id="resultDetail"></div>
                 <div class="topic-stats" id="topicStats" aria-label="Mavzular bo'yicha natija"></div>
                 <div class="review-list" id="reviewList"></div>
-                <button class="btn" onclick="restartQuiz()">🔄 Qaytadan Yechish</button>
+                <button class="btn" data-click="restartQuiz()">🔄 Qaytadan Yechish</button>
             </div>
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="bank.js?v=20261101g"></script>
-    <script src="testlar_online.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101h"></script>
+    <script src="bank.js?v=20261101h"></script>
+    <script src="testlar_online.js?v=20261101h"></script>
 </body>
 </html>

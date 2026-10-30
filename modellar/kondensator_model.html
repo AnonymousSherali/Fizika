@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Yassi kondensator interaktiv modeli - sig'im C = εε₀S/d, zaryad, maydon kuchlanganligi va energiya. Manbaga ulangan va uzilgan holatlar. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔋%3C/text%3E%3C/svg%3E">
     <title>Yassi Kondensator - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101h">
     <style>
         :root {
             --primary: #4f46e5;
@@ -80,8 +80,8 @@
                 <div class="control-group">
                     <label>Manba bilan bog'lanish:</label>
                     <div class="mode-selector" role="radiogroup" aria-label="Kondensatorning manbaga ulanishi">
-                        <button class="mode-btn active" id="modeOn" role="radio" aria-checked="true" onclick="setMode('on', event)">Manbaga ulangan<br>U = const</button>
-                        <button class="mode-btn" id="modeOff" role="radio" aria-checked="false" onclick="setMode('off', event)">Manbadan uzilgan<br>q = const</button>
+                        <button class="mode-btn active" id="modeOn" role="radio" aria-checked="true" data-click="setMode('on', event)">Manbaga ulangan<br>U = const</button>
+                        <button class="mode-btn" id="modeOff" role="radio" aria-checked="false" data-click="setMode('off', event)">Manbadan uzilgan<br>q = const</button>
                     </div>
                     <p class="hint-note" id="modeNote">Kalit yopiq: kondensatordagi kuchlanish manba kuchlanishiga teng bo'lib qoladi, o'zgarganda <strong>zaryad q</strong> o'zgaradi.</p>
                     <p class="warn-note" id="emptyWarn" hidden>⚠️ Kondensator <strong>zaryadsiz</strong> va manbadan uzilgan. Avval «Manbaga ulangan» rejimida zaryadlang.</p>
@@ -104,10 +104,10 @@
                 <div class="control-group">
                     <label>Dielektrik (ε):</label>
                     <div class="diel-selector" role="radiogroup" aria-label="Dielektrikni tanlash">
-                        <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectDielectric('air', event)">Havo<br>1</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectDielectric('paraffin', event)">Parafin<br>2</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectDielectric('mica', event)">Slyuda<br>6</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectDielectric('glass', event)">Shisha<br>7</button>
+                        <button class="planet-btn active" role="radio" aria-checked="true" data-click="selectDielectric('air', event)">Havo<br>1</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectDielectric('paraffin', event)">Parafin<br>2</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectDielectric('mica', event)">Slyuda<br>6</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectDielectric('glass', event)">Shisha<br>7</button>
                     </div>
                 </div>
 
@@ -118,9 +118,9 @@
                     <input type="range" id="voltSlider" min="0" max="100" step="1" value="20" aria-label="Manba kuchlanishi voltda">
                 </div>
 
-                <button class="action btn-primary" onclick="startCharging()">▶️ Zaryadlash</button>
-                <button class="action btn-secondary" onclick="pauseCharging()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetCharging()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startCharging()">▶️ Zaryadlash</button>
+                <button class="action btn-secondary" data-click="pauseCharging()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetCharging()">🔄 Qayta</button>
                 <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
@@ -200,8 +200,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="kondensator_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101h"></script>
+    <script src="../model-tools.js?v=20261101h"></script>
+    <script src="kondensator_model.js?v=20261101h"></script>
 </body>
 </html>

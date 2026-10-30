@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Ideal gaz qonunlari interaktiv modeli - Boyl-Mariott, Gey-Lyussak va Sharl qonunlari, pV = νRT. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎈%3C/text%3E%3C/svg%3E">
     <title>Ideal Gaz Qonunlari - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101h">
     <style>
         :root {
             --primary: #65a30d;
@@ -96,9 +96,9 @@
                 <div class="control-group">
                     <label>Jarayon turi:</label>
                     <div class="mode-selector" role="radiogroup" aria-label="Izojarayonni tanlash">
-                        <button class="mode-btn active" id="modeIsoT" role="radio" aria-checked="true" onclick="setMode('isoT', event)">Izotermik<br>T = const</button>
-                        <button class="mode-btn" id="modeIsoP" role="radio" aria-checked="false" onclick="setMode('isoP', event)">Izobarik<br>p = const</button>
-                        <button class="mode-btn" id="modeIsoV" role="radio" aria-checked="false" onclick="setMode('isoV', event)">Izoxorik<br>V = const</button>
+                        <button class="mode-btn active" id="modeIsoT" role="radio" aria-checked="true" data-click="setMode('isoT', event)">Izotermik<br>T = const</button>
+                        <button class="mode-btn" id="modeIsoP" role="radio" aria-checked="false" data-click="setMode('isoP', event)">Izobarik<br>p = const</button>
+                        <button class="mode-btn" id="modeIsoV" role="radio" aria-checked="false" data-click="setMode('isoV', event)">Izoxorik<br>V = const</button>
                     </div>
                     <p class="hint-note" id="modeHint">-</p>
                 </div>
@@ -118,9 +118,9 @@
                     <p class="hint-note" id="tempRange" hidden></p>
                 </div>
 
-                <button class="action btn-primary" onclick="startGas()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pauseGas()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetGas()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startGas()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pauseGas()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetGas()">🔄 Qayta</button>
                 <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
@@ -189,8 +189,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="gaz_qonunlari_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101h"></script>
+    <script src="../model-tools.js?v=20261101h"></script>
+    <script src="gaz_qonunlari_model.js?v=20261101h"></script>
 </body>
 </html>

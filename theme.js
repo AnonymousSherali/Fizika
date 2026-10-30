@@ -12,6 +12,48 @@ window.Fizika.esc = function (s) {
     });
 };
 
+/*
+ * Tugma bosilishi: HTML'da onclick="..." o'rniga data-click="funksiya('qiymat', event)".
+ * Sabab — CSP (script-src 'self'): HTML ichidagi kod bajarilmaydi. Bu yerda eval YO'Q: faqat global
+ * funksiya nomi va oddiy qiymatlar (satr, son, true/false/null, event, this) qat'iy tahlil qilinadi.
+ */
+(function () {
+    'use strict';
+    var CALL = /^\s*([A-Za-z_$][\w$]*)\s*\((.*)\)\s*;?\s*$/;
+    var ARG = /\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?|true|false|null|event|this)\s*(,|$)/y;
+    function parseArgs(src, ev, el) {
+        var out = [];
+        ARG.lastIndex = 0;
+        if (!src.trim()) return out;
+        while (ARG.lastIndex < src.length) {
+            var start = ARG.lastIndex, m = ARG.exec(src);
+            if (!m) throw new Error('data-click: tushunilmagan argument — ' + src.slice(start));
+            var t = m[1];
+            if (t === 'event') out.push(ev);
+            else if (t === 'this') out.push(el);
+            else if (t === 'true' || t === 'false' || t === 'null') out.push(JSON.parse(t));
+            else if (t[0] === "'") out.push(t.slice(1, -1).replace(/\\(.)/g, '$1'));
+            else if (t[0] === '"') out.push(JSON.parse(t));
+            else out.push(Number(t));
+            if (!m[2]) break;
+        }
+        return out;
+    }
+    window.Fizika.callAttr = function (el, attr, ev) {
+        var m = CALL.exec(el.getAttribute(attr) || '');
+        var fn = m && window[m[1]];
+        if (typeof fn !== 'function') {
+            if (window.console) console.error('data-click: funksiya topilmadi — ' + el.getAttribute(attr));
+            return;
+        }
+        return fn.apply(el, parseArgs(m[2], ev, el));
+    };
+    document.addEventListener('click', function (e) {
+        var el = e.target && e.target.closest ? e.target.closest('[data-click]') : null;
+        if (el && !el.disabled) window.Fizika.callAttr(el, 'data-click', e);
+    });
+})();
+
 (function () {
     'use strict';
 
@@ -136,7 +178,7 @@ window.Fizika.esc = function (s) {
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261101g';
+    var I18N_VER = '20261101h';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----

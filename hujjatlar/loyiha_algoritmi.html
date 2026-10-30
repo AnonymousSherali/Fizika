@@ -2,12 +2,12 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Fizik modellar loyihasining arxitekturasi va algoritmlari - interaktiv diagrammalar.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📊%3C/text%3E%3C/svg%3E">
     <title>Loyiha Algoritmi - Fizik Modellar</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
     <style>
         :root {
             --primary: #4338ca;
@@ -197,18 +197,18 @@
         </div>
         
         <div class="tabs" role="tablist" aria-label="Diagramma turlari">
-            <button class="tab active" role="tab" aria-selected="true" onclick="changeDiagram(0)">1. Umumiy Arxitektura</button>
-            <button class="tab" role="tab" aria-selected="false" onclick="changeDiagram(1)">2. Model Ishlash</button>
-            <button class="tab" role="tab" aria-selected="false" onclick="changeDiagram(2)">3. Deploy Jarayoni</button>
-            <button class="tab" role="tab" aria-selected="false" onclick="changeDiagram(3)">4. Foydalanuvchi Oqimi</button>
+            <button class="tab active" role="tab" aria-selected="true" data-click="changeDiagram(0)">1. Umumiy Arxitektura</button>
+            <button class="tab" role="tab" aria-selected="false" data-click="changeDiagram(1)">2. Model Ishlash</button>
+            <button class="tab" role="tab" aria-selected="false" data-click="changeDiagram(2)">3. Deploy Jarayoni</button>
+            <button class="tab" role="tab" aria-selected="false" data-click="changeDiagram(3)">4. Foydalanuvchi Oqimi</button>
         </div>
         
         <div class="controls">
-            <button class="btn btn-zoom" onclick="zoomIn()">➕ Zoom In</button>
+            <button class="btn btn-zoom" data-click="zoomIn()">➕ Zoom In</button>
             <div class="zoom-level" id="zoomLevel">100%</div>
-            <button class="btn btn-zoom" onclick="zoomOut()">➖ Zoom Out</button>
-            <button class="btn btn-download" onclick="downloadDiagram()">💾 Yuklab Olish</button>
-            <button class="btn btn-print" onclick="printDiagram()">🖨️ Chop Etish</button>
+            <button class="btn btn-zoom" data-click="zoomOut()">➖ Zoom Out</button>
+            <button class="btn btn-download" data-click="downloadDiagram()">💾 Yuklab Olish</button>
+            <button class="btn btn-print" data-click="printDiagram()">🖨️ Chop Etish</button>
         </div>
         
         <div class="canvas-container">
@@ -248,7 +248,7 @@
         </div>
     </div>
 
-    <script src="loyiha_algoritmi.js?v=20261101g"></script>
-    <script src="../theme.js?v=20261101g"></script>
+    <script src="loyiha_algoritmi.js?v=20261101h"></script>
+    <script src="../theme.js?v=20261101h"></script>
 </body>
 </html>

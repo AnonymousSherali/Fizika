@@ -35,11 +35,6 @@
 
 # ---------- Kesh va xavfsizlik ----------
 <IfModule mod_headers.c>
-    # HTML har safar yangidan tekshiriladi — yangi versiya darhol ko'rinadi
-    # sw.js ham har safar tekshiriladi — aks holda oflayn kesh yangilanmay qoladi
-    <FilesMatch "(\.html?|sw\.js|\.webmanifest)$">
-        Header set Cache-Control "no-cache"
-    </FilesMatch>
     # CSS/JS havolalarida ?v=... versiya bor, shuning uchun keshlash xavfsiz
     <FilesMatch "\.(css|js)$">
         Header set Cache-Control "max-age=86400"
@@ -47,6 +42,21 @@
     <FilesMatch "\.(pdf|docx|svg|woff2)$">
         Header set Cache-Control "max-age=604800"
     </FilesMatch>
+    # HTML va sw.js har safar yangidan tekshiriladi — yangi versiya darhol ko'rinadi, oflayn kesh yangilanadi.
+    # (Bu blok yuqoridagi .js qoidasidan KEYIN turishi shart — aks holda sw.js 1 kun keshlanib qolardi)
+    <FilesMatch "(\.html?|sw\.js|\.webmanifest)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    # CSP: HTML ichidagi kod bajarilmaydi (sahifalar faqat o'z .js fayllaridan foydalanadi) — backend/deploy
+    # dagi nginx sozlamasi bilan bir xil. API boshqa domenda bo'lsa connect-src ga qo'shing.
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
 </IfModule>
+
+# Ishlab chiqish fayllari saytda ochilmaydi
+<FilesMatch "^(package(-lock)?\.json|eslint\.config\.js)$">
+    Require all denied
+</FilesMatch>
+RedirectMatch 404 ^/(node_modules|tools|backend)(/|$)

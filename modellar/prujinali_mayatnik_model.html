@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Prujinali mayatnik interaktiv modeli - Guk qonuni, garmonik tebranishlar, T = 2π√(m/k) va energiyaning aylanishi. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌀%3C/text%3E%3C/svg%3E">
     <title>Prujinali Mayatnik - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101h">
     <style>
         :root {
             --primary: #db2777;
@@ -94,9 +94,9 @@
                     <input type="range" id="dampSlider" min="0" max="0.5" step="0.01" value="0" aria-label="So'nish koeffitsiyenti kilogramm taqsim sekundda">
                 </div>
 
-                <button class="action btn-primary" onclick="startSpring()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pauseSpring()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetSpring()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startSpring()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pauseSpring()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetSpring()">🔄 Qayta</button>
                 <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
@@ -185,8 +185,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="prujinali_mayatnik_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101h"></script>
+    <script src="../model-tools.js?v=20261101h"></script>
+    <script src="prujinali_mayatnik_model.js?v=20261101h"></script>
 </body>
 </html>

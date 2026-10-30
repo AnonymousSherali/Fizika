@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Impulsning saqlanish qonuni interaktiv modeli - aravachalarning elastik, noelastik va qisman elastik to'qnashuvi, impuls va kinetik energiya balansi. 10-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎱%3C/text%3E%3C/svg%3E">
     <title>Impulsning Saqlanish Qonuni - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101h">
     <style>
         :root {
             --primary: #b91c1c;
@@ -73,9 +73,9 @@
                 <div class="control-group">
                     <label>To'qnashuv turi:</label>
                     <div class="mode-selector" role="radiogroup" aria-label="To'qnashuv turini tanlash">
-                        <button class="mode-btn active" id="modeElastic" role="radio" aria-checked="true" onclick="setMode('elastic')">Elastik<br>k = 1</button>
-                        <button class="mode-btn" id="modeInelastic" role="radio" aria-checked="false" onclick="setMode('inelastic')">Noelastik<br>k = 0</button>
-                        <button class="mode-btn" id="modePartial" role="radio" aria-checked="false" onclick="setMode('partial')">Qisman<br>elastik</button>
+                        <button class="mode-btn active" id="modeElastic" role="radio" aria-checked="true" data-click="setMode('elastic')">Elastik<br>k = 1</button>
+                        <button class="mode-btn" id="modeInelastic" role="radio" aria-checked="false" data-click="setMode('inelastic')">Noelastik<br>k = 0</button>
+                        <button class="mode-btn" id="modePartial" role="radio" aria-checked="false" data-click="setMode('partial')">Qisman<br>elastik</button>
                     </div>
                     <p class="hint-note" id="modeNote"></p>
                 </div>
@@ -125,9 +125,9 @@
                     <p class="hint-note">Faqat ko'rinishni sekinlashtiradi — o'lchovlar model vaqti t bo'yicha hisoblanadi.</p>
                 </div>
 
-                <button class="action btn-primary" onclick="startSim()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pauseSim()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetSim()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startSim()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pauseSim()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetSim()">🔄 Qayta</button>
                 <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
@@ -241,8 +241,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="impuls_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101h"></script>
+    <script src="../model-tools.js?v=20261101h"></script>
+    <script src="impuls_model.js?v=20261101h"></script>
 </body>
 </html>

@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101h"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Matematik mayatnik interaktiv modeli - erkin tushish tezlanishini aniqlash. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕰️%3C/text%3E%3C/svg%3E">
     <title>Matematik Mayatnik - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101h">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101h">
     <style>
         :root {
             --primary: #0f766e;
@@ -93,18 +93,18 @@
                 <div class="control-group">
                     <label>Osmoniy jism (g tezlanishi):</label>
                     <div class="planet-selector" role="radiogroup" aria-label="Osmoniy jismni tanlash">
-                        <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectBody('earth', event)">Yer<br>9.81</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectBody('moon', event)">Oy<br>1.62</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectBody('mars', event)">Mars<br>3.71</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectBody('jupiter', event)">Yupiter<br>24.79</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectBody('venus', event)">Venera<br>8.87</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectBody('sun', event)">Quyosh<br>274</button>
+                        <button class="planet-btn active" role="radio" aria-checked="true" data-click="selectBody('earth', event)">Yer<br>9.81</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectBody('moon', event)">Oy<br>1.62</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectBody('mars', event)">Mars<br>3.71</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectBody('jupiter', event)">Yupiter<br>24.79</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectBody('venus', event)">Venera<br>8.87</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectBody('sun', event)">Quyosh<br>274</button>
                     </div>
                 </div>
 
-                <button class="action btn-primary" onclick="startPendulum()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pausePendulum()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetPendulum()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startPendulum()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pausePendulum()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetPendulum()">🔄 Qayta</button>
                 <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
@@ -161,8 +161,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="mayatnik_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101h"></script>
+    <script src="../model-tools.js?v=20261101h"></script>
+    <script src="mayatnik_model.js?v=20261101h"></script>
 </body>
 </html>
