@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from apps.core.files import PrivateUpload, delete_files_on_delete
 from apps.core.models import UUIDModel
 
 
@@ -16,7 +17,9 @@ class Assignment(UUIDModel):
         FIVE = 5, "5 ballik (2–5)"
         HUNDRED = 100, "100 ballik"
 
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="assignments")
+    # O'qituvchi hisobi o'chirilsa topshiriq va o'quvchilarning baholari saqlanib qoladi (CASCADE ularni o'chirardi)
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                related_name="assignments")
     type = models.CharField("turi", max_length=4, choices=Type.choices)
     title = models.CharField("sarlavha", max_length=150)
     instructions_uz = models.TextField("ko'rsatma (uz)", blank=True)
@@ -54,6 +57,31 @@ class Assignment(UUIDModel):
     def __str__(self):
         return self.title
 
+    def clean(self):
+        """Admin panel formasi ham API bilan bir xil tekshiriladi (buzilgan sozlama ro'yxatni 500 qilardi)."""
+        from django.core.exceptions import ValidationError
+
+        from .serializers import QuizConfigSerializer
+
+        errors = {}
+        if self.type == self.Type.LAB and not self.simulation_id:
+            errors["simulation"] = ["Laboratoriya ishi uchun model tanlang"]
+        if self.type == self.Type.TEST:
+            s = QuizConfigSerializer(data=self.quiz_config if isinstance(self.quiz_config, dict) else {})
+            if not self.quiz_config or not s.is_valid():
+                errors["quiz_config"] = ['{"topics": ["kepler"], "count": 20, "problems": 0, "time_limit_min": 30} '
+                                         "ko'rinishida bo'lishi kerak" + (f": {s.errors}" if self.quiz_config else "")]
+            else:
+                self.quiz_config = s.validated_data
+        if not 1 <= (self.max_attempts or 0) <= 3:
+            errors["max_attempts"] = ["1–3 oralig'ida"]
+        if self.late_penalty_pct is not None and self.late_penalty_pct > 100:
+            errors["late_penalty_pct"] = ["0–100%"]
+        if self.starts_at and self.due_at and self.due_at <= self.starts_at:
+            errors["due_at"] = ["Muddat boshlanish vaqtidan keyin bo'lishi kerak"]
+        if errors:
+            raise ValidationError(errors)
+
     @property
     def is_open(self) -> bool:
         return self.starts_at is None or self.starts_at <= timezone.now()
@@ -81,7 +109,7 @@ class Submission(UUIDModel):
                                     related_name="submissions")
     lab_snapshot = models.JSONField("jurnal nusxasi", null=True, blank=True)
     conclusion = models.TextField("xulosa", blank=True, max_length=2000)
-    image = models.ImageField("grafik rasmi", upload_to="submissions/%Y/%m/", null=True, blank=True)
+    image = models.ImageField("grafik rasmi", upload_to=PrivateUpload("submissions"), null=True, blank=True)
 
     # Test
     attempt = models.ForeignKey("quizzes.Attempt", null=True, blank=True, on_delete=models.SET_NULL,
@@ -106,3 +134,6 @@ class Submission(UUIDModel):
 
     def __str__(self):
         return f"{self.student} → {self.assignment} ({self.get_status_display()})"
+
+
+models.signals.post_delete.connect(delete_files_on_delete, sender=Submission, dispatch_uid="submission-files")

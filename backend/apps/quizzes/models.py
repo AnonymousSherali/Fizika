@@ -90,6 +90,20 @@ class Question(TimeStampedModel):
     def __str__(self):
         return self.text_uz[:80]
 
+    def clean(self):
+        # Admin panel formasi ham shu tekshiruvdan o'tadi (API serializeri bilan bir xil qoida)
+        from django.core.exceptions import ValidationError
+
+        from .validators import option_errors
+
+        errors = {}
+        if e := option_errors(self.options):
+            errors["options"] = e
+        if self.correct_index is not None and not 0 <= self.correct_index <= 3:
+            errors["correct_index"] = ["0–3 oralig'ida bo'lishi kerak"]
+        if errors:
+            raise ValidationError(errors)
+
     @property
     def points(self):
         return POINTS[self.level]
@@ -137,6 +151,15 @@ class Problem(TimeStampedModel):
 
     def __str__(self):
         return self.text_uz[:80]
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        from .validators import param_errors
+
+        errors, _ = param_errors(self.params, self.formula, self.text_uz)
+        if errors:
+            raise ValidationError(errors)
 
     points = POINTS["calc"]
 

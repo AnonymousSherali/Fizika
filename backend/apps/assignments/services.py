@@ -27,6 +27,20 @@ def assignments_for_teacher(user):
     return Assignment.objects.filter(Q(teacher=user) | Q(classrooms__in=classes)).distinct()
 
 
+def visible_classrooms(a: Assignment, user):
+    """Topshiriqning shu o'qituvchi ko'ra oladigan sinflari: muallif va admin — hammasi; boshqa sinf
+    o'qituvchisi (masalan, 10-A yordamchisi) — faqat o'z sinflari (11-B o'quvchilarini ko'rmaydi/baholamaydi)."""
+    if user is None or user.is_platform_admin or a.teacher_id == user.id:
+        return a.classrooms.all()
+    mine = ClassroomMember.objects.filter(user=user, role__in=STAFF).values("classroom")
+    return a.classrooms.filter(id__in=mine)
+
+
+def can_staff_see_student(a: Assignment, user, student_id) -> bool:
+    return ClassroomMember.objects.filter(classroom__in=visible_classrooms(a, user), user_id=student_id,
+                                          role=ClassroomMember.Role.STUDENT).exists()
+
+
 def get_for_student(assignment_id, user) -> Assignment:
     return get_object_or_404(assignments_for_student(user), pk=assignment_id)
 
@@ -139,12 +153,19 @@ def on_attempt_finished(attempt):
     if not assignment or not attempt.user_id:
         return
     sub, _ = Submission.objects.select_for_update().get_or_create(assignment=assignment, student=attempt.user)
-    best = sub.attempt
-    if best is None or attempt.percent > best.percent:
-        sub.attempt = attempt
-        best = attempt
-    late = assignment.due_at is not None and attempt.finished_at > assignment.due_at
-    percent = best.percent * (1 - assignment.late_penalty_pct / 100) if late else best.percent
+
+    # Har urinish o'z kechikishi bilan baholanadi, eng yuqori (jarimadan keyingi) natija olinadi:
+    # muddatdan keyingi qayta urinish o'z vaqtida olingan yaxshi natijani jarimaga tushirmasin
+    def scored(a):
+        late = assignment.due_at is not None and a.finished_at > assignment.due_at
+        return (a.percent * (1 - assignment.late_penalty_pct / 100) if late else a.percent), late
+
+    from apps.quizzes.models import Attempt
+
+    finished = Attempt.objects.filter(assignment=assignment, user=attempt.user, finished_at__isnull=False)
+    best = max(finished, key=lambda a: scored(a)[0], default=attempt)
+    percent, late = scored(best)
+    sub.attempt = best
     sub.is_late = late
     sub.auto_score = {"percent": round(percent, 1), "raw_percent": best.percent, "score": best.score,
                       "max_score": best.max_score, "late_penalty_pct": assignment.late_penalty_pct if late else 0}
@@ -167,11 +188,12 @@ def student_status(assignment: Assignment, sub: Submission | None) -> str:
     return sub.status
 
 
-def build_roster(a: Assignment) -> list[dict]:
-    """O'qituvchi uchun: topshiriq berilgan sinflardagi har bir o'quvchi va holati (topshirmaganlar ham)."""
+def build_roster(a: Assignment, user=None) -> list[dict]:
+    """O'qituvchi uchun: topshiriq berilgan (va unga ko'rinadigan) sinflardagi har bir o'quvchi va holati."""
     subs = {s.student_id: s for s in a.submissions.select_related("student")}
     rows, seen = [], set()
-    members = (ClassroomMember.objects.filter(classroom__in=a.classrooms.all(), role=ClassroomMember.Role.STUDENT)
+    members = (ClassroomMember.objects.filter(classroom__in=visible_classrooms(a, user),
+                                              role=ClassroomMember.Role.STUDENT)
                .select_related("user", "classroom").order_by("classroom__name", "user__last_name"))
     for m in members:
         if m.user_id in seen:

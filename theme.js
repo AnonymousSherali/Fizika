@@ -127,7 +127,7 @@
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261101d';
+    var I18N_VER = '20261101e';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----

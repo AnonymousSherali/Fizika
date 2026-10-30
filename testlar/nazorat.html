@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../img/icons/icon-192.png" type="image/png">
     <title>Nazorat testi — Fizika 10–11</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101d">
-    <link rel="stylesheet" href="../app.css?v=20261101d">
+    <link rel="stylesheet" href="../styles.css?v=20261101e">
+    <link rel="stylesheet" href="../app.css?v=20261101e">
     <style>
         .qbox { max-width: 760px; margin: 0 auto; }
         .qhead { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-3); }
@@ -56,9 +56,9 @@
         </div>
     </main>
 
-    <script src="../theme.js?v=20261101d"></script>
-    <script src="../api.js?v=20261101d"></script>
-    <script src="../app.js?v=20261101d"></script>
+    <script src="../theme.js?v=20261101e"></script>
+    <script src="../api.js?v=20261101e"></script>
+    <script src="../app.js?v=20261101e"></script>
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
@@ -174,12 +174,16 @@
                 it.answered = true;
                 if (r.is_correct !== null) { it._ok = r.is_correct; it._locked = true; }
                 render();
-                if (r.is_correct === null && cur < attempt.items.length - 1 && it.type === 'mcq') {
-                    setTimeout(function () { cur++; render(); }, 250);
+                // Faqat shu savol hali ekranda bo'lsa keyingisiga o'tiladi: tez bosish yoki «Keyingi» tugmasi
+                // bilan birga kelgan javob savolni o'tkazib yubormasin
+                var at = attempt.items.indexOf(it);
+                if (r.is_correct === null && it.type === 'mcq' && at === cur && cur < attempt.items.length - 1) {
+                    setTimeout(function () { if (cur === at) { cur = at + 1; render(); } }, 250);
                 }
             }, function (e) {
                 FA.msg('msg', 'err', FA.errText(e));
-                if (/Vaqt tugagan|yakunlangan/.test(FA.errText(e))) finish(true);
+                // Asl (tarjima qilinmagan) server xabari bo'yicha — ruscha rejimda ham ishlasin
+                if (/Vaqt tugagan|yakunlangan/.test(e && e.message || '')) finish(true);
             });
         }
 

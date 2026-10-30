@@ -105,7 +105,7 @@ class LabJournalViewSet(viewsets.ModelViewSet):
             g = GraphSerializer(data=request.data)
             g.is_valid(raise_exception=True)
             graph = g.validated_data
-        schema = LabSchema.objects.get(simulation=journal.simulation, version=journal.schema_version)
+        schema = _schema_or_409(journal)
         result = analyze(journal.rows, schema.columns, graph or journal.graph, journal.simulation.analysis)
         if journal.user_id == request.user.id:
             if graph:
@@ -119,7 +119,7 @@ class LabJournalViewSet(viewsets.ModelViewSet):
     def export(self, request, pk=None):
         """FT-4.4: CSV (Excel uchun ';' va o'nli vergul — frontenddagi eksport bilan bir xil)."""
         journal = self.get_object()
-        schema = LabSchema.objects.get(simulation=journal.simulation, version=journal.schema_version)
+        schema = _schema_or_409(journal)
         buf = io.StringIO()
         w = csv.writer(buf, delimiter=";", lineterminator="\r\n")
         w.writerow(["#"] + [c["label"] for c in schema.columns])
@@ -130,3 +130,12 @@ class LabJournalViewSet(viewsets.ModelViewSet):
         resp = HttpResponse("﻿" + buf.getvalue(), content_type="text/csv; charset=utf-8")
         resp["Content-Disposition"] = f'attachment; filename="{journal.simulation.slug}_jurnal_{stamp}.csv"'
         return resp
+
+
+def _schema_or_409(journal):
+    schema = LabSchema.objects.filter(simulation=journal.simulation, version=journal.schema_version).first()
+    if schema is None:
+        from apps.core.exceptions import Conflict
+
+        raise Conflict("Bu jurnalning ustunlar sxemasi topilmadi (administratorga murojaat qiling)")
+    return schema

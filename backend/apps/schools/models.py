@@ -50,7 +50,8 @@ _CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 def generate_join_code() -> str:
     while True:
-        code = "FZ-" + "".join(secrets.choice(_CODE_ALPHABET) for _ in range(4))
+        # 6 belgi (32⁶ ≈ 1 mlrd): kodni tanlab topish amalda imkonsiz (4 belgida ~1 mln edi)
+        code = "FZ-" + "".join(secrets.choice(_CODE_ALPHABET) for _ in range(6))
         if not Classroom.objects.filter(join_code=code).exists():
             return code
 

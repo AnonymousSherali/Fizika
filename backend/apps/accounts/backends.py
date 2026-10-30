@@ -1,6 +1,5 @@
 from django.contrib.auth.backends import ModelBackend
 from django.core.exceptions import ValidationError
-from django.db.models import Q
 
 from .models import User
 from .utils import normalize_email, normalize_phone
@@ -11,17 +10,21 @@ def find_user(login: str) -> User | None:
     login = (login or "").strip()
     if not login:
         return None
-    q = Q(username__iexact=login)
+    # Aniq tartib: email → telefon → login (bir nechta hisobga mos kelsa ham natija bir xil bo'lsin)
     if "@" in login:
-        q |= Q(email=normalize_email(login))
+        user = User.objects.filter(email=normalize_email(login)).first()
+        if user:
+            return user
     else:
         try:
             phone = normalize_phone(login)
         except ValidationError:
             phone = None
         if phone:
-            q |= Q(phone=phone)
-    return User.objects.filter(q).first()
+            user = User.objects.filter(phone=phone).first()
+            if user:
+                return user
+    return User.objects.filter(username__iexact=login).order_by("date_joined").first()
 
 
 class LoginBackend(ModelBackend):

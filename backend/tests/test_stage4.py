@@ -69,7 +69,11 @@ def test_teacher_upload_moderation_flow(api, auth, teacher, settings, tmp_path):
     assert r.status_code == 200 and r.data["status"] == "published"
     api.credentials()
     r = api.get(f"/api/v1/lesson-plans/{pid}/download/?type=pdf")
-    assert r.status_code == 302 and "/media/lesson_plans/" in r["Location"]
+    # Yuklangan fayl maxfiy papkadan API orqali beriladi (media havolasiga yo'naltirilmaydi)
+    assert r.status_code == 200 and b"".join(r.streaming_content).startswith(b"%PDF")
+    assert "attachment" in r["Content-Disposition"]
+    plan = LessonPlan.objects.get(pk=pid)
+    assert plan.pdf.name.startswith("private/lesson_plans/") and "arximed" not in plan.pdf.name
     assert AuditLog.objects.filter(action="lesson_plan.publish").exists()
     # Nashr etilganini muallif o'chira olmaydi
     auth(api, teacher)

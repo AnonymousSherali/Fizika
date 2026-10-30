@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 
+from apps.core.files import PrivateUpload, delete_files_on_delete
 from apps.core.models import TimeStampedModel
 
 
@@ -21,8 +22,8 @@ class LessonPlan(TimeStampedModel):
     icon = models.CharField("belgi", max_length=8, blank=True)
     simulation = models.ForeignKey("simulations.Simulation", null=True, blank=True, on_delete=models.SET_NULL,
                                    related_name="lesson_plans")
-    pdf = models.FileField("PDF", upload_to="lesson_plans/%Y/", blank=True)
-    docx = models.FileField("DOCX", upload_to="lesson_plans/%Y/", blank=True)
+    pdf = models.FileField("PDF", upload_to=PrivateUpload("lesson_plans"), blank=True)
+    docx = models.FileField("DOCX", upload_to=PrivateUpload("lesson_plans"), blank=True)
     static_pdf = models.CharField("statik PDF yo'li", max_length=200, blank=True)
     static_docx = models.CharField("statik DOCX yo'li", max_length=200, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
@@ -66,3 +67,6 @@ class Translation(models.Model):
 
     def __str__(self):
         return self.key[:80]
+
+
+models.signals.post_delete.connect(delete_files_on_delete, sender=LessonPlan, dispatch_uid="lessonplan-files")

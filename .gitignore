@@ -1,0 +1,10 @@
+# Umumiy (backend uchun alohida: backend/.gitignore)
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+dump.rdb
+*.dump
+.env
+.idea/
+.vscode/

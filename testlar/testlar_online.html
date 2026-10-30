@@ -7,7 +7,7 @@
     <meta name="description" content="10-11-sinf fizikasi bo'yicha onlayn interaktiv test: 15 mavzu (mayatniklar, qiya tekislik, impuls, gaz qonunlari, Om qonuni, kondensator, induksiya, optika, fotoeffekt, radioaktivlik, Rezerford, Kepler) — mavzu tanlash va avtomatik baholash bilan.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📝%3C/text%3E%3C/svg%3E">
     <title>Onlayn Testlar - Fizika</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101d">
+    <link rel="stylesheet" href="../styles.css?v=20261101e">
     <style>
         :root {
             --primary: #4f46e5;
@@ -319,7 +319,7 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101d"></script>
+    <script src="../theme.js?v=20261101e"></script>
     <script>
         // Savollar: correct = to'g'ri javob indeksi (0=A, 1=B, 2=C, 3=D)
         const questions = [
@@ -1309,7 +1309,11 @@
                     const had = new Set(TOPICS);
                     TOPICS.splice(0, TOPICS.length, ...b.topics.filter(t => b.questions.some(q => topicOf(q.tag) === t)
                         || b.problems.some(p => topicOf(p.tag) === t)));
-                    questions.splice(0, questions.length, ...b.questions);
+                    // Server ham tekshiradi; himoya uchun: aynan 4 variant va to'g'ri indeksli savollargina
+                    const valid = b.questions.filter(q => Array.isArray(q.o) && q.o.length === 4 &&
+                        Number.isInteger(q.correct) && q.correct >= 0 && q.correct < 4 && q.q);
+                    if (!valid.length) return;
+                    questions.splice(0, questions.length, ...valid);
                     problems.splice(0, problems.length, ...b.problems);
                     // Tanlov saqlanadi; admin qo'shgan yangi mavzu ham tanlangan bo'ladi
                     selTopics = new Set(TOPICS.filter(t => selTopics.has(t) || !had.has(t)));

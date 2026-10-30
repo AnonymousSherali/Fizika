@@ -1,5 +1,6 @@
 """Bildirishnoma yaratish (FT-9.1 – FT-9.3). Email Celery orqali fonda yuboriladi."""
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 
 from .models import Notification
 
@@ -48,7 +49,8 @@ def assignment_url(assignment):
 
 
 def on_assignment_created(assignment):
-    due = f" Muddat: {assignment.due_at:%d.%m.%Y %H:%M}." if assignment.due_at else ""
+    # Toshkent vaqti bo'yicha (UTC emas)
+    due = f" Muddat: {timezone.localtime(assignment.due_at):%d.%m.%Y %H:%M}." if assignment.due_at else ""
     kind = "Laboratoriya ishi" if assignment.type == "lab" else "Test"
     notify(students_of(assignment), Notification.Type.NEW_ASSIGNMENT, f"Yangi topshiriq: {assignment.title}",
            f"{kind}.{due}", assignment_url(assignment), dedupe_key=f"new:{assignment.id}")

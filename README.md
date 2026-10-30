@@ -34,15 +34,19 @@ O'quvchilarga fizik jarayonlarni visualizatsiya qilish va interaktiv tarzda o'rg
   kutilgan natijalar ko'rinadi; `?oqituvchi=0` bilan o'chiriladi
 - 🌐 Interfeys tilini o'zgartirish: o'zbekcha / ruscha (suzuvchi «RU» tugmasi)
 
-### Backend (reja):
-Backend qismi uchun to'liq texnik topshiriq: [`hujjatlar/backend_TZ.md`](hujjatlar/backend_TZ.md)
-(Python + Django + PostgreSQL tavsiya etilgan; muqobil — PHP + Laravel).
+### Backend (hisoblar, sinflar, topshiriqlar, baholash):
+Python + Django + PostgreSQL — [`backend/`](backend/README.md). Texnik topshiriq:
+[`hujjatlar/backend_TZ.md`](hujjatlar/backend_TZ.md), bajarilish holati: [`backend/ROADMAP.md`](backend/ROADMAP.md).
+Qo'llanmalar: o'qituvchi ([uz](hujjatlar/qollanma_oqituvchi.md), [ru](hujjatlar/qollanma_oqituvchi_ru.md)),
+administrator ([uz](hujjatlar/qollanma_admin.md), [ru](hujjatlar/qollanma_admin_ru.md)).
+Backend ishlamasa ham sayt (modellar, mashq testlari, ishlanmalar) avvalgidek oflayn ishlaydi.
 
 ### Oflayn ishlash (PWA):
 Sayt bir marta internet bilan ochilgach, barcha sahifalar, modellar va testlar brauzer
 xotirasiga saqlanadi va **internetsiz ham ochiladi**. Telefonda «Bosh ekranga qo'shish»
-orqali ilova sifatida o'rnatiladi. Fayllar o'zgartirilganda `sw.js` dagi `VERSION` ni
-yangilang. (Oflayn rejim faqat `http(s)://` orqali ishlaydi, `file://` da emas.)
+orqali ilova sifatida o'rnatiladi. Fayllar o'zgartirilganda kesh versiyasini oshiring:
+`python3 tools/bump_version.py` (barcha `?v=`, `sw.js` versiyasi va oflayn ro'yxat yangilanadi; CI tekshiradi).
+(Oflayn rejim faqat `http(s)://` orqali ishlaydi, `file://` da emas.)
 
 ### Texnologiyalar:
 - HTML5
@@ -57,11 +61,18 @@ yangilang. (Oflayn rejim faqat `http(s)://` orqali ishlaydi, `file://` da emas.)
 ```
 Fizika/                            # Tuzilma sayt bo'limlariga mos
 │
-├── index.html                     # 🏠 Bosh sahifa
-├── styles.css                     # Umumiy stillar (dark mode bilan)
+├── index.html                     # 🏠 Bosh sahifa (modellar katalogi)
+├── kirish.html, profil.html       # 👤 Kirish / ro'yxatdan o'tish, profil
+├── oquvchi/, oqituvchi/           # 📋 O'quvchi sahifasi, o'qituvchi paneli
+├── maxfiylik.html                 # 🔒 Maxfiylik siyosati
+├── styles.css, app.css            # Umumiy stillar (dark mode bilan), hisob sahifalari
 ├── model-tools.css                # Laboratoriya vositalari uslubi
-├── theme.js                       # Umumiy UI (rejim, animatsiyalar)
-├── model-tools.js                 # Jurnal, navigatsiya, klaviatura
+├── theme.js                       # Umumiy UI (rejim, til, hisob tugmasi)
+├── api.js, app.js                 # Backend bilan aloqa (token, oflayn navbat), sahifa yordamchilari
+├── i18n.js, i18n-ru.js            # Ruscha tarjima (lug'at)
+├── sw.js, manifest.webmanifest    # Oflayn ishlash (PWA)
+├── model-tools.js                 # Jurnal, navigatsiya, klaviatura, topshiriq rejimi
+├── tools/bump_version.py          # Kesh versiyasini oshirish
 ├── tekshiruv.html                 # 🔍 Deploy tekshiruvi (fayllar yuklanyaptimi)
 ├── .htaccess                      # Apache sozlamalari (MIME, kesh)
 ├── fonts/                         # Inter shrifti (internetsiz ham ishlaydi)
@@ -77,15 +88,21 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │   ├── prujinali_mayatnik_model.html # Prujinali mayatnik
 │   ├── otilgan_jism_model.html    #   Burchak ostida otilgan jism
 │   ├── gaz_qonunlari_model.html   #   Ideal gaz qonunlari
-│   └── kondensator_model.html     #   Yassi kondensator
+│   ├── kondensator_model.html     #   Yassi kondensator
+│   ├── impuls_model.html          #   Impulsning saqlanish qonuni
+│   ├── yoruglik_sinishi_model.html #  Yorug'likning sinishi
+│   ├── linza_model.html           #   Yupqa linza
+│   ├── fotoeffekt_model.html      #   Fotoeffekt
+│   └── radioaktiv_yemirilish_model.html # Radioaktiv yemirilish
 │
 ├── dars_ishlanmalar/              # 📚 Dars ishlanmalar
 │   ├── index.html                 #   Sahifa (/dars_ishlanmalar/)
-│   ├── 10-sinf/                   #   7 ta dars (PDF + DOCX)
-│   └── 11-sinf/                   #   6 ta dars (PDF; 4 tasi DOCX ham)
+│   ├── 10-sinf/                   #   12 ta dars (PDF + DOCX)
+│   └── 11-sinf/                   #   10 ta dars (PDF; 8 tasi DOCX ham)
 │
 ├── testlar/                       # 📝 Test va baholash
-│   ├── testlar_online.html        #   Onlayn interaktiv test
+│   ├── testlar_online.html        #   Mashq testi (savollar serverdan, oflayn — o'rnatilgan bank)
+│   ├── nazorat.html               #   Nazorat testi (o'qituvchi topshirig'i, serverda tekshiriladi)
 │   ├── testlar.pdf                #   Testlar to'plami (PDF)
 │   └── testlar.md                 #   Manba
 │
@@ -95,8 +112,9 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │   ├── loyiha_algoritmi.html      #   Loyiha strukturasi diagrammasi
 │   └── *.md                       #   Manba fayllar
 │
+├── backend/                       # ⚙️ Django backend (README.md, ROADMAP.md, Docker, nginx)
 ├── README.md                      # Bu fayl
-├── railway.json / nixpacks.toml   # Deploy sozlamalari
+├── railway.json / nixpacks.toml   # Railway: faqat statik sayt (backendsiz) deploy sozlamalari
 ```
 
 ---
