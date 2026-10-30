@@ -36,3 +36,29 @@ def test_precache_list_points_to_existing_files():
     assert listed, "sw.js da oflayn fayllar ro'yxati topilmadi"
     missing = [f for f in listed if not (ROOT / f).exists()]
     assert not missing, missing
+
+
+def test_html_has_no_inline_code_for_csp():
+    """CSP (script-src 'self') — HTML ichida kod bo'lmasligi kerak: inline <script> va on*="..." atributlari
+    brauzerda bloklanadi. Tugmalar: data-click="funksiya(...)" (theme.js), sahifa kodi — yonidagi .js faylida."""
+    problems = []
+    for p in ROOT.rglob("*.html"):
+        if "backend" in p.parts or "node_modules" in p.parts:
+            continue
+        html = p.read_text(encoding="utf-8")
+        name = str(p.relative_to(ROOT))
+        if re.search(r"<script(?![^>]*\bsrc=)[^>]*>\s*\S", html):
+            problems.append(f"{name}: inline <script>")
+        if m := re.search(r"<[^>]+\son[a-z]+\s*=", html):
+            problems.append(f"{name}: {m.group(0)[:60]}")
+        if "javascript:" in html:
+            problems.append(f"{name}: javascript: havola")
+    assert not problems, problems
+
+
+def test_csp_policy_is_identical_in_nginx_and_htaccess():
+    nginx = (ROOT / "backend" / "deploy" / "snippets" / "fizika-csp-map.conf").read_text(encoding="utf-8")
+    apache = (ROOT / ".htaccess").read_text(encoding="utf-8")
+    policy = re.search(r'default "([^"]+)"', nginx).group(1)
+    assert f'Content-Security-Policy "{policy}"' in apache
+    assert "script-src 'self';" in policy and "'unsafe-eval'" not in policy

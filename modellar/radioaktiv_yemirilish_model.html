@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101i"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Radioaktiv yemirilish qonuni interaktiv modeli - yarim yemirilish davri, N = N₀·2^(−t/T½), faollik va statistik tebranishlar. 11-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E☢️%3C/text%3E%3C/svg%3E">
     <title>Radioaktiv Yemirilish - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101i">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101i">
     <style>
         :root {
             --primary: #a16207;
@@ -84,11 +84,11 @@
                 <div class="control-group">
                     <label>Izotop:</label>
                     <div class="iso-selector" role="radiogroup" aria-label="Radioaktiv izotopni tanlash">
-                        <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectIsotope('free', event)">Erkin<br>model</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectIsotope('rn', event)">Radon-222<br>3.8 kun</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectIsotope('i', event)">Iod-131<br>8 kun</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectIsotope('co', event)">Kobalt-60<br>5.27 yil</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectIsotope('c', event)">Uglerod-14<br>5730 yil</button>
+                        <button class="planet-btn active" role="radio" aria-checked="true" data-click="selectIsotope('free', event)">Erkin<br>model</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectIsotope('rn', event)">Radon-222<br>3.8 kun</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectIsotope('i', event)">Iod-131<br>8 kun</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectIsotope('co', event)">Kobalt-60<br>5.27 yil</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectIsotope('c', event)">Uglerod-14<br>5730 yil</button>
                     </div>
                     <p class="hint-note" id="isoNote">Haqiqiy T½ juda katta, shuning uchun vaqt <strong>masshtablangan</strong>.</p>
                 </div>
@@ -110,15 +110,15 @@
                 <div class="control-group">
                     <label>Kuzatish rejimi:</label>
                     <div class="mode-selector" role="radiogroup" aria-label="Kuzatish rejimi">
-                        <button class="mode-btn" id="modeCont" role="radio" aria-checked="false" onclick="setStopMode(false, event)">Uzluksiz</button>
-                        <button class="mode-btn active" id="modeStop" role="radio" aria-checked="true" onclick="setStopMode(true, event)">Har T½ da<br>to'xtash</button>
+                        <button class="mode-btn" id="modeCont" role="radio" aria-checked="false" data-click="setStopMode(false, event)">Uzluksiz</button>
+                        <button class="mode-btn active" id="modeStop" role="radio" aria-checked="true" data-click="setStopMode(true, event)">Har T½ da<br>to'xtash</button>
                     </div>
                     <p class="hint-note">Model t = T½, 2T½, 3T½ … da pauza qiladi — N ni jurnalga yozib olish qulay.</p>
                 </div>
 
-                <button class="action btn-primary" onclick="startDecay()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pauseDecay()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetDecay()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startDecay()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pauseDecay()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetDecay()">🔄 Qayta</button>
                 <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
@@ -214,8 +214,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="radioaktiv_yemirilish_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101i"></script>
+    <script src="../model-tools.js?v=20261101i"></script>
+    <script src="radioaktiv_yemirilish_model.js?v=20261101i"></script>
 </body>
 </html>

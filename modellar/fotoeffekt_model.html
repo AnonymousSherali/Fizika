@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101i"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Fotoeffekt interaktiv modeli - Eynshteyn tenglamasi hν = A + Eₖ, qizil chegara, to'xtatuvchi kuchlanish va volt-amper xarakteristikasi. 11-sinf fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💡%3C/text%3E%3C/svg%3E">
     <title>Fotoeffekt - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101i">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101i">
     <style>
         :root {
             --primary: #be123c;
@@ -75,11 +75,11 @@
                 <div class="control-group">
                     <label>Katod metali (chiqish ishi A):</label>
                     <div class="metal-selector" role="radiogroup" aria-label="Katod metalini tanlash">
-                        <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectMetal('cs', event)">Sezyi<br>1.9 eV</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectMetal('k', event)">Kaliy<br>2.3 eV</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectMetal('na', event)">Natriy<br>2.28 eV</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectMetal('zn', event)">Rux<br>4.3 eV</button>
-                        <button class="planet-btn" role="radio" aria-checked="false" onclick="selectMetal('pt', event)">Platina<br>5.3 eV</button>
+                        <button class="planet-btn active" role="radio" aria-checked="true" data-click="selectMetal('cs', event)">Sezyi<br>1.9 eV</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectMetal('k', event)">Kaliy<br>2.3 eV</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectMetal('na', event)">Natriy<br>2.28 eV</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectMetal('zn', event)">Rux<br>4.3 eV</button>
+                        <button class="planet-btn" role="radio" aria-checked="false" data-click="selectMetal('pt', event)">Platina<br>5.3 eV</button>
                     </div>
                     <p class="hint-note">Chiqish ishi qiymatlari maktab darsliklaridagi jadval qiymatlari (o'rtacha, sirt tozaligiga bog'liq).</p>
                 </div>
@@ -108,10 +108,10 @@
                     <p class="hint-note" id="uNote">U &gt; 0 — anod musbat (tezlatuvchi maydon); U &lt; 0 — anod manfiy (tormozlovchi maydon).</p>
                 </div>
 
-                <button class="action btn-primary" onclick="startPhoto()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pausePhoto()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetPhoto()">🔄 Qayta</button>
-                <button class="action btn-secondary" onclick="sweepIU()">📈 I–U ni o'lchash (−3…+3 V)</button>
+                <button class="action btn-primary" data-click="startPhoto()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pausePhoto()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetPhoto()">🔄 Qayta</button>
+                <button class="action btn-secondary" data-click="sweepIU()">📈 I–U ni o'lchash (−3…+3 V)</button>
                 <p class="kbd-hint"><span><kbd>Space</kbd> boshlash/pauza</span><span><kbd>R</kbd> qayta</span><span><kbd>S</kbd> o'lchovni yozish</span></p>
 
                 <div class="stats">
@@ -208,8 +208,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="fotoeffekt_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101i"></script>
+    <script src="../model-tools.js?v=20261101i"></script>
+    <script src="fotoeffekt_model.js?v=20261101i"></script>
 </body>
 </html>

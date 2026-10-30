@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <script src="../theme-init.js?v=20261101i"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Kepler qonunlari interaktiv modeli - sayyoralar harakati: ellips, yuzalar va davr qonunlari. 10-11 sinflar fizika.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪐%3C/text%3E%3C/svg%3E">
     <title>Kepler Qonunlari - Interaktiv Model</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101g">
-    <link rel="stylesheet" href="../model-tools.css?v=20261101g">
+    <link rel="stylesheet" href="../styles.css?v=20261101i">
+    <link rel="stylesheet" href="../model-tools.css?v=20261101i">
     <style>
         :root {
             --primary: #7c3aed;
@@ -106,9 +106,9 @@
         </div>
 
         <div class="tabs" role="tablist">
-            <button class="tab active" role="tab" aria-selected="true" onclick="switchTab(0)">1-Qonun: Ellips</button>
-            <button class="tab" role="tab" aria-selected="false" onclick="switchTab(1)">2-Qonun: Yuzalar</button>
-            <button class="tab" role="tab" aria-selected="false" onclick="switchTab(2)">3-Qonun: Davr</button>
+            <button class="tab active" role="tab" aria-selected="true" data-click="switchTab(0)">1-Qonun: Ellips</button>
+            <button class="tab" role="tab" aria-selected="false" data-click="switchTab(1)">2-Qonun: Yuzalar</button>
+            <button class="tab" role="tab" aria-selected="false" data-click="switchTab(2)">3-Qonun: Davr</button>
         </div>
 
         <!-- 1-QONUN -->
@@ -132,14 +132,14 @@
                 <h2>⚙️ Sozlamalar</h2>
 
                 <div class="planet-selector" role="radiogroup" aria-label="Sayyorani tanlash">
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('mercury', event)">Merkuriy</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('venus', event)">Venera</button>
-                    <button class="planet-btn active" role="radio" aria-checked="true" onclick="selectPlanet('earth', event)">Yer</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('mars', event)">Mars</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('jupiter', event)">Yupiter</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('saturn', event)">Saturn</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('uranus', event)">Uran</button>
-                    <button class="planet-btn" role="radio" aria-checked="false" onclick="selectPlanet('neptune', event)">Neptun</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" data-click="selectPlanet('mercury', event)">Merkuriy</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" data-click="selectPlanet('venus', event)">Venera</button>
+                    <button class="planet-btn active" role="radio" aria-checked="true" data-click="selectPlanet('earth', event)">Yer</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" data-click="selectPlanet('mars', event)">Mars</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" data-click="selectPlanet('jupiter', event)">Yupiter</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" data-click="selectPlanet('saturn', event)">Saturn</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" data-click="selectPlanet('uranus', event)">Uran</button>
+                    <button class="planet-btn" role="radio" aria-checked="false" data-click="selectPlanet('neptune', event)">Neptun</button>
                 </div>
 
                 <div class="control-group">
@@ -166,9 +166,9 @@
                     <input type="range" id="speedSlider1" min="0.1" max="5" step="0.1" value="1" aria-label="Animatsiya tezligi">
                 </div>
 
-                <button class="action btn-primary" onclick="startAnimation1()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pauseAnimation1()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetAnimation1()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startAnimation1()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pauseAnimation1()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetAnimation1()">🔄 Qayta</button>
 
                 <div class="stats">
                     <h3>📊 Ma'lumotlar</h3>
@@ -235,9 +235,9 @@
                     <input type="range" id="speedSlider2" min="0.1" max="3" step="0.1" value="1" aria-label="Animatsiya tezligi">
                 </div>
 
-                <button class="action btn-primary" onclick="startAnimation2()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pauseAnimation2()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetAnimation2()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startAnimation2()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pauseAnimation2()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetAnimation2()">🔄 Qayta</button>
 
                 <div class="stats">
                     <h3>📊 Yuzalar</h3>
@@ -307,9 +307,9 @@
                     <input type="range" id="speedSlider3" min="0.1" max="5" step="0.1" value="1" aria-label="Animatsiya tezligi">
                 </div>
 
-                <button class="action btn-primary" onclick="startAnimation3()">▶️ Boshlash</button>
-                <button class="action btn-secondary" onclick="pauseAnimation3()">⏸️ Pauza</button>
-                <button class="action btn-secondary" onclick="resetAnimation3()">🔄 Qayta</button>
+                <button class="action btn-primary" data-click="startAnimation3()">▶️ Boshlash</button>
+                <button class="action btn-secondary" data-click="pauseAnimation3()">⏸️ Pauza</button>
+                <button class="action btn-secondary" data-click="resetAnimation3()">🔄 Qayta</button>
 
                 <div class="stats">
                     <h3>📊 Sayyoralar Ma'lumotlari</h3>
@@ -341,8 +341,8 @@
         </div>
     </div>
 
-    <script src="../theme.js?v=20261101g"></script>
-    <script src="../model-tools.js?v=20261101g"></script>
-    <script src="kepler_model.js?v=20261101g"></script>
+    <script src="../theme.js?v=20261101i"></script>
+    <script src="../model-tools.js?v=20261101i"></script>
+    <script src="kepler_model.js?v=20261101i"></script>
 </body>
 </html>

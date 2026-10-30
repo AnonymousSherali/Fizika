@@ -18,8 +18,10 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
-if env("DJANGO_SECRET_KEY", default="").startswith("dev-") or not env("DJANGO_SECRET_KEY", default=""):
-    raise RuntimeError("Production uchun DJANGO_SECRET_KEY ni .env da o'rnating")
+_key = env("DJANGO_SECRET_KEY", default="")
+# Bo'sh, sinov uchun («dev-»), qisqa yoki tasodifan izoh matni bo'lib qolgan («# python -c ...») kalit — rad etiladi
+if not _key or _key.startswith(("dev-", "#")) or len(_key) < 40 or " " in _key:
+    raise RuntimeError("Production uchun DJANGO_SECRET_KEY ni .env da o'rnating (kamida 40 belgi, bo'sh joysiz)")
 
 LOGGING = {
     "version": 1,

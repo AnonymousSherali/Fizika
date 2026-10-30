@@ -108,7 +108,7 @@ Hozirgi sayt to'liq statik: barcha ma'lumotlar (laboratoriya jurnali, test natij
 2. **O'rganish oson.** Python o'zbek maktablari va kurslarida eng ko'p o'qitiladigan til, unga hujjat va video darslar ko'p.
 3. **Fizika va statistika.** NumPy/SciPy bilan grafik tahlili, tajriba natijalarini nazariy qiymat bilan avtomatik solishtirish va sinf statistikasini hisoblash qulay.
 4. **Xavfsizlik standart.** CSRF, SQL-injection va XSS himoyasi, parolni xeshlash Django'da tayyor.
-5. **Repozitoriyda allaqachon Python bor.** `railway.json` va `nixpacks.toml` Python bilan ishga tushiriladi — Railway'ga joylash tajribasi bor.
+5. **Repozitoriyda allaqachon Python bor edi** (statik sayt Python serveri bilan joylangan; keyinchalik bu sozlama olib tashlandi — backend Docker + nginx bilan joylanadi).
 
 **Muqobil variant:** agar loyiha faqat **oddiy shared hostingda (ahost, cPanel) qolishi shart bo'lsa** va VPS olish imkoni bo'lmasa, **PHP 8.3 + Laravel 11 + MySQL 8** tanlang. Bu TZ'dagi barcha talablar, API va ma'lumotlar bazasi Laravel uchun ham o'zgarmaydi: Django Admin o'rniga Filament ishlatiladi, Celery o'rniga Laravel Queue.
 

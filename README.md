@@ -58,16 +58,29 @@ orqali ilova sifatida o'rnatiladi. Fayllar o'zgartirilganda kesh versiyasini osh
 
 ## 📁 LOYIHA TUZILMASI
 
+### Kod qanday joylashgan (qoida)
+| Fayl turi | Qoida | Misol |
+|---|---|---|
+| **Sahifa** | `nom.html` — faqat belgilash (matn, tugmalar); uning kodi **yonida** `nom.js`. Har bir `nom.js` faqat o'z sahifasida ulanadi — sahifalar bir-birining kodiga tegmaydi | `modellar/kepler_model.html` + `modellar/kepler_model.js` |
+| **Umumiy kod** | Bir nechta sahifa ishlatadi, ildizda turadi | `theme.js` (hamma sahifa), `model-tools.js` (15 model), `api.js` + `app.js` (hisob sahifalari), `i18n.js` |
+| **Ma'lumot** | Kod emas, faqat ma'lumot | `testlar/bank.js` (savollar banki), `i18n-ru.js` (ruscha lug'at) |
+| **Uslub** | | `styles.css` (umumiy), `app.css` (hisob sahifalari), `model-tools.css` (modellar) |
+
+HTML ichida kod yo'q (inline `<script>`, `onclick="..."`): tugmalar `data-click="funksiya('qiymat')"` bilan
+ulanadi (`theme.js`), bu brauzer xavfsizlik siyosati (CSP) uchun shart. Buni CI tekshiradi
+(`backend/tests/test_frontend_assets.py`), kod sifatini — ESLint (`npm run lint`).
+
+
 ```
 Fizika/                            # Tuzilma sayt bo'limlariga mos
 │
-├── index.html                     # 🏠 Bosh sahifa (modellar katalogi)
-├── kirish.html, profil.html       # 👤 Kirish / ro'yxatdan o'tish, profil
+├── index.html, index.js           # 🏠 Bosh sahifa (modellar katalogi) va uning kodi
+├── kirish.html/.js, profil.html/.js # 👤 Kirish / ro'yxatdan o'tish, profil
 ├── oquvchi/, oqituvchi/           # 📋 O'quvchi sahifasi, o'qituvchi paneli
 ├── maxfiylik.html                 # 🔒 Maxfiylik siyosati
 ├── styles.css, app.css            # Umumiy stillar (dark mode bilan), hisob sahifalari
 ├── model-tools.css                # Laboratoriya vositalari uslubi
-├── theme.js                       # Umumiy UI (rejim, til, hisob tugmasi)
+├── theme.js, theme-init.js        # Umumiy UI (rejim, til, hisob tugmasi, data-click); qorong'i rejim (<head>)
 ├── api.js, app.js                 # Backend bilan aloqa (token, oflayn navbat), sahifa yordamchilari
 ├── i18n.js, i18n-ru.js            # Ruscha tarjima (lug'at)
 ├── sw.js, manifest.webmanifest    # Oflayn ishlash (PWA)
@@ -114,7 +127,6 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │
 ├── backend/                       # ⚙️ Django backend (README.md, ROADMAP.md, Docker, nginx)
 ├── README.md                      # Bu fayl
-├── railway.json / nixpacks.toml   # Railway: faqat statik sayt (backendsiz) deploy sozlamalari
 ```
 
 ---

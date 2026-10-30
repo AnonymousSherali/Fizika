@@ -161,6 +161,10 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Qo'llanmalarning ruscha varianti | ✅ | `hujjatlar/qollanma_oqituvchi_ru.md`, `hujjatlar/qollanma_admin_ru.md` |
 | Avtomatik sinov «admin panel → sayt» (10 holat) | ✅ | `e2e/admin_to_site.js` |
 | OWASP ZAP skanerlash | ⬜ | staging serverda (`zap-baseline.py -t https://...`) |
+| Docker tutun sinovi CI'da: butun tizim compose bilan ko'tarilib, nginx orqali tekshiriladi (`deploy-smoke.yml`) | ✅ | `scripts/smoke_check.sh` — serverda o'rnatgandan keyin ham ishlatiladi |
+| `.env.example`: qator oxiridagi izoh Docker'da qiymat bo'lib qolardi (bo'sh SECRET_KEY o'rniga izoh matni) | ✅ | production kuchsiz/izoh kalitni rad etadi |
+| Railway sozlamalari olib tashlandi (buyurtmachi qarori) | ✅ | |
+| Kirish sahifasi tablari: klaviatura (← → Home End), aria-controls/tabpanel | ✅ | |
 | CD (teg → production deploy) | ⬜ | server tanlangach |
 | ClamAV (yuklangan fayllarni antivirus tekshiruvi) | ⬜ | ixtiyoriy |
 | Production (O'zbekistondagi server, TZ 11.1) | ⬜ | buyurtmachi serveri kerak |
@@ -197,6 +201,9 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Test fayllari bosqich emas, vazifa bo'yicha nomlandi | ✅ | |
 | Tuzatilgan xato: ruscha rejimda model qadamlari o'zbekchaga qaytib qolardi | ✅ | asl sahifa HTML'i bilan solishtiriladi |
 | Tekshiruv: 29 sahifa × 2 til — JS xatosi yo'q; 15 modelda jurnal yozish ishlaydi; E2E (10/10 + asosiy oqim) | ✅ | |
+| CSP: `script-src 'self'` — 126 ta `onclick` → `data-click` (eval'siz qat'iy tahlil), `<head>` skripti → `theme-init.js` | ✅ | nginx (`fizika-csp-map.conf`) va `.htaccess`; admin/Swagger'ga qo'llanmaydi |
+| CSP bilan tekshiruv: nginx orqali 82 sahifa holati (uz/ru, mehmon/o'qituvchi/o'quvchi) — bloklash yo'q; E2E nginx orqali | ✅ | test: HTML'da inline kod paydo bo'lsa CI yiqiladi |
+| nginx: `Host $http_host` (nostandart portda admin CSRF xatosi); `.htaccess`: sw.js keshlanib qolish xatosi | ✅ | |
 
 ## F-bosqich — Frontendni ulash (TZ 9) ✅
 Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shildi,
