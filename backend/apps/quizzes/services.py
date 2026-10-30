@@ -7,6 +7,8 @@ from django.db import transaction
 from django.db.models import F, Q
 from django.utils import timezone
 
+from apps.labs.analysis import safe_eval
+
 from .answers import is_close, parse_answer
 from .models import Attempt, AttemptItem, Problem, Question, Status, Topic
 
@@ -43,7 +45,9 @@ def _round_robin(items_by_topic: "OrderedDict[int, list]", count: int | None, rn
 
 
 def select_items(topic_keys, count, problems_count, author=None, seed=None):
-    rng = random.Random(seed)
+    # seed berilmasa — tizimning kriptografik generatori: variantlar tartibini oldindan bilib bo'lmaydi
+    # Urug'li tanlov — takrorlanuvchanlik uchun (xavfsizlik emas)
+    rng = random.Random(seed) if seed is not None else random.SystemRandom()  # nosec B311
     topics = list(Topic.objects.filter(key__in=topic_keys).order_by("order"))
     if not topics:
         raise ValueError("Mavzu tanlanmagan")
@@ -79,11 +83,34 @@ def create_attempt(user, *, topics, count=20, problems=0, time_limit_min=None, a
         items.append(AttemptItem(attempt=attempt, order=i, question=q, option_order=order))
     base = len(items)
     for j, p in enumerate(probs):
-        items.append(AttemptItem(attempt=attempt, order=base + j, problem=p))
+        values, ans = generate_params(p, rng)
+        items.append(AttemptItem(attempt=attempt, order=base + j, problem=p, params=values, answer_value=ans))
     AttemptItem.objects.bulk_create(items)
     attempt.max_score = sum(it.points for it in items)
     attempt.save(update_fields=["max_score"])
     return attempt
+
+
+def generate_params(problem: Problem, rng):
+    """FT-6.2: params = {"U": [min, max, qadam], ...}, formula — javob (masalan "U/R").
+    Har o'quvchiga boshqa sonlar — ko'chirib olish foydasiz."""
+    if not problem.params or not problem.formula:
+        return None, None
+    import math
+
+    # Tasodifiy qiymatlar formulani buzsa (masalan nolga bo'lish) — boshqa qiymatlar olinadi;
+    # 10 urinishdan keyin ham bo'lmasa masala parametrsiz (asl javob bilan) beriladi
+    for _ in range(10):
+        values = {}
+        for name, (lo, hi, step) in problem.params.items():
+            n = int(round((hi - lo) / step))
+            v = lo + step * rng.randint(0, max(n, 0))
+            values[name] = round(v, 10)
+        try:
+            return values, safe_eval(problem.formula, {**values, "pi": math.pi})
+        except (ValueError, ZeroDivisionError):
+            continue
+    return None, None
 
 
 def is_expired(attempt: Attempt) -> bool:
@@ -100,6 +127,9 @@ def answer_item(attempt: Attempt, item: AttemptItem, answer) -> bool:
         raise AnswerError("Test yakunlangan")
     if is_expired(attempt):
         raise AnswerError("Vaqt tugagan")
+    # Javob darhol ko'rsatiladigan rejimda qayta javob berib bo'lmaydi (aks holda to'g'risini topib olish oson)
+    if attempt.show_answers == Attempt.ShowAnswers.IMMEDIATELY and item.answered_at is not None:
+        raise AnswerError("Bu savolga javob berilgan")
     if item.question_id:
         try:
             shown = int(answer)
@@ -115,7 +145,8 @@ def answer_item(attempt: Attempt, item: AttemptItem, answer) -> bool:
         if value is None:
             raise AnswerError("Avval raqamli javobni kiriting")
         item.given_answer = str(answer)[:60]
-        item.is_correct = is_close(value, item.problem.answer, item.problem.tolerance_pct)
+        correct = item.answer_value if item.answer_value is not None else item.problem.answer
+        item.is_correct = is_close(value, correct, item.problem.tolerance_pct)
     item.answered_at = timezone.now()
     item.save(update_fields=["given_answer", "is_correct", "answered_at"])
     return item.is_correct
@@ -125,7 +156,14 @@ def answer_item(attempt: Attempt, item: AttemptItem, answer) -> bool:
 def finish_attempt(attempt: Attempt) -> Attempt:
     if attempt.is_finished:
         return attempt
+    # Bir urinishni ikki so'rov bir vaqtda yakunlasa — statistika ikki marta yozilmasin
+    locked = Attempt.objects.select_for_update().get(pk=attempt.pk)
+    if locked.is_finished:
+        attempt.refresh_from_db()
+        return attempt
     items = list(attempt.items.select_related("question__topic", "problem__topic"))
+    q_inc: dict[int, dict] = {}
+    p_inc: dict[int, dict] = {}
     score = 0
     breakdown: dict[str, dict] = {}
     for it in items:
@@ -137,21 +175,27 @@ def finish_attempt(attempt: Attempt) -> Attempt:
         if it.is_correct:
             b["ok"] += 1
             score += it.points
-        # FT-6.8: savol statistikasi
+        # FT-6.8: savol statistikasi — avval yig'amiz, keyin tartib bilan yozamiz
         if it.question_id:
-            stats = list(it.question.stats_choices or [0, 0, 0, 0])
+            d = q_inc.setdefault(it.question_id, {"total": 0, "correct": 0, "choices": [0, 0, 0, 0]})
             if it.answered_at is not None:
-                stats[it.option_order[int(it.given_answer)]] += 1
-            Question.objects.filter(pk=it.question_id).update(
-                stats_total=F("stats_total") + 1,
-                stats_correct=F("stats_correct") + (1 if it.is_correct else 0),
-                stats_choices=stats,
-            )
+                d["choices"][it.option_order[int(it.given_answer)]] += 1
         else:
-            Problem.objects.filter(pk=it.problem_id).update(
-                stats_total=F("stats_total") + 1,
-                stats_correct=F("stats_correct") + (1 if it.is_correct else 0),
-            )
+            d = p_inc.setdefault(it.problem_id, {"total": 0, "correct": 0})
+        d["total"] += 1
+        d["correct"] += 1 if it.is_correct else 0
+    # Qatorlar doim id bo'yicha bir xil tartibda qulflanadi — parallel yakunlashda deadlock bo'lmaydi
+    for qid in sorted(q_inc):
+        d = q_inc[qid]
+        upd = {"stats_total": F("stats_total") + d["total"], "stats_correct": F("stats_correct") + d["correct"]}
+        for i, n in enumerate(d["choices"]):
+            if n:
+                upd[f"choice_{i}"] = F(f"choice_{i}") + n
+        Question.objects.filter(pk=qid).update(**upd)
+    for pid in sorted(p_inc):
+        d = p_inc[pid]
+        Problem.objects.filter(pk=pid).update(stats_total=F("stats_total") + d["total"],
+                                              stats_correct=F("stats_correct") + d["correct"])
     attempt.score = score
     attempt.percent = round(score / attempt.max_score * 100, 1) if attempt.max_score else 0
     attempt.grade = grade_from_percent(attempt.percent)

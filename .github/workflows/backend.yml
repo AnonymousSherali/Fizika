@@ -39,6 +39,8 @@ jobs:
         run: python manage.py makemigrations --check --dry-run --settings=config.settings.test
       - name: Testlar (qamrov ≥ 75%)
         run: pytest --cov --cov-fail-under=75
+      - name: Xavfsizlik tahlili (bandit)
+        run: bandit -q -r apps config -x '*/migrations/*,*/tests/*' -ll
       - name: Zaifliklar (pip-audit)
         run: pip install pip-audit && pip-audit -r requirements.txt
         continue-on-error: true

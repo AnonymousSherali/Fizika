@@ -1,5 +1,8 @@
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -8,6 +11,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.audit import services as audit
 from apps.core.permissions import IsTeacher
 from apps.simulations.serializers import lang
 
@@ -31,6 +35,8 @@ class TopicListView(APIView):
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(responses={200: TopicSerializer(many=True)})
+    @method_decorator(cache_page(300))
+    @method_decorator(vary_on_headers("Accept-Language"))
     def get(self, request):
         qs = Topic.objects.annotate(
             n_questions=Count("questions", filter=Q(questions__status=Status.APPROVED), distinct=True),
@@ -69,6 +75,40 @@ class PracticeView(APIView):
                         "text": q.text(lg), "options": [texts[i] for i in order],
                         "correct": order.index(q.correct_index), "explanation": q.explanation(lg)})
         return Response(out)
+
+
+class BankView(APIView):
+    """
+    Mashq sahifasi (`testlar/testlar_online.html`) uchun butun tasdiqlangan bank — sahifadagi o'rnatilgan bank
+    bilan bir xil formatda. Admin panelda tasdiqlangan/tahrirlangan/arxivlangan savollar saytda shu orqali
+    ko'rinadi. Matnlar o'zbekcha (ruscha rejimda sahifa ularni `i18n-ru.js` lug'ati orqali tarjima qiladi).
+    Parametrlangan masalalar har so'rovda yangi sonlar bilan beriladi.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        import random
+
+        topics = list(Topic.objects.order_by("order", "id"))
+        questions = (Question.objects.filter(status=Status.APPROVED).select_related("topic")
+                     .order_by("topic__order", "level", "id"))
+        problems = Problem.objects.filter(status=Status.APPROVED).select_related("topic").order_by("topic__order", "id")
+        rng = random.SystemRandom()
+        out_p = []
+        for p in problems:
+            values, ans = services.generate_params(p, rng)
+            vals = {**(values or {}), "answer": ans if ans is not None else p.answer}
+            out_p.append({"id": p.id, "tag": f"{p.topic.title_uz} · Hisoblash", "q": p.text("uz", values),
+                          "ans": ans if ans is not None else p.answer, "unit": p.unit, "tol": p.tolerance_pct,
+                          "sol": p.solution("uz", vals)})
+        return Response({
+            "topics": [t.title_uz for t in topics],
+            "questions": [{"id": q.id, "tag": f"{q.topic.title_uz} · {q.get_level_display()}", "q": q.text_uz,
+                           "o": q.option_texts("uz"), "correct": q.correct_index, "ex": q.explanation_uz}
+                          for q in questions],
+            "problems": out_p,
+        })
 
 
 class AttemptViewSet(viewsets.GenericViewSet):
@@ -191,6 +231,7 @@ class _BankViewSet(viewsets.ModelViewSet):
                         if u.is_platform_admin else Status.DRAFT)
 
     def perform_destroy(self, instance):
+        audit.log(self.request, f"{self.model._meta.model_name}.delete", instance, before={"text": instance.text_uz[:200]})
         # Urinishda ishlatilgan savol o'chirilmaydi — arxivlanadi
         if AttemptItem.objects.filter(**{self.model._meta.model_name: instance}).exists():
             instance.status = Status.ARCHIVED
@@ -221,3 +262,21 @@ class ProblemViewSet(_BankViewSet):
     model = Problem
     serializer_class = ProblemSerializer
     queryset = Problem.objects.none()
+
+    @extend_schema(request=ProblemSerializer, responses={200: dict})
+    @action(detail=False, methods=["post"])
+    def preview(self, request):
+        """Saqlashdan oldin tekshirish: o'quvchilar ko'radigan 3 ta namuna (sonlar, javob, yechim)."""
+        import random
+
+        ser = ProblemSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        p = Problem(**{k: v for k, v in ser.validated_data.items() if k != "status"})
+        rng = random.SystemRandom()
+        samples = []
+        for _ in range(3 if p.params else 1):
+            values, ans = services.generate_params(p, rng)
+            ans = ans if ans is not None else p.answer
+            samples.append({"text": p.text("uz", values), "answer": ans, "unit": p.unit,
+                            "solution": p.solution("uz", {**(values or {}), "answer": ans})})
+        return Response({"samples": samples})

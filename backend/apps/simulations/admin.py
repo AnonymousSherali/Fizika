@@ -1,25 +1,26 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, StackedInline, TabularInline
 
 from .models import LabSchema, Simulation, SimulationExpected, SimulationTask
 
 
-class TaskInline(admin.TabularInline):
+class TaskInline(TabularInline):
     model = SimulationTask
     extra = 0
 
 
-class ExpectedInline(admin.TabularInline):
+class ExpectedInline(TabularInline):
     model = SimulationExpected
     extra = 0
 
 
-class SchemaInline(admin.StackedInline):
+class SchemaInline(StackedInline):
     model = LabSchema
     extra = 0
 
 
 @admin.register(Simulation)
-class SimulationAdmin(admin.ModelAdmin):
+class SimulationAdmin(ModelAdmin):
     list_display = ["order", "title_uz", "category", "grade", "slug", "is_active"]
     list_display_links = ["title_uz"]
     list_editable = ["order", "is_active"]

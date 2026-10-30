@@ -1,5 +1,8 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
@@ -34,10 +37,18 @@ class SimulationViewSet(viewsets.ReadOnlyModelViewSet):
     def get_serializer_class(self):
         return SimulationDetailSerializer if self.action == "retrieve" else SimulationListSerializer
 
+    # Katalog kamdan-kam o'zgaradi va eng ko'p so'raladi — 10 daqiqa keshlanadi (yuklama testi natijasi)
     @extend_schema(parameters=[OpenApiParameter("category", str), OpenApiParameter("grade", int),
                                OpenApiParameter("q", str)])
+    @method_decorator(cache_page(600))
+    @method_decorator(vary_on_headers("Accept-Language"))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @method_decorator(cache_page(600))
+    @method_decorator(vary_on_headers("Accept-Language"))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(responses={200: ExpectedSerializer(many=True)})
     @action(detail=True, methods=["get"], permission_classes=[IsTeacher])

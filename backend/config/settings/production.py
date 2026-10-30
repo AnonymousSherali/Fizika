@@ -2,6 +2,7 @@ from .base import *  # noqa: F403
 from .base import env
 
 DEBUG = False
+ADMIN_2FA = env.bool("ADMIN_2FA", default=True)   # production'da standart — yoqilgan
 
 # TZ 11.3: faqat HTTPS, HSTS
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

@@ -1,6 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -21,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "first_name", "last_name", "role", "phone", "email",
-                  "school", "school_name", "language", "theme", "is_verified", "must_change_password"]
+                  "school", "school_name", "language", "theme", "notify_email", "is_verified", "must_change_password"]
         read_only_fields = ["id", "username", "role", "phone", "email", "school", "is_verified",
                             "must_change_password"]
 
@@ -29,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 class MeUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "language", "theme"]
+        fields = ["first_name", "last_name", "language", "theme", "notify_email"]
 
 
 class PasswordField(serializers.CharField):
@@ -55,7 +56,18 @@ class NewSchoolSerializer(serializers.Serializer):
     number = serializers.CharField(max_length=20, required=False, allow_blank=True)
 
 
-class TeacherRegisterSerializer(serializers.Serializer):
+class PrivacyMixin(serializers.Serializer):
+    """TZ 11.1: shaxsiy ma'lumotlarni qayta ishlashga rozilik (O'RQ-547)."""
+
+    accept_privacy = serializers.BooleanField(write_only=True)
+
+    def validate_accept_privacy(self, v):
+        if not v:
+            raise serializers.ValidationError("Maxfiylik siyosatiga rozilik bildiring")
+        return v
+
+
+class TeacherRegisterSerializer(PrivacyMixin):
     """FT-1.1: o'qituvchi telefon yoki email bilan ro'yxatdan o'tadi va kod bilan tasdiqlaydi."""
 
     first_name = serializers.CharField(max_length=60)
@@ -99,7 +111,7 @@ class TeacherRegisterSerializer(serializers.Serializer):
         user = User(
             username=login.lstrip("+"), first_name=data["first_name"], last_name=data["last_name"],
             phone=data.get("phone"), email=data.get("email"), role=Role.TEACHER, school=school,
-            is_verified=False,
+            is_verified=False, privacy_accepted_at=timezone.now(),
         )
         user.set_password(data["password"])
         user.save()
@@ -115,7 +127,7 @@ class UsernameField(serializers.RegexField):
         )
 
 
-class StudentRegisterSerializer(serializers.Serializer):
+class StudentRegisterSerializer(PrivacyMixin):
     """FT-1.2: o'quvchi o'qituvchi bergan sinf kodi bilan ro'yxatdan o'tadi."""
 
     join_code = serializers.CharField(max_length=12)
@@ -143,10 +155,13 @@ class StudentRegisterSerializer(serializers.Serializer):
     def create(self, data):
         classroom = self.context["classroom"]
         user = User(username=data["username"], first_name=data["first_name"], last_name=data["last_name"],
-                    role=Role.STUDENT, school=classroom.school, is_verified=True)
+                    role=Role.STUDENT, school=classroom.school, is_verified=True, privacy_accepted_at=timezone.now())
         user.set_password(data["password"])
         user.save()
         ClassroomMember.objects.create(classroom=classroom, user=user, role=ClassroomMember.Role.STUDENT)
+        from apps.notifications.services import on_student_joined
+
+        on_student_joined(classroom, user)
         return user
 
 

@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.audit import services as audit
 from apps.core.exceptions import LoginFailed
 
 from . import services
@@ -110,12 +111,14 @@ class LoginView(ScopedAnon):
         if user is None:
             services.register_failure(login)
             LoginEvent.objects.create(user=find_user(login), login=login[:120], ip=ip, user_agent=ua)
+            audit.log(request, "auth.login_failed", after={"login": login[:120]})
             raise LoginFailed("Login yoki parol noto'g'ri", code="invalid_credentials")
         if user.is_teacher and not user.is_verified:
             raise LoginFailed("Hisob tasdiqlanmagan. SMS/email orqali kelgan kodni kiriting",
                                        code="not_verified")
         services.reset_failures(login)
         LoginEvent.objects.create(user=user, login=login[:120], ip=ip, user_agent=ua, success=True)
+        audit.log(request, "auth.login", user, actor=user)
         user.last_login = timezone.now()
         user.save(update_fields=["last_login"])
         return Response(auth_payload(user))
@@ -174,6 +177,7 @@ class PasswordResetConfirmView(ScopedAnon):
         user.save()
         services.blacklist_all_tokens(user)
         services.reset_failures(s.validated_data["login"])
+        audit.log(request, "auth.password_reset", user, actor=user)
         return Response(auth_payload(user))
 
 
@@ -189,6 +193,7 @@ class PasswordChangeView(APIView):
         user.must_change_password = False
         user.save()
         services.blacklist_all_tokens(user)
+        audit.log(request, "auth.password_change", user)
         return Response(auth_payload(user))
 
 
@@ -214,6 +219,7 @@ class MeView(generics.RetrieveUpdateDestroyAPIView):
         user.is_active = False
         user.save(update_fields=["deletion_requested_at", "is_active"])
         services.blacklist_all_tokens(user)
+        audit.log(request, "account.delete_requested", user)
         return Response({"detail": "Hisob o'chirishga navbatga qo'yildi. 30 kundan keyin barcha shaxsiy "
                                    "ma'lumotlar o'chiriladi."}, status=status.HTTP_202_ACCEPTED)
 

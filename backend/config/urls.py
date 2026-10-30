@@ -4,10 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-admin.site.site_header = "Fizika 10–11 — boshqaruv paneli"
-admin.site.site_title = "Fizika 10–11"
-admin.site.index_title = "Boshqaruv"
-
+# admin.site — apps.core.admin_site.FizikaAdminSite (Unfold ko'rinishi + ADMIN_2FA bo'lsa TOTP kodi)
 api_v1 = [
     path("", include("apps.core.urls")),
     path("", include("apps.accounts.urls")),
@@ -16,6 +13,9 @@ api_v1 = [
     path("", include("apps.labs.urls")),
     path("", include("apps.quizzes.urls")),
     path("", include("apps.assignments.urls")),
+    path("", include("apps.analytics.urls")),
+    path("", include("apps.notifications.urls")),
+    path("", include("apps.content.urls")),
 ]
 
 urlpatterns = [

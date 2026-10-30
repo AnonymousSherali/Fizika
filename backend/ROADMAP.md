@@ -22,7 +22,7 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | `/api/v1/health/` (NF-10) | ✅ | baza + kesh |
 | Docker, docker-compose, Nginx | ✅ | `Dockerfile`, `docker-compose.yml`, `deploy/nginx.conf` |
 | CI: ruff, migratsiya tekshiruvi, pytest + qamrov ≥ 75%, pip-audit | ✅ | `.github/workflows/backend.yml` |
-| Sentry | ⬜ | 5-bosqich |
+| Sentry | ✅ | `SENTRY_DSN` bo'lsa yoqiladi (shaxsiy ma'lumotlarsiz) |
 | CD (teg → production deploy) | ⬜ | 5-bosqich |
 
 ## 1-bosqich — MVP ✅
@@ -45,12 +45,12 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 ### Maktab va sinflar (schools)
 | Band | Holat | Izoh |
 |---|---|---|
-| FT-2.1 Maktab, 14 viloyat | ✅ | tumanlar ro'yxati — ⬜ (hozir erkin matn) |
+| FT-2.1 Maktab, 14 viloyat, tumanlar ro'yxati | ✅ | `schools/districts/`; ro'yxatda yo'q nom ham yozilishi mumkin |
 | FT-2.2 Sinf yaratish, qo'shilish kodi | ✅ | |
 | FT-2.3 Kodni yangilash / o'chirish / muddat | ✅ | |
 | FT-2.4 O'quvchilar: ro'yxat, chiqarish, parol tiklash, ko'chirish | ✅ | |
 | FT-2.5 Bir nechta o'qituvchi | ✅ | |
-| FT-2.6 Arxivlash | ✅ | yil oxirida avtomatik arxiv — ⬜ |
+| FT-2.6 Arxivlash, o'quv yili tugagach avtomatik arxiv (1-iyuldan) | ✅ | Celery Beat, audit yozuvi |
 
 ### Modellar katalogi (simulations)
 | Band | Holat | Izoh |
@@ -75,7 +75,11 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Band | Holat | Izoh |
 |---|---|---|
 | FT-10.1 Django Admin (o'zbekcha) | ✅ | foydalanuvchi, maktab, sinf, model, jurnal |
-| FT-10.4 Admin uchun 2FA (TOTP) | ⬜ | 5-bosqich (django-otp) |
+| FT-10.4 Admin uchun 2FA (TOTP) | ✅ | django-otp, `manage.py admin_2fa_setup` |
+| Zamonaviy admin ko'rinishi (Unfold): sayt ranglari, yorug'/qorong'i, telefonda qulay, o'zbekcha menyu | ✅ | `apps/core/admin_site.py`, `UNFOLD` (settings) |
+| Admin bosh sahifasi: ko'rsatkichlar, 30 kunlik faollik grafigi, moderatsiya navbati, hududlar, modellar, audit | ✅ | `apps/core/admin_ui.py`, `templates/admin/index.html` |
+| Yon menyuda moderatsiya kutayotganlar soni (savollar, masalalar, ishlanmalar, maktablar) | ✅ | |
+| Admin matnlarining o'zbekcha tarjimasi (Unfold + Django'da yo'q satrlar) | ✅ | `locale/uz/`, `scripts/compile_po.py` |
 
 ---
 
@@ -107,46 +111,101 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-6.8 Savollar statistikasi (har variant necha marta tanlangan) | ✅ | admin panelda «to'g'ri %» |
 | O'qituvchi o'z savollarini qo'shadi (qoralama), admin tasdiqlaydi | ✅ | o'z topshiriqlarida qoralamasi ham ishlatiladi |
 | FT-1.7 davomi: o'chirilgan foydalanuvchi test natijalari anonim saqlanadi | ✅ | |
-| Savollarning ruscha tarjimasi | ⬜ | bazada maydon bor, matnlar hali tarjima qilinmagan (4-bosqich) |
+| Savollarning ruscha tarjimasi | ✅ | 3-qadamda (2026-10-30) |
 
-## 3-bosqich — Statistika va bildirishnomalar ⬜
-- ⬜ FT-8.1 O'qituvchi paneli, mavzular issiqlik xaritasi
-- ⬜ FT-8.2 O'quvchi kartasi
-- ⬜ FT-8.3 Eksport: sinf jurnali (.xlsx), o'quvchi hisoboti (PDF), natijalar (CSV)
-- ⬜ FT-8.4 Administrator statistikasi
-- ⬜ FT-8.5 Og'ir hisoblar Celery'da, 10 daqiqa kesh
-- ⬜ FT-9.1 Bildirishnomalar: sayt ichida + email (Telegram ➖)
-- ⬜ FT-9.2 Hodisalar: yangi topshiriq, muddat, baho, qaytarish, yangi o'quvchi
-- ⬜ FT-9.3 Kanallarni yoqish/o'chirish
-- ⬜ FT-5.8 Muddatga 24 soat / 1 soat qolganda eslatma
-- ⬜ FT-4.4 jurnal PDF eksporti
+## 3-bosqich — Statistika va bildirishnomalar ✅
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-8.1 Sinf paneli: topshiriqlar holati, o'rtacha baho, testlar o'rtachasi, 7 kunlik faollik | ✅ | `analytics/classrooms/{id}/` |
+| FT-8.1 «O'quvchi × mavzu» issiqlik xaritasi | ✅ | `analytics/classrooms/{id}/heatmap/` |
+| FT-8.2 O'quvchi kartasi: topshiriqlar, test dinamikasi, zaif mavzular, jurnallar | ✅ | o'quvchining o'zi ham ko'radi |
+| FT-8.3 Sinf jurnali Excel (.xlsx: baholar + mavzular), topshiriq natijalari CSV | ✅ | |
+| FT-8.3 O'quvchi hisoboti PDF | 🟡 | brauzerda chop etish → PDF (model sahifasidagi hisobot); server PDF — kerak bo'lsa 5-bosqich |
+| FT-8.4 Administrator statistikasi | ✅ | `analytics/platform/` (sahifa — admin panel orqali, keyin) |
+| FT-8.5 Kesh (10 daqiqa), yangi baho/urinishda o'zi yangilanadi | ✅ | Celery shart emas — hisoblar yengil |
+| FT-9.1 Sayt ichidagi bildirishnomalar (🔔) + email | ✅ | Telegram ➖ |
+| FT-9.2 Hodisalar: yangi topshiriq, muddat, baho, qaytarish, yangi o'quvchi, ish topshirildi | ✅ | |
+| FT-9.3 Email kanalini yoqish/o'chirish (profil) | ✅ | |
+| FT-5.8 Muddatga 24 soat / 1 soat qolganda eslatma (har 15 daqiqada, takrorlanmaydi) | ✅ | Celery Beat |
+| FT-4.4 Jurnal PDF eksporti | 🟡 | model sahifasidagi «Hisobot (PDF)» (brauzer) |
 
-## 4-bosqich — Kontent va tarjimalar ⬜
-- ⬜ FT-7.1–7.4 Dars ishlanmalar: yuklash, moderatsiya, fayl tekshiruvi, yuklab olishlar soni
-- ⬜ FT-7.5 `dars_ishlanmalar/index.html` API'dan
-- ⬜ FT-7.6 Tarjimalar bazada, `GET /i18n/ru.js`
-- ⬜ FT-6.2 Parametrlangan masalalar
-- ⬜ FT-11.1–11.3 Audit jurnali (o'zgarmas, 1 yil)
+## 4-bosqich — Kontent, tarjimalar, audit ✅
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-7.1 Dars ishlanmalar bazada (22 ta import qilindi, fayllar saytda qoladi) | ✅ | `manage.py import_lesson_plans` |
+| FT-7.2 O'qituvchi yuklaydi → moderatsiya → nashr / rad (izoh bilan) | ✅ | admin panel yoki `lesson-plans/{id}/moderate/` |
+| FT-7.3 Fayl tekshiruvi: kengaytma, hajm (PDF 15 MB, DOCX 10 MB), ichki tuzilma, makrosli DOCX rad | ✅ | ClamAV — ixtiyoriy, 5-bosqich |
+| FT-7.4 Yuklab olishlar soni | ✅ | statik havolalar ham API orqali hisoblanadi |
+| FT-7.5 `dars_ishlanmalar/index.html` API bilan (yangi ishlanmalar qo'shiladi, statik zaxira) | ✅ | |
+| O'qituvchi panelida «Ishlanmalarim» (yuklash, holat, moderator izohi) | ✅ | |
+| FT-7.6 Tarjimalar bazada, admin panelda tahrirlanadi, `GET /i18n/ru.js` | ✅ | `import_i18n` / `export_i18n` |
+| FT-6.2 Parametrlangan masalalar (har o'quvchiga boshqa sonlar, javob formuladan) | ✅ | admin/API orqali; paneldagi forma — ⬜ |
+| FT-11.1 Audit: kirish, parol, hisob o'chirish, rol o'zgarishi, baho (oldin/keyin), qaytarish, o'chirishlar, moderatsiya | ✅ | |
+| FT-11.2 Kim, qachon, IP, amal, obyekt, oldingi/yangi qiymat | ✅ | |
+| FT-11.3 O'zgarmas (tahrir/o'chirish taqiqlangan), 1 yil saqlanadi | ✅ | haftalik tozalash (Celery Beat) |
+| Savollarning ruscha tarjimasi (170 + 48) | ✅ | lug'atda (mashq sahifasi) va bazada (`import_quiz_bank` ruscha maydonlarni to'ldiradi — nazorat testi) |
 
-## 5-bosqich — Sifat va ishga tushirish ⬜
-- ⬜ Yuklama testi (k6/Locust): 500 foydalanuvchi, p95 ≤ 300 ms (NF-1, NF-2)
-- ⬜ OWASP ZAP skanerlash, qo'lda IDOR tekshiruvi
-- ⬜ E2E Playwright: sinf → topshiriq → baho
-- ⬜ Sentry, JSON loglar (✅ production settings'da), monitoring ogohlantirishlari
-- ⬜ Backup (kunlik pg_dump, 30 kun) + tiklashni sinash (NF-4)
-- ⬜ Admin 2FA
-- ⬜ O'qituvchi va administrator qo'llanmasi (uz/ru), maxfiylik siyosati
-- ⬜ Production (O'zbekistondagi server, TZ 11.1)
+## 5-bosqich — Sifat va ishga tushirish 🟡
+| Band | Holat | Izoh |
+|---|---|---|
+| FT-10.4 Admin 2FA (TOTP, Google Authenticator) | ✅ | production'da standart yoqilgan (`ADMIN_2FA`) |
+| Sentry (xatolar monitoringi) | ✅ | `SENTRY_DSN`; `send_default_pii=False` |
+| Maxfiylik siyosati (`maxfiylik.html`), ro'yxatda rozilik belgisi (`accept_privacy`, sana saqlanadi) | ✅ | O'RQ-547 |
+| NF-4 Backup: kunlik `pg_dump`, media haftalik, 30 kun / 8 hafta saqlash | ✅ | `scripts/backup.sh` |
+| NF-4 Tiklashni sinash | ✅ | `scripts/restore.sh` — sinovda jadval sonlari to'liq mos keldi |
+| Statik xavfsizlik tahlili (bandit) | ✅ | yuqori/o'rta xavf yo'q; CI'da ham |
+| Yuklama testi (Locust) | 🟡 | 200 foyd.: median 20 ms; 500 foyd.: p95 ≈ 490 ms, 330 so'rov/s, server xatosi 0. Mezon (p95 ≤ 300 ms) umumiy 4 yadroli sinov muhitida (yuklama generatori ham shu mashinada) bajarilmadi — alohida server (≥ 4 vCPU) va alohida generator bilan qayta o'lchash kerak |
+| Yuklama testidan keyingi tuzatishlar | ✅ | test yakunidagi deadlock (tartiblangan F() yangilash, variant hisoblagichlari), Argon2 parametrlari (~30 ms), DB ulanishlarini qayta ishlatish, katalog keshi, gunicorn gthread |
+| E2E Playwright: sinf → topshiriq → baho | ✅ | `e2e/flow.js` |
+| O'qituvchi va administrator qo'llanmasi | ✅ | `hujjatlar/qollanma_oqituvchi.md`, `hujjatlar/qollanma_admin.md` (uz) |
+| Qo'llanmalarning ruscha varianti | ✅ | `hujjatlar/qollanma_oqituvchi_ru.md`, `hujjatlar/qollanma_admin_ru.md` |
+| Avtomatik sinov «admin panel → sayt» (10 holat) | ✅ | `e2e/admin_to_site.js` |
+| OWASP ZAP skanerlash | ⬜ | staging serverda (`zap-baseline.py -t https://...`) |
+| CD (teg → production deploy) | ⬜ | server tanlangach |
+| ClamAV (yuklangan fayllarni antivirus tekshiruvi) | ⬜ | ixtiyoriy |
+| Production (O'zbekistondagi server, TZ 11.1) | ⬜ | buyurtmachi serveri kerak |
 
-## F-bosqich — Frontendni ulash (TZ 9) ⬜ — keyingi navbat
-Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shiladi,
-yangi sahifalar shu PhET uslubidagi statik HTML bo'ladi. Backend ishlamasa sayt hozirgidek (oflayn) ishlaydi.
-- ⬜ `api.js`: login/refresh, token saqlash, oflayn navbat (IndexedDB), xatosiz ishlash
-- ⬜ `kirish.html` (kirish / ro'yxat: o'qituvchi, o'quvchi sinf kodi bilan), `profil.html`
-- ⬜ `theme.js`: yuqori menyuda «Kirish» / profil tugmasi, til va mavzu sinxroni
-- ⬜ `model-tools.js`: jurnalni avtomatik saqlash (FT-4.2), faol topshiriq bo'lsa «Topshirish», o'qituvchi rejimi rol bo'yicha
-- ⬜ `oquvchi/topshiriqlar.html`: mening topshiriqlarim, holat, baho
-- ⬜ `oqituvchi/`: sinflar (kod, o'quvchilar, Excel import, login kartochkalari PDF), topshiriq berish, baholash
-- ⬜ `testlar/testlar_online.html`: savollar API'dan (zaxira — o'rnatilgan bank), nazorat testi `/quiz/attempts/`
-- ⬜ Katalog va dars ishlanmalar API'dan (zaxira — statik)
-- ✅ `sw.js`: `/api/`, `/admin/`, `/media/` keshlanmaydi
+## F-bosqich — Frontendni ulash (TZ 9) ✅
+Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shildi,
+yangi sahifalar shu uslubdagi statik HTML. Backend ishlamasa sayt hozirgidek (oflayn) ishlaydi, «Kirish» tugmasi chiqmaydi.
+| Band | Holat | Izoh |
+|---|---|---|
+| `api.js`: token, avtomatik refresh, xatolar, oflayn navbat (IndexedDB) | ✅ | `API_BASE` — backend boshqa domenda bo'lsa |
+| `kirish.html`: kirish, o'quvchi (sinf kodi, `?kod=` havolasi), o'qituvchi (kod bilan tasdiqlash), parol tiklash | ✅ | |
+| `profil.html`: ism, til/mavzu sinxroni, parol (vaqtinchalik parolni majburiy almashtirish), kirish tarixi, hisobni o'chirish | ✅ | |
+| Hisob tugmasi: bosh sahifa menyusi, model sahifasidagi pastki panel, boshqa sahifalarda burchakda | ✅ | |
+| FT-4.2 Model jurnali avtomatik saqlanadi (2 s), holat ko'rsatiladi | ✅ | |
+| FT-4.3 Internet yo'q — navbatga, ulanganda yuboriladi | ✅ | |
+| Modelda topshiriq rejimi (`?topshiriq=`): banner, o'qituvchi qadamlari, «Topshirish», avto-tekshiruv natijasi, qaytarilgan izoh | ✅ | |
+| O'qituvchi rejimi rol bo'yicha (kutilgan natijalar serverdan) | ✅ | `?oqituvchi=1` ham ishlaydi |
+| `oquvchi/index.html`: topshiriqlar (holat, baho, izoh), jurnallar (CSV), test natijalari, sinfga qo'shilish | ✅ | |
+| `testlar/nazorat.html`: nazorat testi (taymer, navigatsiya, davom ettirish, natija va xatolar tahlili) | ✅ | |
+| `oqituvchi/index.html`: sinflar, kod/havola, o'quvchilar (import, parol, ko'chirish), **login kartochkalari (chop etish/PDF)** | ✅ | FT-1.2 kartochkalar |
+| `oqituvchi/index.html`: topshiriq berish (lab/test), sinf bo'yicha holat, ishni ko'rish va baholash, qaytarish | ✅ | |
+| `oqituvchi/index.html`: savollarim (qo'shish, Excel import, statistika) | ✅ | |
+| E2E: o'qituvchi → sinf → o'quvchilar → topshiriq → o'quvchi bajaradi → baho | ✅ | Playwright (qo'lda ishga tushiriladi) |
+| `testlar_online.html` mashq savollari serverdan (`quiz/bank/`), server bo'lmasa — o'rnatilgan bank | ✅ | admin tasdiqlagan/arxivlagan savol saytda darhol aks etadi |
+| Bosh sahifa katalogi serverdan: nofaol model yashiriladi, tartib/nom/tavsif admin bo'yicha | ✅ | `import_simulations` qayta ishga tushirilsa nom/tavsif sahifadagidek qaytadi |
+| Dars ishlanmalar: nashrdan olingan statik ishlanma yashiriladi, faqat nashr etilganlar | ✅ | |
+| Ruscha tarjimalar admin paneldan (`i18n/ru.js` fayldagi lug'at ustiga) | ✅ | `export_i18n` shart emas; brauzer keshi 10 daqiqa |
+| O'qituvchi panelida masalalar: oddiy va parametrli, «Namunani ko'rish» (`quiz/problems/preview/`) | ✅ | |
+| Xavfsizlik: formula hisoblagichida daraja/uzunlik chegarasi (`9**9**9**9` serverni osib qo'yardi) | ✅ | |
+| Yangi sahifalarning ruscha tarjimasi (kirish, profil, panellar, nazorat, maxfiylik, model hisobi/topshiriq rejimi) | ✅ | ruscha rejimda barcha sahifalar aylanib tekshirildi: qolgani faqat ism/sarlavha/formulalar |
+| Lug'atda andozalar: `"Savol {} / {}"` — son va ismli matnlar ham tarjima qilinadi | ✅ | `i18n.js` |
+| Server xabarlari (xatolar, bildirishnomalar) va confirm/alert oynalari ruscha | ✅ | |
+| `sw.js`: `/api/`, `/admin/`, `/media/` keshlanmaydi | ✅ | |
+
+### Sahifalar va backend (tekshiruv, 2026-11-01)
+| Sahifa | Backend bilan aloqa | Admin paneldagi o'zgarish saytda ko'rinadimi |
+|---|---|---|
+| `index.html` (katalog) | `simulations/` | ✅ nofaol model, tartib, nom, tavsif; ruscha matnlar — tarjimalar orqali |
+| `modellar/*_model.html` (15 ta) | jurnal avto-saqlash, oflayn navbat, topshiriq rejimi, kutilgan natijalar (o'qituvchi) | ✅ kutilgan natijalar, topshiriq qadamlari |
+| `testlar/testlar_online.html` (mashq) | `quiz/bank/` | ✅ savollar/masalalar (holat, matn, parametrlar) |
+| `testlar/nazorat.html` | `quiz/attempts/` | ✅ |
+| `dars_ishlanmalar/index.html` | `lesson-plans/`, yuklab olish hisobi | ✅ nashr/rad, yangi ishlanmalar |
+| `kirish.html`, `profil.html` | `auth/*`, `me/` | ✅ (hisob holati, bloklash, tasdiqlash) |
+| `oquvchi/`, `oqituvchi/` | sinflar, topshiriqlar, baholar, statistika, savollar, masalalar, ishlanmalar, bildirishnomalar | ✅ |
+| Barcha sahifalar (ruscha rejim) | `i18n/ru.js` | ✅ tarjimalar |
+| `maxfiylik.html`, `hujjatlar/loyiha_algoritmi.html`, `tekshiruv.html` | yo'q — statik matn | — (kerak emas) |
+| `modellar/index.html`, `testlar/index.html`, `hujjatlar/index.html` | yo'q — yo'naltirish sahifalari | — |
+| Topilgan va tuzatilgan xato: yopishqoq kanvas pastdagi jurnal ustiga chiqardi (panel ekran tepasidan chiqqanda) | ✅ | |

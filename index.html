@@ -11,8 +11,8 @@
     <meta property="og:type" content="website">
     <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Fizik Modellar — Interaktiv O'quv Platformasi</title>
-    <link rel="stylesheet" href="styles.css?v=20261029f">
-    <link rel="stylesheet" href="model-tools.css?v=20261029f">
+    <link rel="stylesheet" href="styles.css?v=20261101d">
+    <link rel="stylesheet" href="model-tools.css?v=20261101d">
     <style>
         /* ============================================================
            Bosh sahifa: simulyatsiyalar katalogi (toza, yorug', rangli
@@ -64,6 +64,8 @@
             color: var(--h-ink); font-weight: 600; font-size: 0.92rem; transition: background 0.2s var(--ease), color 0.2s var(--ease);
         }
         .nav-links a:hover { background: var(--h-sky); color: var(--h-blue); }
+        .nav-links .nav-account { border: 1px solid var(--h-line); }
+        [data-account][hidden] { display: none !important; }
         .nav-menu { display: none; margin-left: auto; position: relative; }
         .nav-menu summary {
             list-style: none; cursor: pointer; width: 42px; height: 42px; display: grid; place-items: center;
@@ -297,6 +299,7 @@
                 <a href="#oqituvchi">O'qituvchilar uchun</a>
                 <a href="testlar/testlar_online.html">Testlar</a>
                 <a href="dars_ishlanmalar/index.html">Dars ishlanmalar</a>
+                <a href="kirish.html" class="nav-account" data-account hidden>👤 Kirish</a>
             </div>
             <details class="nav-menu">
                 <summary aria-label="Menyu">☰</summary>
@@ -305,6 +308,7 @@
                     <a href="#oqituvchi">O'qituvchilar uchun</a>
                     <a href="testlar/testlar_online.html">Testlar</a>
                     <a href="dars_ishlanmalar/index.html">Dars ishlanmalar</a>
+                    <a href="kirish.html" data-account hidden>👤 Kirish</a>
                 </div>
             </details>
         </div>
@@ -693,6 +697,7 @@
                         <li><a href="testlar/testlar.pdf" download>Testlar to'plami</a></li>
                         <li><a href="hujjatlar/loyiha_algoritmi.html">Loyiha algoritmi</a></li>
                         <li><a href="tekshiruv.html">Fayllar tekshiruvi</a></li>
+                        <li><a href="maxfiylik.html">Maxfiylik siyosati</a></li>
                     </ul>
                 </div>
             </div>
@@ -703,7 +708,7 @@
         </div>
     </footer>
 
-    <script src="theme.js?v=20261029f"></script>
+    <script src="theme.js?v=20261101d"></script>
     <script>
         // ===== Katalog: qidiruv, bo'lim/sinf filtrlari, saralash, ko'rinish =====
         (function () {
@@ -789,6 +794,40 @@
                 apply();
             });
             document.getElementById('sort').addEventListener('change', function () { sortBy(this.value); });
+
+            // Backend bo'lsa: katalog admin paneldagi holatga moslanadi — o'chirilgan (nofaol) model yashiriladi,
+            // tartib, nom va tavsif admin panelda o'zgartirilgani bo'yicha. Backend bo'lmasa — statik katalog.
+            function withApi(fn) {
+                if (window.FizikaAPI) fn(window.FizikaAPI);
+                else window.addEventListener('fizika:api', function (e) { fn(e.detail); }, { once: true });
+            }
+            withApi(function (api) {
+                api.available().then(function (ok) { return ok ? api.get('simulations/') : null; }).then(function (list) {
+                    if (!Array.isArray(list) || !list.length) return;
+                    var byPath = {};
+                    list.forEach(function (m) { byPath[m.page_path] = m; });
+                    // i18n.js lang atributini keyinroq o'zgartirishi mumkin — tanlangan tilni theme.js dan olamiz
+                    var uz = (window.fizikaLang ? window.fizikaLang() : 'uz') === 'uz';
+                    sims = sims.filter(function (s) {
+                        var m = byPath[s.getAttribute('href')];
+                        if (!m) { s.remove(); return false; }
+                        s.dataset.order = m.order;
+                        // Ruscha rejimda matnlarni i18n lug'ati tarjima qiladi — faqat o'zbekchada almashtiramiz
+                        if (uz && m.title) {
+                            var tt = s.querySelector('.sim__title');
+                            if (norm(tt.textContent) !== norm(m.title)) tt.textContent = m.title;
+                            s.dataset.name = m.title;
+                            // Tavsif o'zgarmagan bo'lsa tegilmaydi — sahifadagi formatlash (Eₖ, T½) saqlanadi
+                            var desc = s.querySelector('.sim__desc');
+                            if (m.description && norm(desc.textContent) !== norm(m.description)) desc.textContent = m.description;
+                            s._text = norm(s.textContent);
+                        }
+                        return true;
+                    });
+                    sortBy(document.getElementById('sort').value);
+                    apply();
+                }).catch(function () { /* statik katalog qoladi */ });
+            });
             document.querySelectorAll('.viewsw button').forEach(function (b) {
                 b.addEventListener('click', function () {
                     var list = b.dataset.view === 'list';

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem('fizika-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/icons/icon-192.png" type="image/png">
+    <title>Profil — Fizika 10–11</title>
+    <link rel="stylesheet" href="styles.css?v=20261101d">
+    <link rel="stylesheet" href="app.css?v=20261101d">
+</head>
+<body class="app">
+    <header class="app-nav">
+        <div class="wrap">
+            <a class="app-brand" href="index.html"><img src="img/icons/icon-192.png" alt="" width="32" height="32">Fizika 10–11</a>
+            <button type="button" class="btn-a ghost small menu-btn" aria-label="Menyu">☰</button>
+            <nav id="appNav" aria-label="Menyu"></nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="wrap">
+            <div class="app-head">
+                <h1>👤 Profil</h1>
+                <p id="who"></p>
+            </div>
+            <div class="msg" id="msg" role="status" aria-live="polite"></div>
+
+            <div class="grid2">
+                <form class="panel" id="fProfile" novalidate>
+                    <h2>Shaxsiy ma'lumotlar</h2>
+                    <div class="row">
+                        <div class="field"><label for="pLast">Familiya</label><input id="pLast" required></div>
+                        <div class="field"><label for="pFirst">Ism</label><input id="pFirst" required></div>
+                    </div>
+                    <div class="row">
+                        <div class="field">
+                            <label for="pLang">Til</label>
+                            <select id="pLang"><option value="uz">O'zbekcha</option><option value="ru">Русский</option></select>
+                        </div>
+                        <div class="field">
+                            <label for="pTheme">Mavzu</label>
+                            <select id="pTheme"><option value="light">Yorug'</option><option value="dark">Qorong'i</option></select>
+                        </div>
+                    </div>
+                    <div class="checks" style="margin-bottom:10px"><label><input type="checkbox" id="pMail"> Bildirishnomalarni emailga ham yuborish</label></div>
+                    <p class="muted small">Til va mavzu barcha qurilmalaringizda bir xil bo'ladi. Email bildirishnomalar faqat profilida emaili bor foydalanuvchilarga yuboriladi.</p>
+                    <button class="btn-a" type="submit">Saqlash</button>
+                </form>
+
+                <form class="panel" id="fPass" novalidate>
+                    <h2 id="passTitle">Parolni o'zgartirish</h2>
+                    <div class="field"><label for="oldPass">Joriy (yoki vaqtinchalik) parol</label>
+                        <input id="oldPass" type="password" autocomplete="current-password" required></div>
+                    <div class="field"><label for="newPass">Yangi parol</label>
+                        <input id="newPass" type="password" autocomplete="new-password" required>
+                        <span class="hint">Kamida 8 belgi, faqat raqamlardan iborat bo'lmasin</span></div>
+                    <button class="btn-a" type="submit">Parolni o'zgartirish</button>
+                </form>
+            </div>
+
+            <div class="panel" style="margin-top:var(--sp-4)">
+                <h2>🕑 Oxirgi kirishlar</h2>
+                <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Sana</th><th>IP</th><th>Qurilma</th></tr></thead>
+                    <tbody id="logins"></tbody></table></div>
+            </div>
+
+            <div class="panel" style="margin-top:var(--sp-4)">
+                <h2>⚠️ Hisobni o'chirish</h2>
+                <p class="muted">Hisob darhol bloklanadi va 30 kundan keyin barcha shaxsiy ma'lumotlaringiz o'chiriladi.
+                    Test natijalari faqat anonim statistika sifatida qoladi.</p>
+                <div class="actions"><button type="button" class="btn-a danger" id="delBtn">Hisobni o'chirish</button></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="theme.js?v=20261101d"></script>
+    <script src="api.js?v=20261101d"></script>
+    <script src="app.js?v=20261101d"></script>
+    <script>
+    (function () {
+        var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
+        FA.boot({ login: true, active: 'profil.html' }).then(function (u) {
+            var roles = { student: 'O\'quvchi', teacher: 'O\'qituvchi', school_admin: 'Maktab administratori', admin: 'Administrator' };
+            $('who').textContent = (roles[u.role] || u.role) + ' · login: ' + u.username + (u.school_name ? ' · ' + u.school_name : '');
+            $('pFirst').value = u.first_name; $('pLast').value = u.last_name;
+            $('pLang').value = u.language; $('pTheme').value = u.theme; $('pMail').checked = u.notify_email;
+            if (!u.email) { $('pMail').disabled = true; $('pMail').parentNode.title = 'Profilingizda email yo\'q'; }
+            if (u.must_change_password || /parol=1/.test(location.search)) {
+                $('passTitle').textContent = '🔑 Avval parolingizni o\'zgartiring';
+                FA.msg('msg', 'info', 'Siz o\'qituvchi bergan vaqtinchalik parol bilan kirdingiz. Xavfsizlik uchun o\'zingizning parolingizni o\'rnating.');
+                $('oldPass').focus();
+            }
+            api.get('me/logins/').then(function (rows) {
+                $('logins').innerHTML = rows.map(function (r) {
+                    return '<tr><td>' + FA.date(r.created_at) + '</td><td>' + FA.esc(r.ip || '—') + '</td><td class="small">' +
+                        FA.esc((r.user_agent || '').slice(0, 70)) + '</td></tr>';
+                }).join('') || '<tr><td colspan="3" class="muted">Ma\'lumot yo\'q</td></tr>';
+            });
+        }, function () {});
+
+        $('fProfile').onsubmit = function (e) {
+            e.preventDefault();
+            api.patch('me/', { first_name: $('pFirst').value.trim(), last_name: $('pLast').value.trim(),
+                               language: $('pLang').value, theme: $('pTheme').value, notify_email: $('pMail').checked }).then(function (u) {
+                try {
+                    localStorage.setItem('fizika-lang', u.language);
+                    localStorage.setItem('fizika-theme', u.theme);
+                } catch (e2) {}
+                api.refreshMe();
+                FA.msg('msg', 'ok', 'Saqlandi. Til o\'zgargan bo\'lsa sahifani yangilang.');
+            }, function (err) { FA.msg('msg', 'err', FA.errText(err)); });
+        };
+
+        $('fPass').onsubmit = function (e) {
+            e.preventDefault();
+            api.post('auth/password/change/', { old_password: $('oldPass').value, new_password: $('newPass').value })
+                .then(function (r) {
+                    api.setAuth(r);
+                    $('oldPass').value = $('newPass').value = '';
+                    FA.msg('msg', 'ok', 'Parol o\'zgartirildi');
+                    if (/parol=1/.test(location.search)) {
+                        setTimeout(function () {
+                            location.href = FA.root + (api.isTeacher() ? 'oqituvchi/index.html' : 'oquvchi/index.html');
+                        }, 900);
+                    }
+                }, function (err) { FA.msg('msg', 'err', FA.errText(err)); });
+        };
+
+        $('delBtn').onclick = function () {
+            if (!confirm('Hisobingizni o\'chirishni tasdiqlaysizmi? Bu amalni o\'zingiz bekor qila olmaysiz.')) return;
+            api.del('me/').then(function () {
+                api.logout().then(function () { location.href = FA.root + 'index.html'; });
+            }, function (err) { FA.msg('msg', 'err', FA.errText(err)); });
+        };
+    })();
+    </script>
+</body>
+</html>

@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.simulations.serializers import lang
 
-from .models import Attempt, AttemptItem, Problem, Question, Topic
+from .models import Attempt, AttemptItem, Problem, Question, Topic, fmt_num
 from .services import answers_visible
 
 
@@ -29,13 +29,14 @@ class QuestionSerializer(serializers.ModelSerializer):
     topic = serializers.SlugRelatedField(slug_field="key", queryset=Topic.objects.all())
     options = OptionSerializer(many=True)
     author_name = serializers.SerializerMethodField()
+    stats_choices = serializers.ListField(child=serializers.IntegerField(), read_only=True)
 
     class Meta:
         model = Question
         fields = ["id", "topic", "level", "difficulty", "text_uz", "text_ru", "options", "correct_index",
                   "explanation_uz", "explanation_ru", "status", "author_name",
                   "stats_total", "stats_correct", "stats_choices", "created_at"]
-        read_only_fields = ["stats_total", "stats_correct", "stats_choices", "created_at"]
+        read_only_fields = ["stats_total", "stats_correct", "created_at"]
 
     def get_author_name(self, obj) -> str | None:
         return f"{obj.author.last_name} {obj.author.first_name}".strip() if obj.author else None
@@ -66,8 +67,45 @@ class ProblemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Problem
         fields = ["id", "topic", "text_uz", "text_ru", "answer", "unit", "tolerance_pct", "solution_uz",
-                  "solution_ru", "status", "stats_total", "stats_correct", "created_at"]
+                  "solution_ru", "params", "formula", "status", "stats_total", "stats_correct", "created_at"]
         read_only_fields = ["stats_total", "stats_correct", "created_at"]
+        # Parametrli masalada javob formuladan hisoblanadi — majburiy emas
+        extra_kwargs = {"answer": {"required": False}}
+
+    def validate(self, data):
+        """Parametrlangan masala: har bir parametr [min, max, qadam], formula hisoblanadi, matnda {nom} bor."""
+        import math
+
+        from apps.labs.analysis import safe_eval
+
+        params = data.get("params", getattr(self.instance, "params", None))
+        formula = data.get("formula", getattr(self.instance, "formula", ""))
+        if not params:
+            if data.get("answer", getattr(self.instance, "answer", None)) is None:
+                raise serializers.ValidationError({"answer": ["Javobni kiriting (yoki parametr va formula bering)"]})
+            return data
+        if not isinstance(params, dict):
+            raise serializers.ValidationError({"params": ['{"U": [2, 12, 0.5]} ko\'rinishida bo\'lishi kerak']})
+        sample = {}
+        for k, v in params.items():
+            ok = (isinstance(v, list) and len(v) == 3 and all(isinstance(x, int | float) for x in v)
+                  and v[2] > 0 and v[1] >= v[0])
+            if not ok or not k.isidentifier():
+                raise serializers.ValidationError({"params": [f"«{k}»: [min, max, qadam] (qadam > 0, max ≥ min)"]})
+            sample[k] = v[0]
+        if not formula:
+            raise serializers.ValidationError({"formula": ["Parametrli masala uchun javob formulasi kerak"]})
+        try:
+            sample_answer = safe_eval(formula, {**sample, "pi": math.pi})
+        except (ValueError, ZeroDivisionError, SyntaxError) as e:
+            raise serializers.ValidationError({"formula": [f"Formulani hisoblab bo'lmadi: {e}"]}) from e
+        text = data.get("text_uz", getattr(self.instance, "text_uz", ""))
+        missing = [k for k in params if "{" + k + "}" not in text]
+        if missing:
+            raise serializers.ValidationError({"text_uz": [f"Matnda {{{missing[0]}}} joyi yo'q"]})
+        if data.get("answer") is None and not getattr(self.instance, "pk", None):
+            data["answer"] = sample_answer  # namuna (minimal qiymatlar) — har o'quvchiga baribir qayta hisoblanadi
+        return data
 
     def validate_tolerance_pct(self, v):
         if not 0 < v <= 50:
@@ -117,7 +155,9 @@ class AttemptItemPublicSerializer(serializers.ModelSerializer):
         return f"{it.problem.topic.title_uz} · Hisoblash"
 
     def get_text(self, it) -> str:
-        return (it.question or it.problem).text(lang())
+        if it.question_id:
+            return it.question.text(lang())
+        return it.problem.text(lang(), it.params)
 
     def get_options(self, it) -> list[str] | None:
         if not it.question_id:
@@ -138,8 +178,8 @@ class AttemptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Attempt
-        fields = ["id", "assignment", "config", "started_at", "deadline_at", "remaining_seconds", "finished_at",
-                  "max_score", "items"]
+        fields = ["id", "assignment", "config", "show_answers", "started_at", "deadline_at", "remaining_seconds",
+                  "finished_at", "max_score", "items"]
 
     def get_items(self, obj) -> list[dict]:
         qs = obj.items.select_related("question__topic", "problem__topic")
@@ -182,8 +222,11 @@ class ResultSerializer(serializers.ModelSerializer):
                             "correct": texts[q.correct_index], "explanation": q.explanation(lg)})
             else:
                 p = it.problem
-                out.append({"item_id": it.order, "type": "calc", "text": p.text(lg), "given": it.given_answer or None,
-                            "correct": f"{p.answer:g} {p.unit}".strip(), "explanation": p.solution(lg)})
+                ans = it.answer_value if it.answer_value is not None else p.answer
+                vals = {**(it.params or {}), "answer": ans}
+                out.append({"item_id": it.order, "type": "calc", "text": p.text(lg, it.params),
+                            "given": it.given_answer or None, "correct": f"{fmt_num(ans)} {p.unit}".strip(),
+                            "explanation": p.solution(lg, vals)})
         return out
 
 

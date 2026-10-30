@@ -13,9 +13,11 @@ from apps.accounts.backends import find_user
 from apps.accounts.models import Role, User
 from apps.accounts.services import blacklist_all_tokens
 from apps.accounts.utils import slug_login, temp_password
+from apps.audit import services as audit
 from apps.core.exceptions import Conflict
 from apps.core.permissions import IsStudent, IsTeacher
 
+from .districts import DISTRICTS
 from .importers import check_limit, parse_students_file
 from .models import Classroom, ClassroomMember, School
 from .serializers import (
@@ -139,6 +141,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         classroom.is_archived = True
         classroom.join_code = None
         classroom.save(update_fields=["is_archived", "join_code", "updated_at"])
+        audit.log(request, "classroom.archive", classroom)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(request=JoinCodeSerializer, responses={200: ClassroomSerializer})
@@ -209,6 +212,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         student.must_change_password = True
         student.save(update_fields=["password", "must_change_password"])
         blacklist_all_tokens(student)
+        audit.log(request, "student.password_reset_by_teacher", student, after={"classroom": classroom.pk})
         return Response({"username": student.username, "password": pwd})
 
     @extend_schema(request=MoveSerializer, responses={200: dict})
@@ -233,6 +237,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         classroom = staff_classroom(request.user, pk)
         student = self._student(classroom, uid)
         ClassroomMember.objects.filter(classroom=classroom, user=student).delete()
+        audit.log(request, "classroom.remove_student", student, after={"classroom": classroom.pk})
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(request=AddTeacherSerializer, responses={201: dict})
@@ -278,7 +283,25 @@ class JoinClassroomView(APIView):
         _, created = ClassroomMember.objects.get_or_create(classroom=classroom, user=request.user)
         if not created:
             raise Conflict("Siz allaqachon shu sinfdasiz")
+        from apps.notifications.services import on_student_joined
+
+        on_student_joined(classroom, request.user)
         if not request.user.school_id and classroom.school_id:
             request.user.school = classroom.school
             request.user.save(update_fields=["school"])
         return Response({"id": classroom.pk, "name": classroom.name})
+
+
+class DistrictListView(APIView):
+    """Viloyat tumanlari va shaharlari (ro'yxatdan o'tishda tanlash uchun). ?region= bo'lmasa — hammasi."""
+
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(parameters=[OpenApiParameter("region", str)], responses={200: dict})
+    def get(self, request):
+        region = request.query_params.get("region")
+        if region:
+            if region not in DISTRICTS:
+                raise ValidationError({"region": ["Noma'lum viloyat"]})
+            return Response({region: DISTRICTS[region]})
+        return Response(DISTRICTS)

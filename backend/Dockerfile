@@ -20,4 +20,5 @@ RUN DJANGO_SECRET_KEY=build-only-key python manage.py collectstatic --noinput --
 
 USER app
 EXPOSE 8000
-CMD ["gunicorn", "config.wsgi", "-w", "4", "-b", "0.0.0.0:8000", "--access-logfile", "-"]
+# gthread: har bir worker bir nechta so'rovni parallel bajaradi (yuklama testi asosida tanlangan)
+CMD ["gunicorn", "config.wsgi", "-k", "gthread", "-w", "4", "--threads", "4", "-b", "0.0.0.0:8000", "--access-logfile", "-"]

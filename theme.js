@@ -92,14 +92,42 @@
         if (getLang() !== 'ru' || !ROOT) return;
         var d = document.createElement('script');
         d.src = ROOT + 'i18n-ru.js?v=' + I18N_VER;
-        d.onload = function () {
+        function run() {
             var r = document.createElement('script');
             r.src = ROOT + 'i18n.js?v=' + I18N_VER;
             document.head.appendChild(r);
+        }
+        d.onload = function () {
+            // Backend ishlayotgani ma'lum bo'lsa (api.js shu sessiyada tekshirgan): admin panelda tahrirlangan
+            // tarjimalar serverdan olinib, fayldagilar ustiga yoziladi — export_i18n ni kutish shart emas
+            // Sessiyaning birinchi sahifasida server holati hali noma'lum — baribir bir marta urinib ko'riladi
+            // (backendsiz statik hostingda bitta muvaffaqiyatsiz so'rov, keyin api.js «server yo'q» deb eslab qoladi)
+            var api = null;
+            try { api = JSON.parse(sessionStorage.getItem('fizika-api-ok') || 'null'); } catch (e) {}
+            if (api && !api.v) return run();
+            var apiBase = api && api.base;
+            if (!apiBase) {
+                try { apiBase = localStorage.getItem('fizika-api'); } catch (e) {}
+                apiBase = apiBase || (/^https?:/.test(location.protocol) ? ROOT + 'api/v1/' : null);
+            }
+            if (!apiBase) return run();
+            var base = window.FIZIKA_RU || {};
+            var done = false;
+            function finish() { if (!done) { done = true; run(); } }
+            var x = document.createElement('script');
+            x.src = apiBase + 'i18n/ru.js';
+            // Server lug'ati fayldagisi ustiga qo'shiladi (kech kelsa ham — fayldagi lug'at yo'qolmaydi)
+            x.onload = function () {
+                if (window.FIZIKA_RU !== base) window.FIZIKA_RU = Object.assign({}, base, window.FIZIKA_RU || {});
+                finish();
+            };
+            x.onerror = function () { window.FIZIKA_RU = base; finish(); };
+            setTimeout(finish, 2500);   // server javob bermasa sahifa kutib qolmasin
+            document.head.appendChild(x);
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261029f';
+    var I18N_VER = '20261101d';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----
@@ -180,6 +208,55 @@
         setTimeout(function () { t.remove(); }, 3800);
     }
 
+    // ----- Backend bilan aloqa (api.js) va hisob tugmasi -----
+    // api.js har sahifada avtomatik yuklanadi. «Kirish» tugmasi faqat server ishlayotgan bo'lsa
+    // ko'rinadi — backendsiz (faqat statik hosting) saytda ortiqcha tugma chiqmaydi.
+    function loadApi() {
+        if (!ROOT || !/^https?:/.test(location.protocol) || window.FizikaAPI) return;
+        var s = document.createElement('script');
+        s.src = ROOT + 'api.js?v=' + I18N_VER;
+        s.onload = function () { renderAccount(); };
+        document.head.appendChild(s);
+        window.addEventListener('fizika:auth', renderAccount);
+    }
+
+    function renderAccount() {
+        var api = window.FizikaAPI;
+        if (!api) return;
+        var u = api.user();
+        var slots = document.querySelectorAll('[data-account]');
+        var show = function (ok) {
+            if (!ok && !u) {
+                slots.forEach(function (el) { el.hidden = true; });
+                return;
+            }
+            var href, text;
+            if (u) {
+                href = ROOT + (api.isTeacher() ? 'oqituvchi/index.html' : 'oquvchi/index.html');
+                text = '👤 ' + (u.first_name || u.username);
+            } else {
+                href = api.loginUrl(location.pathname + location.search);
+                text = '👤 Kirish';
+            }
+            if (!slots.length) {
+                var a = document.createElement('a');
+                a.id = 'accountBtn';
+                a.className = 'account-btn';
+                a.setAttribute('data-account', '');
+                document.body.appendChild(a);
+                slots = [a];
+            }
+            slots.forEach(function (el) {
+                el.hidden = false;
+                el.href = href;
+                el.textContent = text;
+                el.title = u ? 'Mening sahifam' : 'Tizimga kirish';
+            });
+        };
+        if (u) show(true);
+        else api.available().then(show);
+    }
+
     // ----- Ishga tushirish -----
     // Rejimni iloji boricha erta qo'llaymiz (miltillashning oldini olish)
     function boot() {
@@ -192,6 +269,7 @@
         initPwa();
         initTeacherFlag();
         loadLang();
+        loadApi();
     }
 
     if (document.readyState === 'loading') {

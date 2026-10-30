@@ -407,3 +407,29 @@ body.dark.sim-page .info-panel, body.dark.sim-page .lab-log, body.dark.sim-page 
     .sim-page #scrollTop { bottom: calc(56px + var(--sp-3) + 50px); }
 }
 @media print { .sim-bar { display: none !important; } .sim-page { padding: 0; } }
+
+/* ===== Backend: saqlash holati, topshiriq ===== */
+.cloud-status { margin-left: auto; font-size: 0.8rem; color: var(--text-muted); }
+.cloud-status a { color: var(--primary); font-weight: 600; }
+.cloud-status--ok { color: #16a34a; }
+.cloud-status--warn { color: #d97706; }
+.cloud-status--err { color: #dc2626; }
+.assign-banner {
+    margin-bottom: var(--sp-4); padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
+    background: color-mix(in srgb, #2563eb 8%, var(--card-bg)); border: 1px solid color-mix(in srgb, #2563eb 30%, transparent);
+    font-size: 0.88rem; color: var(--text);
+}
+.assign-banner__top { display: flex; justify-content: space-between; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: 4px; }
+.assign-banner__due { color: var(--text-muted); font-size: 0.8rem; }
+.submit-box { margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: 1px dashed var(--border); }
+.submit-box h4 { font-size: 0.95rem; color: var(--text); margin-bottom: var(--sp-2); }
+.submit-box p { font-size: 0.88rem; color: var(--text-muted); margin-bottom: var(--sp-2); }
+.submit-label { display: block; font-weight: 600; font-size: 0.85rem; color: var(--text); margin-bottom: 6px; }
+.submit-box textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-sm);
+    background: var(--card-bg); color: var(--text); font: inherit; font-size: 0.9rem; resize: vertical; margin-bottom: var(--sp-2);
+}
+.submit-grade { font-size: 1.3rem; color: #16a34a; }
+.submit-msg { min-height: 1.2em; }
+.auto-checks { list-style: none; display: grid; gap: 4px; font-size: 0.85rem; color: var(--text-muted); }
+.sim-bar__account { margin-left: var(--sp-2); }
