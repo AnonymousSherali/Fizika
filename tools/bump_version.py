@@ -56,8 +56,9 @@ def main():
             p.write_text(t, encoding="utf-8")
             changed += 1
     sw = (ROOT / "sw.js").read_text(encoding="utf-8")
+    tooling = {"sw.js", "eslint.config.js"}   # ishlab chiqish vositalari — saytga kerak emas
     core = ["./"] + [f"./{f}" for f in files
-                     if PRECACHE.search(f) and f != "sw.js" and not f.startswith("img/icons/maskable")]
+                     if PRECACHE.search(f) and f not in tooling and not f.startswith("img/icons/maskable")]
     listing = "var CORE = [\n" + ",\n".join(f"    '{x}'" for x in core) + "\n];"
     sw = re.sub(r"var CORE = \[.*?\n\];", listing, sw, flags=re.S)
     sw = sw.replace(f"var VERSION = 'fizika-{old}'", f"var VERSION = 'fizika-{new}'")

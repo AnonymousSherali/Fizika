@@ -1,0 +1,678 @@
+/* kondensator_model.html sahifasining skripti (avval HTML ichida edi). */
+const canvas = document.getElementById('capacitorCanvas');
+const ctx = canvas.getContext('2d');
+
+// Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
+const LIGHT = { bg1: '#eef2ff', bg2: '#e0e7ff', ink: '#1e1b4b', muted: '#64748b',
+                plate1: '#e2e8f0', plate2: '#94a3b8', plateEdge: '#475569', plateSide: '#64748b',
+                wire: '#475569', field: 'rgba(79,70,229,0.8)', plus: '#dc2626', minus: '#2563eb',
+                panel: 'rgba(255,255,255,0.88)', panelEdge: '#c7d2fe', grid: '#e2e8f0',
+                curve: '#4f46e5', target: '#f59e0b', lcd: '#0f172a', lcdText: '#4ade80',
+                dot: '#f59e0b', switchOn: '#16a34a', switchOff: '#dc2626' };
+const DARK  = { bg1: '#0f1023', bg2: '#16183a', ink: '#e0e7ff', muted: '#94a3b8',
+                plate1: '#cbd5e1', plate2: '#475569', plateEdge: '#e2e8f0', plateSide: '#334155',
+                wire: '#94a3b8', field: 'rgba(165,180,252,0.9)', plus: '#f87171', minus: '#60a5fa',
+                panel: 'rgba(27,29,63,0.9)', panelEdge: '#3730a3', grid: '#2a2d55',
+                curve: '#a5b4fc', target: '#fbbf24', lcd: '#020617', lcdText: '#4ade80',
+                dot: '#fbbf24', switchOn: '#4ade80', switchOff: '#f87171' };
+function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
+
+const EPS0 = 8.85e-12;     // F/m
+const TAU = 1.0;           // s — ko'rinishi uchun sekinlashtirilgan τ = RC
+const Q_UNIT = 0.15e-9;    // bitta chizilgan "+" belgisi = 0.15 nC
+const MAX_SIGNS = 64;
+
+const dielectrics = {
+    air:      { name: 'Havo',    eps: 1, color: null },
+    paraffin: { name: 'Parafin', eps: 2, color: '#fcd34d' },
+    mica:     { name: 'Slyuda',  eps: 6, color: '#d6a35c' },
+    glass:    { name: 'Shisha',  eps: 7, color: '#67e8f9' }
+};
+
+let state = {
+    S: 100,          // cm²
+    d: 2,            // mm
+    dKey: 'air',
+    eps: 1,
+    U0: 20,          // manba kuchlanishi, V
+    mode: 'on',      // 'on' — ulangan, 'off' — uzilgan
+    q: 0,            // C (kulon)
+    I: 0,            // A
+    running: false,
+    started: false,  // "Qayta"dan keyin zaryadlash boshlanganmi
+    time: 0,
+    hist: [],        // [t, q] — q(t) grafigi uchun
+    flow: 0          // simdagi zaryad nuqtalari fazasi (px)
+};
+
+let animationId = null;
+let lastTimestamp = null;
+
+// ----- Fizika -----
+function capacitance() { return state.eps * EPS0 * (state.S * 1e-4) / (state.d * 1e-3); }
+function qEquilibrium() { return capacitance() * state.U0; }
+function capVoltage() { return state.q / capacitance(); }
+function fieldE() { return capVoltage() / (state.d * 1e-3); }           // V/m
+function energy() { return state.q * state.q / (2 * capacitance()); }   // J
+
+// Pauzada sozlama o'zgarsa — kvazistatik holat: ulangan kondensator
+// darhol yangi muvozanatga keladi (q = C·U₀), uzilganda q saqlanadi
+function settleIfPaused() {
+    if (!state.running && state.mode === 'on' && state.started) {
+        state.q = qEquilibrium();
+        state.I = 0;
+    }
+}
+
+function onSettingChanged() {
+    settleIfPaused();
+    // Pauzada yangi sozlama — grafik yangi holatdan boshlanadi (eski egri chalg'itmasin)
+    if (state.started && !state.running) state.hist = [[state.time, state.q]];
+    updateStats();
+    if (!state.running) draw();
+}
+
+document.getElementById('areaSlider').oninput = function() {
+    state.S = parseFloat(this.value);
+    document.getElementById('areaValue').textContent = state.S + ' cm²';
+    onSettingChanged();
+};
+document.getElementById('distSlider').oninput = function() {
+    state.d = parseFloat(this.value);
+    document.getElementById('distValue').textContent = state.d.toFixed(1) + ' mm';
+    onSettingChanged();
+};
+document.getElementById('voltSlider').oninput = function() {
+    state.U0 = parseFloat(this.value);
+    document.getElementById('voltValue').textContent = state.U0 + ' V';
+    onSettingChanged();
+};
+
+function selectDielectric(key, evt) {
+    document.querySelectorAll('.diel-selector .planet-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+    });
+    const t = (evt || window.event) ? (evt || window.event).target : null;
+    if (t) {
+        const btn = t.closest ? t.closest('.planet-btn') : t;
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+    }
+    state.dKey = key;
+    state.eps = dielectrics[key].eps;
+    onSettingChanged();
+}
+
+function setMode(m, evt) {
+    state.mode = m;
+    const bOn = document.getElementById('modeOn'), bOff = document.getElementById('modeOff');
+    bOn.classList.toggle('active', m === 'on');
+    bOff.classList.toggle('active', m === 'off');
+    bOn.setAttribute('aria-checked', m === 'on' ? 'true' : 'false');
+    bOff.setAttribute('aria-checked', m === 'off' ? 'true' : 'false');
+    document.getElementById('modeNote').innerHTML = (m === 'on')
+        ? 'Kalit yopiq: kondensatordagi kuchlanish manba kuchlanishiga teng bo\'lib qoladi, o\'zgarganda <strong>zaryad q</strong> o\'zgaradi.'
+        : 'Kalit ochiq: zaryad <strong>q saqlanadi</strong>. Endi S, d yoki ε o\'zgarsa <strong>U = q/C</strong> o\'zgaradi. U₀ slayderi hozir kondensatorga ta\'sir qilmaydi.';
+    if (m === 'off') state.I = 0;
+    onSettingChanged();
+}
+
+function updatePhysics(dt) {
+    if (state.mode === 'on') {
+        // Aniq eksponentsial qadam: q → q_max, τ = RC (kadr tezligiga bog'liq emas)
+        const qe = qEquilibrium();
+        const dq = (qe - state.q) * (1 - Math.exp(-dt / TAU));
+        state.q += dq;
+        state.I = dq / dt;
+    } else {
+        state.I = 0;
+    }
+    state.time += dt;
+    state.hist.push([state.time, state.q]);
+    while (state.hist.length && state.hist[0][0] < state.time - 8) state.hist.shift();
+    // Tok qancha katta bo'lsa, simdagi nuqtalar shuncha tez yuradi
+    state.flow += 140 * Math.tanh(state.I / 1e-9) * dt;
+}
+
+// ----- Formatlash -----
+function sig(v, n) {
+    if (!isFinite(v)) return '-';
+    if (v === 0) return '0';
+    const a = Math.abs(v);
+    const dec = Math.max(0, n - 1 - Math.floor(Math.log10(a)));
+    return v.toFixed(Math.min(dec, 6));
+}
+function fmtEnergy(W) {
+    const nJ = W * 1e9;
+    return nJ >= 1000 ? sig(nJ / 1000, 3) + ' µJ' : sig(nJ, 3) + ' nJ';
+}
+function fmtField(E) {
+    const kV = E / 1000;
+    return Math.abs(kV) >= 1 || E === 0 ? sig(kV, 3) + ' kV/m' : sig(E, 3) + ' V/m';
+}
+
+function updateStats() {
+    const C = capacitance();
+    document.getElementById('capValue').textContent = sig(C * 1e12, 3) + ' pF';
+    document.getElementById('chargeValue').textContent = sig(state.q * 1e9, 3) + ' nC';
+    document.getElementById('ucapValue').textContent = sig(capVoltage(), 3) + ' V';
+    document.getElementById('fieldValue').textContent = fmtField(fieldE());
+    document.getElementById('energyValue').textContent = fmtEnergy(energy());
+    const qe = qEquilibrium();
+    let prog;
+    if (state.mode === 'on') prog = qe > 0 ? Math.min(100, state.q / qe * 100).toFixed(0) + '%' : '-';
+    else prog = 'kalit ochiq';
+    document.getElementById('progressValue').textContent = prog;
+    document.getElementById('emptyWarn').hidden = !(state.mode === 'off' && state.q < 1e-15);
+}
+
+// ----- Chizish -----
+// Qiya (kabinet) proyeksiya: z — chuqurlik, o'ngga-yuqoriga ketadi
+const KX = 0.3, KY = 0.2;
+function pj(x, y, z) { return [x + KX * z, y - KY * z]; }
+function poly(pts) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+}
+
+const CX = 290, CY = 280, TH = 8;
+const BUS_TOP = 542, BUS_BOT = 584, BAT_X = 50;
+
+function geometry() {
+    const a = 18 * Math.sqrt(state.S);    // qoplama tomoni (px) ∝ √S, yuzi ∝ S
+    const g = 30 * state.d;               // oraliq (px) ∝ d
+    const xL = CX - g / 2 - TH / 2;       // chap qoplama markaz tekisligi
+    const xR = CX + g / 2 + TH / 2;
+    return { a, g, xL, xR, top: CY - a / 2, bot: CY + a / 2 };
+}
+
+function drawPlate(x, a, p) {
+    const h = a / 2;
+    // Asosiy yuz
+    const face = [pj(x, CY - h, -h), pj(x, CY - h, h), pj(x, CY + h, h), pj(x, CY + h, -h)];
+    const gr = ctx.createLinearGradient(face[0][0], face[0][1], face[2][0], face[2][1]);
+    gr.addColorStop(0, p.plate1);
+    gr.addColorStop(1, p.plate2);
+    ctx.fillStyle = gr;
+    poly(face);
+    ctx.fill();
+    // Old qirra (qalinlik)
+    ctx.fillStyle = p.plateSide;
+    poly([pj(x - TH / 2, CY - h, -h), pj(x + TH / 2, CY - h, -h), pj(x + TH / 2, CY + h, -h), pj(x - TH / 2, CY + h, -h)]);
+    ctx.fill();
+    // Yuqori qirra
+    ctx.fillStyle = p.plate1;
+    poly([pj(x - TH / 2, CY - h, -h), pj(x - TH / 2, CY - h, h), pj(x + TH / 2, CY - h, h), pj(x + TH / 2, CY - h, -h)]);
+    ctx.fill();
+    ctx.strokeStyle = p.plateEdge;
+    ctx.lineWidth = 1.5;
+    poly(face);
+    ctx.stroke();
+}
+
+function drawDielectric(G, p) {
+    const D = dielectrics[state.dKey];
+    if (!D.color) return;
+    const h = G.a / 2;
+    const x1 = G.xL + TH / 2, x2 = G.xR - TH / 2;
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = D.color;
+    // Orqa (x2) yuz, yuqori yuz, old yuz
+    poly([pj(x2, CY - h, -h), pj(x2, CY - h, h), pj(x2, CY + h, h), pj(x2, CY + h, -h)]);
+    ctx.fill();
+    ctx.globalAlpha = 0.5;
+    poly([pj(x1, CY - h, -h), pj(x1, CY - h, h), pj(x2, CY - h, h), pj(x2, CY - h, -h)]);
+    ctx.fill();
+    ctx.globalAlpha = 0.42;
+    poly([pj(x1, CY - h, -h), pj(x2, CY - h, -h), pj(x2, CY + h, -h), pj(x1, CY + h, -h)]);
+    ctx.fill();
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = D.color;
+    ctx.lineWidth = 1.5;
+    poly([pj(x1, CY - h, -h), pj(x2, CY - h, -h), pj(x2, CY + h, -h), pj(x1, CY + h, -h)]);
+    ctx.stroke();
+    ctx.restore();
+
+    // Dielektrik nomi — plastinaning old yuzida (joy yetsa)
+    const lb = pj((x1 + x2) / 2, CY + h - 14, -h);
+    if (x2 - x1 >= 56) {
+        ctx.fillStyle = p.ink;
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('ε = ' + D.eps, lb[0], lb[1]);
+    }
+
+    // Qutblanish: + qoplama yonida "−", − qoplama yonida "+" bog'langan zaryadlar
+    if (state.q > 1e-15 && x2 - x1 > 26) {
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const n = 5;
+        for (let i = 0; i < n; i++) {
+            const y = CY - h + (i + 0.5) * G.a / n;
+            const l = pj(x1 + 7, y, -h), r = pj(x2 - 7, y, -h);
+            ctx.fillStyle = p.minus; ctx.fillText('−', l[0], l[1]);
+            ctx.fillStyle = p.plus;  ctx.fillText('+', r[0], r[1]);
+        }
+        ctx.textBaseline = 'alphabetic';
+    }
+}
+
+function drawField(G, p) {
+    const E = Math.abs(fieldE());
+    if (E < 1) return;
+    // Chiziqlar zichligi ∝ E: qoplama balandligiga to'g'ri keladigan chiziqlar soni
+    const n = Math.min(34, Math.round(E / 1000 * G.a / 210));
+    if (n < 1) return;
+    const x1 = G.xL + TH / 2 + 2, x2 = G.xR - TH / 2 - 2;
+    const dir = state.q >= 0 ? 1 : -1;
+    ctx.strokeStyle = p.field;
+    ctx.fillStyle = p.field;
+    ctx.lineWidth = 1.6;
+    for (let i = 0; i < n; i++) {
+        const y = G.top + (i + 0.5) * G.a / n;
+        const s = pj(x1, y, 0), e = pj(x2, y, 0);
+        ctx.beginPath();
+        ctx.moveTo(s[0], s[1]);
+        ctx.lineTo(e[0], e[1]);
+        ctx.stroke();
+        // O'q — chiziq o'rtasida, + dan − ga
+        if (x2 - x1 > 14) {
+            const mx = (s[0] + e[0]) / 2, my = (s[1] + e[1]) / 2;
+            ctx.beginPath();
+            ctx.moveTo(mx + 5 * dir, my);
+            ctx.lineTo(mx - 4 * dir, my - 4);
+            ctx.lineTo(mx - 4 * dir, my + 4);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+}
+
+function drawCharges(G, p) {
+    const N = Math.min(MAX_SIGNS, Math.round(Math.abs(state.q) / Q_UNIT));
+    if (N < 1) return;
+    const rows = Math.ceil(Math.sqrt(N));
+    const cols = Math.ceil(N / rows);
+    const h = G.a / 2;
+    const sp = Math.min(G.a / rows, G.a / cols);
+    const r = Math.max(4, Math.min(8, sp * 0.3));
+    ctx.font = 'bold ' + Math.round(r * 1.7) + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const sides = [[G.xL + TH / 2, p.plus, '+'], [G.xR - TH / 2, p.minus, '−']];
+    for (const [x, col, sign] of sides) {
+        let k = 0;
+        for (let rr = 0; rr < rows && k < N; rr++) {
+            for (let cc = 0; cc < cols && k < N; cc++, k++) {
+                const y = CY - h + (rr + 0.5) * G.a / rows;
+                const z = h - (cc + 0.5) * G.a / cols;
+                const pt = pj(x, y, z);
+                ctx.fillStyle = col;
+                ctx.beginPath();
+                ctx.arc(pt[0], pt[1], r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(sign, pt[0], pt[1] + 0.5);
+            }
+        }
+    }
+    ctx.textBaseline = 'alphabetic';
+}
+
+function wirePath(G) {
+    // Zaryadlanish tokining yo'nalishi: manba (+) → chap qoplama; o'ng qoplama → manba (−)
+    return [[G.xR, G.bot], [G.xR, BUS_BOT], [BAT_X, BUS_BOT], [BAT_X, BUS_TOP], [G.xL, BUS_TOP], [G.xL, G.bot]];
+}
+
+function drawCircuit(G, p) {
+    const path = wirePath(G);
+    ctx.strokeStyle = p.wire;
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    // Sim (kalit va batareya joylarida uzilish bilan chiziladi)
+    const batY = (BUS_TOP + BUS_BOT) / 2;
+    const swX1 = 108, swX2 = 148;
+    const rX1 = 178, rX2 = 236;
+    ctx.beginPath();
+    ctx.moveTo(G.xL, G.bot); ctx.lineTo(G.xL, BUS_TOP); ctx.lineTo(BAT_X, BUS_TOP); ctx.lineTo(BAT_X, batY - 6);
+    ctx.moveTo(BAT_X, batY + 6); ctx.lineTo(BAT_X, BUS_BOT); ctx.lineTo(swX1, BUS_BOT);
+    ctx.moveTo(swX2, BUS_BOT); ctx.lineTo(rX1, BUS_BOT);
+    ctx.moveTo(rX2, BUS_BOT); ctx.lineTo(G.xR, BUS_BOT); ctx.lineTo(G.xR, G.bot);
+    ctx.stroke();
+
+    // Batareya: uzun chiziq (+) yuqorida, qisqa (−) pastda
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(BAT_X - 18, batY - 6); ctx.lineTo(BAT_X + 18, batY - 6);
+    ctx.stroke();
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(BAT_X - 9, batY + 6); ctx.lineTo(BAT_X + 9, batY + 6);
+    ctx.stroke();
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = p.plus;  ctx.fillText('+', BAT_X + 22, batY - 3);
+    ctx.fillStyle = p.minus; ctx.fillText('−', BAT_X + 22, batY + 13);
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 13px Arial';
+    ctx.fillText('U₀ = ' + state.U0 + ' V', BAT_X + 12, BUS_TOP - 9);
+
+    // Kalit K
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = p.wire;
+    ctx.fillStyle = p.wire;
+    for (const x of [swX1, swX2]) {
+        ctx.beginPath(); ctx.arc(x, BUS_BOT, 3.5, 0, Math.PI * 2); ctx.fill();
+    }
+    const closed = state.mode === 'on';
+    ctx.strokeStyle = closed ? p.switchOn : p.switchOff;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(swX1, BUS_BOT);
+    if (closed) ctx.lineTo(swX2, BUS_BOT - 2);
+    else ctx.lineTo(swX1 + 34 * Math.cos(-0.6), BUS_BOT + 34 * Math.sin(-0.6));
+    ctx.stroke();
+    ctx.fillStyle = p.ink;
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 13px Arial';
+    ctx.fillText('K', (swX1 + swX2) / 2, BUS_BOT - 24);
+
+    // Rezistor R (zigzag)
+    ctx.strokeStyle = p.wire;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(rX1, BUS_BOT);
+    const segs = 8;
+    for (let i = 1; i < segs; i++) {
+        ctx.lineTo(rX1 + i * (rX2 - rX1) / segs, BUS_BOT + (i % 2 ? -7 : 7));
+    }
+    ctx.lineTo(rX2, BUS_BOT);
+    ctx.stroke();
+    ctx.fillText('R', (rX1 + rX2) / 2, BUS_BOT - 13);
+
+    // Tok: simdagi harakatlanuvchi nuqtalar (|I| ∝ tezlik)
+    if (Math.abs(state.I) > 2e-12) {
+        const lens = [];
+        let total = 0;
+        for (let i = 1; i < path.length; i++) {
+            const L = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]);
+            lens.push(L); total += L;
+        }
+        const step = 24;
+        const off = ((state.flow % step) + step) % step;
+        ctx.fillStyle = p.dot;
+        for (let s = off; s < total; s += step) {
+            let rem = s, k = 0;
+            while (k < lens.length && rem > lens[k]) { rem -= lens[k]; k++; }
+            if (k >= lens.length) break;
+            const a0 = path[k], a1 = path[k + 1], f = rem / lens[k];
+            const x = a0[0] + (a1[0] - a0[0]) * f, y = a0[1] + (a1[1] - a0[1]) * f;
+            ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = p.ink;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText('I = ' + sig(state.I * 1e9, 2) + ' nA', 250, BUS_BOT - 12);
+    }
+}
+
+function drawVoltmeter(G, p) {
+    const bx = CX - 62, by = 12, bw = 124, bh = 40;
+    // Voltmetr simlari qoplamalarning orqa-yuqori burchagiga ulanadi
+    const cL = pj(G.xL, G.top, G.a / 2), cR = pj(G.xR, G.top, G.a / 2);
+    const yW = Math.min(70, cL[1] - 6);
+    ctx.strokeStyle = p.wire;
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(cL[0], cL[1]); ctx.lineTo(cL[0], yW); ctx.lineTo(CX - 34, yW); ctx.lineTo(CX - 34, by + bh);
+    ctx.moveTo(cR[0], cR[1]); ctx.lineTo(cR[0], yW); ctx.lineTo(CX + 34, yW); ctx.lineTo(CX + 34, by + bh);
+    ctx.stroke();
+    for (const c of [cL, cR]) { ctx.fillStyle = p.wire; ctx.beginPath(); ctx.arc(c[0], c[1], 3, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = p.lcd;
+    ctx.strokeStyle = p.panelEdge;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 8); else ctx.rect(bx, by, bw, bh);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = p.lcdText;
+    ctx.font = 'bold 20px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(sig(capVoltage(), 3) + ' V', CX + 8, by + 27);
+    ctx.fillStyle = '#a5b4fc';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('V', bx + 14, by + 25);
+}
+
+function drawReadoutPanel(p) {
+    const x = 560, y = 18, w = 222, h = 186;
+    ctx.fillStyle = p.panel;
+    ctx.strokeStyle = p.panelEdge;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, 12); else ctx.rect(x, y, w, h);
+    ctx.fill(); ctx.stroke();
+    const C = capacitance();
+    const lines = [
+        ['C', sig(C * 1e12, 3) + ' pF'],
+        ['q', sig(state.q * 1e9, 3) + ' nC'],
+        ['U', sig(capVoltage(), 3) + ' V'],
+        ['E', fmtField(fieldE())],
+        ['W', fmtEnergy(energy())]
+    ];
+    ctx.font = 'bold 13px Arial';
+    ctx.fillStyle = p.muted;
+    ctx.textAlign = 'left';
+    ctx.fillText('ε = ' + state.eps + ' (' + dielectrics[state.dKey].name.toLowerCase() + ')   S = ' + state.S + ' cm²', x + 14, y + 24);
+    ctx.fillText('d = ' + state.d.toFixed(1) + ' mm', x + 14, y + 42);
+    lines.forEach((ln, i) => {
+        const yy = y + 72 + i * 25;
+        ctx.fillStyle = p.ink;
+        ctx.font = 'italic bold 17px Georgia, serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(ln[0] + ' =', x + 14, yy);
+        ctx.font = 'bold 17px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(ln[1], x + w - 14, yy);
+    });
+}
+
+function drawGraph(p) {
+    const x = 560, y = 222, w = 222, h = 170;
+    ctx.fillStyle = p.panel;
+    ctx.strokeStyle = p.panelEdge;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, 12); else ctx.rect(x, y, w, h);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('q(t), nC', x + 12, y + 20);
+    const gx = x + 36, gy = y + 32, gw = w - 50, gh = h - 62;
+    const window_ = 8;
+    const tEnd = Math.max(window_, state.time), tStart = tEnd - window_;
+    let qMax = Math.max(qEquilibrium(), Math.abs(state.q));
+    state.hist.forEach(hh => { if (hh[1] > qMax) qMax = hh[1]; });
+    qMax = qMax > 0 ? qMax * 1.15 : 1e-9;
+    // To'r
+    ctx.strokeStyle = p.grid;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const yy = gy + gh * i / 4;
+        ctx.beginPath(); ctx.moveTo(gx, yy); ctx.lineTo(gx + gw, yy); ctx.stroke();
+    }
+    ctx.strokeStyle = p.muted;
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+    ctx.fillStyle = p.muted;
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(sig(qMax * 1e9, 2), gx - 4, gy + 4);
+    ctx.fillText('0', gx - 4, gy + gh + 4);
+    ctx.textAlign = 'center';
+    ctx.fillText(tStart.toFixed(0) + ' s', gx, gy + gh + 16);
+    ctx.fillText(tEnd.toFixed(0) + ' s', gx + gw, gy + gh + 16);
+    ctx.fillText('t', gx + gw / 2, gy + gh + 16);
+    // q_max (manbaga ulangan holdagi muvozanat) chizig'i
+    if (state.mode === 'on' && qEquilibrium() > 0) {
+        const yq = gy + gh - qEquilibrium() / qMax * gh;
+        ctx.strokeStyle = p.target;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(gx, yq); ctx.lineTo(gx + gw, yq); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = p.target;
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('q_max = C·U₀', gx + gw, yq - 4);
+    }
+    if (state.hist.length > 1) {
+        ctx.strokeStyle = p.curve;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        state.hist.forEach((hh, i) => {
+            const px = gx + (hh[0] - tStart) / window_ * gw;
+            const py = gy + gh - hh[1] / qMax * gh;
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+    } else {
+        ctx.fillStyle = p.muted;
+        ctx.textAlign = 'center';
+        ctx.font = '12px Arial';
+        ctx.fillText('«Zaryadlash»ni bosing', gx + gw / 2, gy + gh / 2);
+    }
+}
+
+function drawModeBadge(p) {
+    const x = 560, y = 410, w = 222, h = 72;
+    const on = state.mode === 'on';
+    ctx.fillStyle = p.panel;
+    ctx.strokeStyle = on ? p.switchOn : p.switchOff;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, 12); else ctx.rect(x, y, w, h);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = on ? p.switchOn : p.switchOff;
+    ctx.font = 'bold 15px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(on ? 'Manbaga ulangan' : 'Manbadan uzilgan', x + 14, y + 26);
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText(on ? 'U = const, q = C·U o\'zgaradi' : 'q = const, U = q/C o\'zgaradi', x + 14, y + 50);
+    ctx.fillStyle = p.muted;
+    ctx.font = '12px Arial';
+    ctx.fillText(on ? 'kalit K yopiq' : 'kalit K ochiq, E = q/(εε₀S)', x + 14, y + 66);
+}
+
+function draw() {
+    const p = P();
+    const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, p.bg1);
+    bg.addColorStop(1, p.bg2);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const G = geometry();
+    drawCircuit(G, p);
+    drawVoltmeter(G, p);
+    drawPlate(G.xL, G.a, p);
+    drawDielectric(G, p);
+    drawField(G, p);
+    ctx.globalAlpha = 0.9;
+    drawPlate(G.xR, G.a, p);
+    ctx.globalAlpha = 1;
+    drawCharges(G, p);
+
+    // d o'lchami
+    const yD = G.bot + 18;
+    const l = pj(G.xL + TH / 2, yD, -G.a / 2), r = pj(G.xR - TH / 2, yD, -G.a / 2);
+    ctx.strokeStyle = p.muted;
+    ctx.fillStyle = p.muted;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(l[0], l[1]); ctx.lineTo(r[0], r[1]); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(l[0], l[1] - 5); ctx.lineTo(l[0], l[1] + 5);
+    ctx.moveTo(r[0], r[1] - 5); ctx.lineTo(r[0], r[1] + 5); ctx.stroke();
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('d = ' + state.d.toFixed(1) + ' mm', (l[0] + r[0]) / 2, l[1] + 18);
+
+
+    drawReadoutPanel(p);
+    drawGraph(p);
+    drawModeBadge(p);
+}
+
+function loop(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    let dt = (timestamp - lastTimestamp) / 1000;
+    lastTimestamp = timestamp;
+    if (dt > 0.05) dt = 0.05;
+
+    if (state.running && dt > 0) {
+        updatePhysics(dt);
+        updateStats();
+    }
+    draw();
+
+    if (state.running) {
+        animationId = requestAnimationFrame(loop);
+    }
+}
+
+function startCharging() {
+    if (!state.running) {
+        state.running = true;
+        if (!state.started) {
+            state.started = true;
+            if (!state.hist.length) state.hist.push([state.time, state.q]);
+        }
+        lastTimestamp = null;
+        animationId = requestAnimationFrame(loop);
+    }
+}
+
+function pauseCharging() {
+    state.running = false;
+    if (animationId) cancelAnimationFrame(animationId);
+    state.I = 0;
+    updateStats();
+    draw();
+}
+
+function resetCharging() {
+    state.running = false;
+    if (animationId) cancelAnimationFrame(animationId);
+    state.q = 0;
+    state.I = 0;
+    state.time = 0;
+    state.hist = [];
+    state.flow = 0;
+    state.started = false;
+    updateStats();
+    draw();
+}
+
+resetCharging();
+
+// Rejim almashganda kanvasni qayta chizamiz
+window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
+
+// ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+window.modelControls = { start: startCharging, pause: pauseCharging, reset: resetCharging };
+window.modelIsRunning = function () { return state.running; };
+window.labFields = [
+    { label: 'S (cm²)',  get: function () { return state.S; } },
+    { label: 'd (mm)',   get: function () { return +state.d.toFixed(1); } },
+    { label: 'ε',        get: function () { return state.eps; } },
+    { label: 'U (V)',    get: function () { return +capVoltage().toPrecision(4); } },
+    { label: 'C (pF)',   get: function () { return +(capacitance() * 1e12).toPrecision(4); } },
+    { label: 'q (nC)',   get: function () { return +(state.q * 1e9).toPrecision(4); } },
+    { label: 'E (kV/m)', get: function () { return +(fieldE() / 1000).toPrecision(4); } },
+    { label: 'W (nJ)',   get: function () { return +(energy() * 1e9).toPrecision(4); } },
+    { label: 'Rejim',    get: function () { return state.mode === 'on' ? 'ulangan' : 'uzilgan'; } }
+];

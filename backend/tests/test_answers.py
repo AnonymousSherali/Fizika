@@ -1,4 +1,4 @@
-"""FT-6.5: serverdagi javob tekshiruvi frontend (testlar_online.html → checkProblem) bilan bir xil.
+"""FT-6.5: serverdagi javob tekshiruvi frontend (testlar_online.js → checkProblem) bilan bir xil.
 Kutilgan qiymatlar brauzerdagi JavaScript funksiyasining o'zidan olingan (46 ta holat)."""
 import pytest
 

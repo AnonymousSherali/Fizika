@@ -1,4 +1,4 @@
-"""5-bosqich: admin 2FA (FT-10.4), backup skripti mavjudligi."""
+"""Admin panel: 2FA (FT-10.4), kirish va bosh sahifa."""
 import io
 
 import pytest

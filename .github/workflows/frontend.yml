@@ -1,0 +1,21 @@
+# Frontend CI: ESLint (sayt yig'ishsiz ishlaydi — faqat kod sifati tekshiriladi)
+name: frontend
+
+on:
+  push:
+    paths: ["**/*.js", "package.json", "package-lock.json", "eslint.config.js", ".github/workflows/frontend.yml"]
+  pull_request:
+    paths: ["**/*.js", "package.json", "package-lock.json", "eslint.config.js", ".github/workflows/frontend.yml"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: ESLint
+        run: npm run lint

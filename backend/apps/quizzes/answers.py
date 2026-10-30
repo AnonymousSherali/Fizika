@@ -1,6 +1,6 @@
 """
 Hisoblash masalasi javobini o'qish va tekshirish (FT-6.5).
-testlar/testlar_online.html dagi checkProblem() bilan AYNAN bir xil natija berishi shart —
+testlar/testlar_online.js dagi checkProblem() bilan AYNAN bir xil natija berishi shart —
 tests/test_answers.py da umumiy holatlar to'plami (JS bilan solishtirib tuzilgan) bor.
 
 Qabul qilinadi: 4,5 · 4.5 · −5 · 45 fm · 4,22·10⁷ · 4.5×10^-3 · 4.5e7 · 42 200

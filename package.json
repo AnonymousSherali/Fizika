@@ -1,0 +1,14 @@
+{
+  "name": "fizika-frontend",
+  "private": true,
+  "description": "Fizika 10–11 statik sayti uchun ishlab chiqish vositalari (sayt o'zi yig'ishsiz ishlaydi)",
+  "scripts": {
+    "lint": "eslint .",
+    "version:bump": "python3 tools/bump_version.py"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.13.0",
+    "globals": "17.13.0"
+  }
+}

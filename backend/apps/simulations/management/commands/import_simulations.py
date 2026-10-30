@@ -3,7 +3,7 @@ Mavjud statik saytdan modellar katalogini bazaga ko'chiradi (TZ 13: scripts/impo
 
 Manbalar (FRONTEND_DIR, standart — repozitoriy ildizi):
   index.html               — katalog kartalari: nom, tavsif, bo'lim, sinf, rasm, tartib
-  modellar/*_model.html    — topshiriq qadamlari va jurnal ustunlari (window.labFields)
+  modellar/*_model.html    — topshiriq qadamlari; *_model.js — jurnal ustunlari (window.labFields)
   model-tools.js           — kutilgan natijalar (TEACHER obyekti)
   i18n-ru.js               — rus tilidagi tarjimalar
 
@@ -133,6 +133,10 @@ class Command(BaseCommand):
 
     def _parse_page(self, path: Path) -> tuple[list[str], list[dict]]:
         text = path.read_text(encoding="utf-8")
+        # Model kodi (jurnal ustunlari — window.labFields) sahifa yonidagi <nom>_model.js da
+        script = path.with_suffix(".js")
+        if script.exists():
+            text += "\n" + script.read_text(encoding="utf-8")
         task = re.search(r'class="task-card".*?<ol>(.*?)</ol>', text, re.S)
         steps = [li.strip() for li in re.findall(r"<li>(.*?)</li>", task.group(1), re.S)] if task else []
         steps = [re.sub(r"\s+", " ", s) for s in steps]

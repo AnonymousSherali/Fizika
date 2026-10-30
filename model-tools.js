@@ -592,7 +592,7 @@
         nameEl.addEventListener('change', save);
         clsEl.addEventListener('change', save);
 
-        function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+        var esc = escapeHtml;
 
         who.querySelector('#labPrint').onclick = function () {
             var rows = log.rows();
@@ -951,27 +951,32 @@
 
     // O'qituvchi yozgan matn: hammasi ekranlanadi, faqat oddiy belgilash teglari qoladi (XSS'dan himoya)
     // Admin panelda model topshirig'i (qadamlar) o'zgartirilgan bo'lsa — sahifadagi ro'yxat serverdagisi bilan
-    // almashtiriladi. O'zgarmagan bo'lsa tegilmaydi (sahifadagi formatlash saqlanadi). O'zbekcha matn bilan
-    // solishtiriladi: ruscha rejimda sahifa allaqachon lug'at bo'yicha tarjima qilingan.
+    // almashtiriladi. «O'zgarganmi» — sahifaning asl HTML'idagi qadamlar bilan solishtiriladi (tilga bog'liq emas:
+    // ruscha rejimda sahifadagi matn allaqachon lug'at bo'yicha tarjima qilingan bo'ladi). O'zgarmagan bo'lsa
+    // ro'yxatga tegilmaydi — sahifadagi formatlash va tarjima saqlanadi.
     function syncTasks(api, slug) {
         var ol = document.querySelector('.task-card ol');
         if (!ol) return;
-        // DOMParser hujjati «inert»: <img onerror>, <script> bajarilmaydi (createElement+innerHTML esa rasmni yuklaydi)
-        var plain = function (t) {
-            var d = new DOMParser().parseFromString(String(t == null ? '' : t), 'text/html');
-            return (d.body.textContent || '').replace(/\s+/g, ' ').trim();
-        };
-        var tr = function (t) { return window.fizikaTr ? window.fizikaTr(t) : t; };
+        // DOMParser hujjati «inert»: <img onerror>, <script> bajarilmaydi
+        var parse = function (html) { return new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html'); };
+        var plain = function (t) { return (parse(t).body.textContent || '').replace(/\s+/g, ' ').trim(); };
         var ru = (window.fizikaLang && window.fizikaLang()) === 'ru';
-        Promise.all([api.get('simulations/' + slug + '/', { lang: 'uz' }), ru ? api.get('simulations/' + slug + '/') : null]).then(function (res) {
+        var detail = 'simulations/' + slug + '/';
+        Promise.all([
+            api.get(detail, { lang: 'uz' }),
+            ru ? api.get(detail) : null,
+            fetch(location.pathname, { cache: 'force-cache' }).then(function (r) { return r.text(); })
+        ]).then(function (res) {
             var uz = (res[0].tasks || []).map(function (t) { return t.text; });
             if (!uz.length) return;
-            var cur = Array.prototype.map.call(ol.children, function (li) { return plain(li.innerHTML); });
-            // Joriy ro'yxat = serverdagi matn (ruscha rejimda — uning lug'atdagi tarjimasi) bo'lsa, o'zgarish yo'q
-            var same = cur.length === uz.length && uz.every(function (t, i) { return plain(ru ? tr(plain(t)) : t) === cur[i]; });
+            var orig = Array.prototype.map.call(parse(res[2]).querySelectorAll('.task-card ol li'),
+                function (li) { return li.textContent.replace(/\s+/g, ' ').trim(); });
+            var same = orig.length === uz.length && uz.every(function (t, i) { return plain(t) === orig[i]; });
             if (same) return;
-            var shown = ru ? (res[1].tasks || []).map(function (t, i) { return t.text !== uz[i] ? t.text : tr(plain(t.text)); }) : uz;
-            ol.innerHTML = shown.map(function (t) { return '<li>' + safeInline(plain(t)) + '</li>'; }).join('');
+            // Ruscha: serverdagi ruscha matn (bo'lmasa server o'zbekchasini qaytaradi)
+            var shown = ru ? (res[1].tasks || []).map(function (t) { return t.text; }) : uz;
+            // safeInline: matn ekranlanadi, faqat <b>, <strong>, <sub> ... kabi atributsiz teglar qoladi
+            ol.innerHTML = shown.map(function (t) { return '<li>' + safeInline(t) + '</li>'; }).join('');
         }).catch(function () { /* statik ro'yxat qoladi */ });
     }
 
@@ -979,11 +984,7 @@
         return escapeHtml(t).replace(/&lt;(\/?)(strong|b|em|i|sub|sup|kbd)&gt;/g, '<$1$2>');
     }
 
-    function escapeHtml(t) {
-        return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
-        });
-    }
+    function escapeHtml(t) { return window.Fizika.esc(t); }   // theme.js
 
     // ---------- Ishga tushirish ----------
     function boot() {

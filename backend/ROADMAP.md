@@ -185,6 +185,19 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Mashq banki to'g'ri javoblar bilan ochiq; nazorat testi o'sha banklardan | 🟡 | buyurtmachi qarori kerak (README → «Muhim kelishuvlar») |
 | `?oqituvchi=1` bilan kutilgan natijalar hammaga ochiq | 🟡 | buyurtmachi qarori kerak |
 
+## Frontend kodini tartibga keltirish ✅
+| Band | Holat | Izoh |
+|---|---|---|
+| HTML ichidagi katta skriptlar alohida fayllarga: `sahifa.html` → yonida `sahifa.js` (25 sahifa, ~10 ming qator) | ✅ | brauzer keshi, ESLint, keyinchalik CSP uchun |
+| Savollar banki ma'lumoti mantiqdan ajratildi: `testlar/bank.js` | ✅ | `import_quiz_bank` shu fayldan o'qiydi |
+| `import_simulations` model kodini `*_model.js` dan o'qiydi | ✅ | 15 model, sxema versiyalari o'zgarmadi |
+| Bitta umumiy HTML-ekranlash funksiyasi `Fizika.esc` (theme.js) — 4 ta nusxa o'rniga | ✅ | |
+| ESLint (`npm run lint`, `eslint.config.js`), CI: `.github/workflows/frontend.yml` | ✅ | o'lik kod tozalandi, 0 xato |
+| E2E skriptlari o'qiladigan formatda, brauzer yo'li va kesh tozalash sozlanadigan | ✅ | `CHROMIUM`, `CLEAR_CACHE_CMD` |
+| Test fayllari bosqich emas, vazifa bo'yicha nomlandi | ✅ | |
+| Tuzatilgan xato: ruscha rejimda model qadamlari o'zbekchaga qaytib qolardi | ✅ | asl sahifa HTML'i bilan solishtiriladi |
+| Tekshiruv: 29 sahifa × 2 til — JS xatosi yo'q; 15 modelda jurnal yozish ishlaydi; E2E (10/10 + asosiy oqim) | ✅ | |
+
 ## F-bosqich — Frontendni ulash (TZ 9) ✅
 Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shildi,
 yangi sahifalar shu uslubdagi statik HTML. Backend ishlamasa sayt hozirgidek (oflayn) ishlaydi, «Kirish» tugmasi chiqmaydi.
