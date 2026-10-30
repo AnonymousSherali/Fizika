@@ -17,6 +17,7 @@ from apps.audit import services as audit
 from apps.core.exceptions import Conflict
 from apps.core.permissions import IsStudent, IsTeacher
 
+from .districts import DISTRICTS
 from .importers import check_limit, parse_students_file
 from .models import Classroom, ClassroomMember, School
 from .serializers import (
@@ -289,3 +290,18 @@ class JoinClassroomView(APIView):
             request.user.school = classroom.school
             request.user.save(update_fields=["school"])
         return Response({"id": classroom.pk, "name": classroom.name})
+
+
+class DistrictListView(APIView):
+    """Viloyat tumanlari va shaharlari (ro'yxatdan o'tishda tanlash uchun). ?region= bo'lmasa — hammasi."""
+
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(parameters=[OpenApiParameter("region", str)], responses={200: dict})
+    def get(self, request):
+        region = request.query_params.get("region")
+        if region:
+            if region not in DISTRICTS:
+                raise ValidationError({"region": ["Noma'lum viloyat"]})
+            return Response({region: DISTRICTS[region]})
+        return Response(DISTRICTS)

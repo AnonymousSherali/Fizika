@@ -10,6 +10,7 @@ ACTION_LABELS = {
     "user.created_by_admin": "Admin foydalanuvchi yaratdi", "user.permissions_changed": "Rol/huquq o'zgardi",
     "student.password_reset_by_teacher": "O'qituvchi o'quvchi parolini tikladi",
     "classroom.archive": "Sinf arxivlandi", "classroom.remove_student": "O'quvchi sinfdan chiqarildi",
+    "classroom.auto_archive": "Sinf avtomatik arxivlandi (o'quv yili tugadi)",
     "assignment.delete": "Topshiriq o'chirildi", "grade.set": "Baho qo'yildi", "submission.return": "Ish qaytarildi",
     "lesson_plan.upload": "Ishlanma yuklandi", "lesson_plan.publish": "Ishlanma nashr etildi",
     "lesson_plan.reject": "Ishlanma rad etildi", "lesson_plan.delete": "Ishlanma o'chirildi",

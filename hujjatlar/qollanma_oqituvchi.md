@@ -1,5 +1,7 @@
 # «Fizika 10–11» — o'qituvchi uchun qo'llanma
 
+*Русская версия: [qollanma_oqituvchi_ru.md](qollanma_oqituvchi_ru.md)*
+
 Platforma bepul. Modellar, mashq testlari va dars ishlanmalardan ro'yxatdan o'tmasdan ham foydalanish mumkin.
 Hisob ochsangiz — sinf yaratasiz, o'quvchilarga topshiriq berasiz, natijalarni avtomatik ko'rasiz.
 
@@ -8,7 +10,8 @@ Hisob ochsangiz — sinf yaratasiz, o'quvchilarga topshiriq berasiz, natijalarni
 ## 1. Ro'yxatdan o'tish
 
 1. Bosh sahifadagi **«Kirish»** tugmasi → **«O'qituvchi»** bo'limi.
-2. Ism, familiya, telefon (yoki email), maktabingiz va parolni kiriting.
+2. Ism, familiya, telefon (yoki email), maktabingiz va parolni kiriting. Maktabingiz ro'yxatda bo'lmasa —
+   yangisini kiriting: tuman/shahar ro'yxatdan tanlanadi (yo'q bo'lsa qo'lda yozing).
 3. **Maxfiylik siyosatiga rozilik** belgisini qo'ying (siyosat matni: «Maxfiylik siyosati» havolasi).
 4. Telefoningizga (yoki emailga) kelgan **6 xonali kodni** kiriting. Kod 10 daqiqa amal qiladi;
    kelmasa — «Kodni qayta yuborish».
@@ -39,7 +42,9 @@ Kod bilan ishlash: **«Kodni yangilash»** (eskisi bekor bo'ladi), **muddat** be
 - **Parolni tiklash** — o'quvchi parolni unutsa, yangi vaqtinchalik parol chiqadi (o'quvchida telefon/email so'ralmaydi).
 - **Boshqa sinfga ko'chirish**, **sinfdan chiqarish**.
 - **Ikkinchi o'qituvchi** qo'shish (masalan, o'rinbosar): u ham sinfni ko'radi va baholaydi.
-- O'quv yili tugagach — **«Arxivlash»**: sinf yopiladi, natijalar saqlanib qoladi.
+- O'quv yili tugagach — **«Arxivlash»**: sinf yopiladi, natijalar saqlanib qoladi. Unutsangiz ham, sinf
+  **1-iyuldan keyin avtomatik arxivlanadi** (qo'shilish kodi o'chiriladi). Iyul–avgustda ochilgan sinf
+  yangi o'quv yiliga yoziladi.
 
 ## 3. Topshiriq berish
 
@@ -92,6 +97,15 @@ Yangi savol **qoralama** holatida — o'z topshiriqlaringizda darhol ishlatsangi
 tasdiqlagach umumiy bankka qo'shiladi. Har bir savol bo'yicha statistika: necha marta berildi, necha % to'g'ri,
 qaysi noto'g'ri variant ko'p tanlandi.
 
+### Hisoblash masalalari
+Shu bo'limning pastida **«Masala qo'shish»**:
+- **Oddiy** — matn, to'g'ri javob, birlik, ruxsat etilgan xatolik (%), yechim.
+- **Parametrli** — matnda sonlar o'rniga `{h}`, `{m}` kabi nomlar yoziladi, har bir nom uchun oraliq beriladi
+  (masalan `h`: 5 dan 45 gacha, qadam 5) va **javob formulasi**: `(2*9.8*h)**0.5`. Amallar: `+ − * / **`
+  (ildiz — `**0.5`), qavslar, `pi`. Yechimda `{h}` va `{answer}` ishlatish mumkin.
+  Har o'quvchiga boshqa sonlar tushadi — javobni ko'chirib olish foyda bermaydi.
+- **«Namunani ko'rish»** — saqlashdan oldin o'quvchilar ko'radigan 3 ta variantni javobi bilan ko'rsatadi.
+
 ## 7. Dars ishlanmalari
 
 **«Ishlanmalarim» → «Yuklash»**: PDF (≤ 15 MB) yoki DOCX (≤ 10 MB, makrossiz). Administrator ko'rib chiqadi:
@@ -122,3 +136,6 @@ qaytganda o'zi yuboriladi; o'quvchi sahifani yopmasdan internetga ulanishi kifoy
 hisoblanadi; vaqt tugasa test avtomatik yakunlanadi).
 
 **Bitta o'quvchi ikki sinfda bo'la oladimi?** Ha (masalan, asosiy sinf va to'garak).
+
+**Sayt rus tilida ishlaydimi?** Ha. Pastki chap burchakdagi **RU** tugmasi — barcha sahifalar, test savollari va
+masalalar ruscha. Profilda tilni tanlasangiz, barcha qurilmalaringizda saqlanadi.

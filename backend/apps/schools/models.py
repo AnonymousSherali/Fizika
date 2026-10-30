@@ -56,9 +56,20 @@ def generate_join_code() -> str:
 
 
 def current_academic_year() -> str:
+    # Yangi o'quv yili 1-iyuldan hisoblanadi: avgustda ochilgan sinf eski yilga yozilib, darhol avtomatik
+    # arxivlanib qolmasin (schools.tasks.archive_finished_classrooms)
     today = timezone.localdate()
-    start = today.year if today.month >= 9 else today.year - 1
+    start = today.year if today.month >= 7 else today.year - 1
     return f"{start}–{start + 1}"
+
+
+def academic_year_end(year: str):
+    """«2025–2026» → 2026-07-01 (shu kundan boshlab o'quv yili tugagan hisoblanadi). Noma'lum format — None."""
+    import datetime
+    import re
+
+    m = re.fullmatch(r"\s*(\d{4})\s*[–-]\s*(\d{4})\s*", year or "")
+    return datetime.date(int(m.group(2)), 7, 1) if m else None
 
 
 class Classroom(TimeStampedModel):

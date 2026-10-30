@@ -21,6 +21,11 @@ app.conf.beat_schedule = {
         "task": "apps.notifications.tasks.send_deadline_reminders",
         "schedule": crontab(minute="*/15"),
     },
+    # FT-2.6: o'quv yili tugagan sinflar arxivga (har kuni tekshiriladi, 1-iyuldan boshlab ishlaydi)
+    "archive-finished-classrooms": {
+        "task": "apps.schools.tasks.archive_finished_classrooms",
+        "schedule": crontab(hour=2, minute=41),
+    },
     # FT-11.3: audit yozuvlari 1 yil saqlanadi
     "purge-old-audit": {
         "task": "apps.audit.tasks.purge_old_audit",

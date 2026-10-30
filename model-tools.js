@@ -774,6 +774,7 @@
                 showTeacherBox(rows.map(function (r) { return r.text; }));
             }, function () { showTeacherBox(TEACHER[currentFile()]); });
         }
+        if (!assignmentId) api.available().then(function (ok) { if (ok) syncTasks(api, slug); });
         if (!log) return;
 
         var host = document.querySelector('.lab-log');
@@ -942,6 +943,27 @@
     }
 
     // O'qituvchi yozgan matn: hammasi ekranlanadi, faqat oddiy belgilash teglari qoladi (XSS'dan himoya)
+    // Admin panelda model topshirig'i (qadamlar) o'zgartirilgan bo'lsa — sahifadagi ro'yxat serverdagisi bilan
+    // almashtiriladi. O'zgarmagan bo'lsa tegilmaydi (sahifadagi formatlash saqlanadi). O'zbekcha matn bilan
+    // solishtiriladi: ruscha rejimda sahifa allaqachon lug'at bo'yicha tarjima qilingan.
+    function syncTasks(api, slug) {
+        var ol = document.querySelector('.task-card ol');
+        if (!ol) return;
+        var plain = function (t) { var d = document.createElement('div'); d.innerHTML = t; return d.textContent.replace(/\s+/g, ' ').trim(); };
+        var tr = function (t) { return window.fizikaTr ? window.fizikaTr(t) : t; };
+        var ru = (window.fizikaLang && window.fizikaLang()) === 'ru';
+        Promise.all([api.get('simulations/' + slug + '/', { lang: 'uz' }), ru ? api.get('simulations/' + slug + '/') : null]).then(function (res) {
+            var uz = (res[0].tasks || []).map(function (t) { return t.text; });
+            if (!uz.length) return;
+            var cur = Array.prototype.map.call(ol.children, function (li) { return plain(li.innerHTML); });
+            // Joriy ro'yxat = serverdagi matn (ruscha rejimda — uning lug'atdagi tarjimasi) bo'lsa, o'zgarish yo'q
+            var same = cur.length === uz.length && uz.every(function (t, i) { return plain(ru ? tr(plain(t)) : t) === cur[i]; });
+            if (same) return;
+            var shown = ru ? (res[1].tasks || []).map(function (t, i) { return t.text !== uz[i] ? t.text : tr(plain(t.text)); }) : uz;
+            ol.innerHTML = shown.map(function (t) { return '<li>' + safeInline(plain(t)) + '</li>'; }).join('');
+        }).catch(function () { /* statik ro'yxat qoladi */ });
+    }
+
     function safeInline(t) {
         return escapeHtml(t).replace(/&lt;(\/?)(strong|b|em|i|sub|sup|kbd)&gt;/g, '<$1$2>');
     }

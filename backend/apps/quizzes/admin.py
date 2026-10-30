@@ -13,6 +13,8 @@ class TopicAdmin(ModelAdmin):
 
 
 class _BankAdmin(ModelAdmin):
+    # Statistika va import kaliti tizim tomonidan to'ldiriladi — qo'lda o'zgartirilmaydi
+    readonly_fields = ["stats_total", "stats_correct", "source_key"]
     list_filter = ["status", "topic"]
     search_fields = ["text_uz", "text_ru"]
     raw_id_fields = ["author"]
@@ -40,6 +42,7 @@ class _BankAdmin(ModelAdmin):
 class QuestionAdmin(_BankAdmin):
     list_display = ["id", "topic", "level", "short", "status_label", "stats_total", "accuracy"]
     list_filter = ["status", "topic", "level"]
+    readonly_fields = _BankAdmin.readonly_fields + ["choice_0", "choice_1", "choice_2", "choice_3"]
 
     @admin.display(description="savol")
     def short(self, obj):

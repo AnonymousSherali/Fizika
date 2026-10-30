@@ -100,19 +100,34 @@
         d.onload = function () {
             // Backend ishlayotgani ma'lum bo'lsa (api.js shu sessiyada tekshirgan): admin panelda tahrirlangan
             // tarjimalar serverdan olinib, fayldagilar ustiga yoziladi — export_i18n ni kutish shart emas
+            // Sessiyaning birinchi sahifasida server holati hali noma'lum — baribir bir marta urinib ko'riladi
+            // (backendsiz statik hostingda bitta muvaffaqiyatsiz so'rov, keyin api.js «server yo'q» deb eslab qoladi)
             var api = null;
             try { api = JSON.parse(sessionStorage.getItem('fizika-api-ok') || 'null'); } catch (e) {}
-            if (!api || !api.v || !api.base) return run();
+            if (api && !api.v) return run();
+            var apiBase = api && api.base;
+            if (!apiBase) {
+                try { apiBase = localStorage.getItem('fizika-api'); } catch (e) {}
+                apiBase = apiBase || (/^https?:/.test(location.protocol) ? ROOT + 'api/v1/' : null);
+            }
+            if (!apiBase) return run();
             var base = window.FIZIKA_RU || {};
+            var done = false;
+            function finish() { if (!done) { done = true; run(); } }
             var x = document.createElement('script');
-            x.src = api.base + 'i18n/ru.js';
-            x.onload = function () { window.FIZIKA_RU = Object.assign({}, base, window.FIZIKA_RU || {}); run(); };
-            x.onerror = function () { window.FIZIKA_RU = base; run(); };
+            x.src = apiBase + 'i18n/ru.js';
+            // Server lug'ati fayldagisi ustiga qo'shiladi (kech kelsa ham — fayldagi lug'at yo'qolmaydi)
+            x.onload = function () {
+                if (window.FIZIKA_RU !== base) window.FIZIKA_RU = Object.assign({}, base, window.FIZIKA_RU || {});
+                finish();
+            };
+            x.onerror = function () { window.FIZIKA_RU = base; finish(); };
+            setTimeout(finish, 2500);   // server javob bermasa sahifa kutib qolmasin
             document.head.appendChild(x);
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261101c';
+    var I18N_VER = '20261101d';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----

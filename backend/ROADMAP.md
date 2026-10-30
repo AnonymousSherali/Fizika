@@ -45,12 +45,12 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 ### Maktab va sinflar (schools)
 | Band | Holat | Izoh |
 |---|---|---|
-| FT-2.1 Maktab, 14 viloyat | ✅ | tumanlar ro'yxati — ⬜ (hozir erkin matn) |
+| FT-2.1 Maktab, 14 viloyat, tumanlar ro'yxati | ✅ | `schools/districts/`; ro'yxatda yo'q nom ham yozilishi mumkin |
 | FT-2.2 Sinf yaratish, qo'shilish kodi | ✅ | |
 | FT-2.3 Kodni yangilash / o'chirish / muddat | ✅ | |
 | FT-2.4 O'quvchilar: ro'yxat, chiqarish, parol tiklash, ko'chirish | ✅ | |
 | FT-2.5 Bir nechta o'qituvchi | ✅ | |
-| FT-2.6 Arxivlash | ✅ | yil oxirida avtomatik arxiv — ⬜ |
+| FT-2.6 Arxivlash, o'quv yili tugagach avtomatik arxiv (1-iyuldan) | ✅ | Celery Beat, audit yozuvi |
 
 ### Modellar katalogi (simulations)
 | Band | Holat | Izoh |
@@ -158,7 +158,8 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Yuklama testidan keyingi tuzatishlar | ✅ | test yakunidagi deadlock (tartiblangan F() yangilash, variant hisoblagichlari), Argon2 parametrlari (~30 ms), DB ulanishlarini qayta ishlatish, katalog keshi, gunicorn gthread |
 | E2E Playwright: sinf → topshiriq → baho | ✅ | `e2e/flow.js` |
 | O'qituvchi va administrator qo'llanmasi | ✅ | `hujjatlar/qollanma_oqituvchi.md`, `hujjatlar/qollanma_admin.md` (uz) |
-| Qo'llanmalarning ruscha varianti | ⬜ | |
+| Qo'llanmalarning ruscha varianti | ✅ | `hujjatlar/qollanma_oqituvchi_ru.md`, `hujjatlar/qollanma_admin_ru.md` |
+| Avtomatik sinov «admin panel → sayt» (10 holat) | ✅ | `e2e/admin_to_site.js` |
 | OWASP ZAP skanerlash | ⬜ | staging serverda (`zap-baseline.py -t https://...`) |
 | CD (teg → production deploy) | ⬜ | server tanlangach |
 | ClamAV (yuklangan fayllarni antivirus tekshiruvi) | ⬜ | ixtiyoriy |

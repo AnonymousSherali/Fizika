@@ -7,8 +7,8 @@
     <meta name="description" content="Fizika 10–11 platformasiga kirish va ro'yxatdan o'tish">
     <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Kirish — Fizika 10–11</title>
-    <link rel="stylesheet" href="styles.css?v=20261101c">
-    <link rel="stylesheet" href="app.css?v=20261101c">
+    <link rel="stylesheet" href="styles.css?v=20261101d">
+    <link rel="stylesheet" href="app.css?v=20261101d">
     <style>
         .auth { max-width: 480px; margin: var(--sp-7) auto; }
         .auth .panel { padding: var(--sp-6); }
@@ -109,7 +109,7 @@
                     </div>
                     <div class="row" id="newSchoolRow">
                         <div class="field"><label for="tSchoolName">Yangi maktab nomi</label><input id="tSchoolName" placeholder="12-umumta'lim maktabi"></div>
-                        <div class="field"><label for="tDistrict">Tuman / shahar</label><input id="tDistrict"></div>
+                        <div class="field"><label for="tDistrict">Tuman / shahar</label><input id="tDistrict" list="tDistrictList" autocomplete="off"><datalist id="tDistrictList"></datalist></div>
                     </div>
                     <div class="field">
                         <label for="tPass">Parol</label>
@@ -151,9 +151,9 @@
         </div>
     </main>
 
-    <script src="theme.js?v=20261101c"></script>
-    <script src="api.js?v=20261101c"></script>
-    <script src="app.js?v=20261101c"></script>
+    <script src="theme.js?v=20261101d"></script>
+    <script src="api.js?v=20261101d"></script>
+    <script src="app.js?v=20261101d"></script>
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
@@ -277,7 +277,18 @@
             $('tSchool').onchange = function () { $('newSchoolRow').hidden = !!this.value; };
             loadSchools();
         }
+        // Tumanlar ro'yxati (tanlash qulay; ro'yxatda yo'q nom ham yozilishi mumkin)
+        var districts = null;
+        function loadDistricts() {
+            var fill = function () {
+                var list = (districts && districts[$('tRegion').value]) || [];
+                $('tDistrictList').innerHTML = list.map(function (d) { return '<option value="' + FA.esc(d) + '">'; }).join('');
+            };
+            if (districts) return fill();
+            api.get('schools/districts/').then(function (d) { districts = d; fill(); }, function () {});
+        }
         function loadSchools() {
+            loadDistricts();
             api.get('schools/?page_size=100&region=' + $('tRegion').value).then(function (r) {
                 $('tSchool').innerHTML = '<option value="">— ro\'yxatdan tanlang —</option>' + r.results.map(function (s) {
                     return '<option value="' + s.id + '">' + FA.esc(s.name + ' (' + s.district + ')') + '</option>';

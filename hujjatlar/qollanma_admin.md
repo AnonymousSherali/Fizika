@@ -1,5 +1,7 @@
 # «Fizika 10–11» — administrator qo'llanmasi
 
+*Русская версия: [qollanma_admin_ru.md](qollanma_admin_ru.md)*
+
 Administrator platformani boshqaradi: foydalanuvchilar, maktablar, kontent moderatsiyasi, tarjimalar,
 statistika va xavfsizlik. Texnik o'rnatish: [`backend/README.md`](../backend/README.md).
 
@@ -37,8 +39,13 @@ Chap menyudagi qizil raqamlar — ko'rib chiqilishi kerak bo'lgan yozuvlar soni.
 
 ## 3. Maktablar va sinflar
 
-Maktablar 14 hudud bo'yicha. Bir maktab ikki xil yozilgan bo'lsa (masalan, «12-maktab» va «12-sonli maktab»),
-o'qituvchilarni bittasiga o'tkazib, ikkinchisini o'chiring. Sinflarni ko'rish, arxivlash mumkin.
+Maktablar 14 hudud bo'yicha; tuman o'qituvchi ro'yxatdan o'tganda tayyor ro'yxatdan tanlanadi
+(`apps/schools/districts.py`, yo'q bo'lsa qo'lda yoziladi). Bir maktab ikki xil yozilgan bo'lsa (masalan,
+«12-maktab» va «12-sonli maktab»), o'qituvchilarni bittasiga o'tkazib, ikkinchisini o'chiring.
+**Tasdiqlanmagan maktablar** soni yon menyuda qizil raqam bilan ko'rinadi.
+
+Sinflarni ko'rish, arxivlash mumkin. O'quv yili tugagan sinflar (masalan, «2025–2026») **1-iyuldan keyin har kecha
+avtomatik arxivlanadi** — audit jurnalida «Sinf avtomatik arxivlandi» yozuvi qoladi.
 
 ## 4. Kontent moderatsiyasi
 
@@ -57,24 +64,46 @@ Masalalar: javob, birlik va ruxsat etilgan xatolik (%). **Parametrlangan masala*
 (tur, hajm, makrosli DOCX rad etiladi).
 
 ### Tarjimalar
-**Kontent → Tarjimalar** — saytning ruscha matnlari. O'zgartirgandan keyin saytdagi faylni yangilash:
-```bash
-python manage.py export_i18n
-```
+**Kontent → Tarjimalar** — saytning ruscha matnlari (interfeys, test savollari, masalalar). O'zgartirish saytda
+avtomatik ko'rinadi (brauzer keshi tufayli 10 daqiqagacha). Saytdagi zaxira faylni ham yangilash (internetsiz
+ishlash uchun) — ixtiyoriy: `python manage.py export_i18n`. Matnida `{}` bo'lgan tarjima — andoza: `{}` o'rniga
+son yoki ism qo'yiladi, tarjimada ham `{}` soni bir xil bo'lishi kerak.
 
 ### Modellar
-Model sahifalari o'zgarsa (yangi model, jurnal ustunlari): `python manage.py import_simulations`.
-Eski jurnallar eski sxema versiyasida qoladi.
+Admin panelda modelning nomi, tavsifi, tartibi, topshiriq qadamlari, kutilgan natijalari o'zgartiriladi va
+nofaol qilinadi (katalogdan yashiriladi). **Yangi model** qo'shish uchun esa dasturchi uning sahifasini
+(`modellar/*_model.html`) yaratishi kerak — admin panelning o'zi yangi simulyatsiya yarata olmaydi.
+
+Model sahifalari o'zgarsa (yangi model, jurnal ustunlari): `python manage.py import_simulations`. Eski jurnallar
+eski sxema versiyasida qoladi. **Diqqat:** bu buyruq nom, tavsif va qadamlarni sahifadagi matnga qaytaradi —
+admin panelda qilingan shu o'zgarishlarni qaytadan kiritish kerak bo'ladi (faol/nofaol holati saqlanadi).
+
+### Admin paneldan qo'shilgan ma'lumot saytda qayerda ko'rinadi
+| Admin panelda | Saytda | Qachon |
+|---|---|---|
+| Savol yoki masala (holat «Tasdiqlangan») | Mashq testi, o'qituvchi topshiriqlari | darhol |
+| Model nomi, tavsifi, tartibi, «faol» belgisi | Bosh sahifa katalogi | 10 daqiqagacha (kesh) |
+| Model topshiriq qadamlari | Model sahifasi | 10 daqiqagacha |
+| Model kutilgan natijalari | Model sahifasi (faqat o'qituvchiga) | darhol |
+| Dars ishlanma (holat «Nashr etilgan», PDF bilan) | «Dars ishlanmalar» sahifasi | darhol |
+| Maktab | O'qituvchi ro'yxatdan o'tish formasi | darhol |
+| Bildirishnoma | Foydalanuvchining 🔔 ro'yxati | darhol |
+| Ruscha tarjima | Barcha sahifalar (ruscha rejim) | 10 daqiqagacha |
+| Foydalanuvchi, sinf, topshiriq | Tegishli foydalanuvchi panelida | darhol |
+
+Bularning hammasi avtomatik sinov bilan tekshiriladi: `backend/e2e/admin_to_site.js` (sinov serverida).
 
 ## 5. Statistika
 
-`GET /api/v1/analytics/platform/` (admin hisobi bilan): rollar bo'yicha foydalanuvchilar, 7 va 30 kunlik
-faollar, modellar bo'yicha laboratoriya jurnallari, yakunlangan testlar va topshiriqlar soni, hududlar bo'yicha taqsimot.
+Admin panel **bosh sahifasi**: o'quvchilar, o'qituvchilar, maktablar, faol sinflar, 7/30 kunlik faollar,
+laboratoriya jurnallari, yakunlangan testlar, topshiriqlar; 30 kunlik faollik grafigi; hududlar bo'yicha
+foydalanuvchilar; eng ko'p ishlatilgan modellar; so'nggi audit amallari. Xuddi shu ma'lumot API orqali:
+`GET /api/v1/analytics/platform/` (admin hisobi bilan).
 
 ## 6. Xavfsizlik jurnali (audit)
 
 **Audit → Jurnal**: kirishlar, parol o'zgarishi, hisob o'chirish, rol o'zgarishi, baho qo'yish/o'zgartirish
-(oldingi va yangi qiymat), qaytarish, o'chirishlar, moderatsiya. Har bir yozuvda kim, qachon, IP.
+(oldingi va yangi qiymat), qaytarish, o'chirishlar, moderatsiya, sinflarni avtomatik arxivlash. Har bir yozuvda kim, qachon, IP.
 
 Jurnalni **tahrirlash yoki o'chirib bo'lmaydi** (hatto administrator ham). 1 yildan eski yozuvlar har hafta
 avtomatik tozalanadi.
@@ -90,7 +119,7 @@ Shikoyat bo'lsa («bahoni kimdir o'zgartirgan») — obyekt bo'yicha filtrlang v
 | Tiklash | `scripts/restore.sh <fayl.dump>`; oyiga bir marta sinov bazasida tiklab ko'ring |
 | Xatolar | Sentry (`SENTRY_DSN`), gunicorn loglari: `docker compose logs api` |
 | Yangilash | `git pull` → `docker compose up -d --build` → `docker compose exec api python manage.py migrate` |
-| Fon vazifalari | `celery` va `beat` konteynerlari: email, muddat eslatmalari, hisoblarni o'chirish, audit tozalash |
+| Fon vazifalari | `celery` va `beat` konteynerlari: email, muddat eslatmalari, hisoblarni o'chirish, audit tozalash, sinflarni avtomatik arxivlash |
 
 **Muhim:** server va zaxira nusxalar **O'zbekiston hududida** bo'lishi shart (O'RQ-547, 27¹-modda).
 
@@ -103,3 +132,4 @@ Shikoyat bo'lsa («bahoni kimdir o'zgartirgan») — obyekt bo'yicha filtrlang v
 | Muddat eslatmalari kelmayapti | `beat` konteyneri ishlayaptimi |
 | Saytda «Kirish» tugmasi yo'q | API ishlamayapti: `/api/v1/health/` ni oching |
 | Admin kodni qabul qilmayapti | telefon vaqti noto'g'ri (avtomatik vaqtni yoqing) yoki `admin_2fa_setup --reset` |
+| Admin paneldagi o'zgarish saytda ko'rinmayapti | 10 daqiqagacha kuting (kesh) yoki sahifani keshsiz yangilang (Ctrl+F5) |

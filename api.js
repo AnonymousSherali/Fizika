@@ -93,6 +93,7 @@
         var headers = { 'Accept': 'application/json' };
         var lang = 'uz';
         try { lang = localStorage.getItem('fizika-lang') === 'ru' ? 'ru' : 'uz'; } catch (e) {}
+        if (opts.lang) lang = opts.lang;   // ma'lum tildagi matn kerak bo'lsa (masalan, solishtirish uchun)
         headers['Accept-Language'] = lang;
         var auth = load();
         if (withAuth && auth && auth.access) headers['Authorization'] = 'Bearer ' + auth.access;
