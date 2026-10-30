@@ -127,7 +127,6 @@ Fizika/                            # Tuzilma sayt bo'limlariga mos
 │
 ├── backend/                       # ⚙️ Django backend (README.md, ROADMAP.md, Docker, nginx)
 ├── README.md                      # Bu fayl
-├── railway.json / nixpacks.toml   # Railway: faqat statik sayt (backendsiz) deploy sozlamalari
 ```
 
 ---

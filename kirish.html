@@ -2,13 +2,13 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script src="theme-init.js?v=20261101h"></script>
+    <script src="theme-init.js?v=20261101i"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Fizika 10–11 platformasiga kirish va ro'yxatdan o'tish">
     <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Kirish — Fizika 10–11</title>
-    <link rel="stylesheet" href="styles.css?v=20261101h">
-    <link rel="stylesheet" href="app.css?v=20261101h">
+    <link rel="stylesheet" href="styles.css?v=20261101i">
+    <link rel="stylesheet" href="app.css?v=20261101i">
     <style>
         .auth { max-width: 480px; margin: var(--sp-7) auto; }
         .auth .panel { padding: var(--sp-6); }
@@ -35,16 +35,16 @@
                 <h1>👋 Xush kelibsiz</h1>
                 <p class="sub">Natijalaringiz saqlanadi, o'qituvchi topshiriq beradi va baholaydi</p>
 
-                <div class="tabs-a" role="tablist">
-                    <button type="button" role="tab" data-tab="login" aria-selected="true">Kirish</button>
-                    <button type="button" role="tab" data-tab="student" aria-selected="false">O'quvchi ro'yxati</button>
-                    <button type="button" role="tab" data-tab="teacher" aria-selected="false">O'qituvchi ro'yxati</button>
+                <div class="tabs-a" role="tablist" aria-label="Kirish turi">
+                    <button type="button" role="tab" id="tab-login" data-tab="login" aria-controls="fLogin" aria-selected="true">Kirish</button>
+                    <button type="button" role="tab" id="tab-student" data-tab="student" aria-controls="fStudent" aria-selected="false" tabindex="-1">O'quvchi ro'yxati</button>
+                    <button type="button" role="tab" id="tab-teacher" data-tab="teacher" aria-controls="fTeacher" aria-selected="false" tabindex="-1">O'qituvchi ro'yxati</button>
                 </div>
 
                 <div class="msg" id="msg" role="status" aria-live="polite"></div>
 
                 <!-- Kirish -->
-                <form data-step="login" id="fLogin" novalidate>
+                <form data-step="login" id="fLogin" role="tabpanel" aria-labelledby="tab-login" novalidate>
                     <div class="field">
                         <label for="lLogin">Login, telefon yoki email</label>
                         <input id="lLogin" name="login" autocomplete="username" required placeholder="masalan: aliyev.vali yoki +998 90 123 45 67">
@@ -58,7 +58,7 @@
                 </form>
 
                 <!-- O'quvchi: sinf kodi bilan -->
-                <form data-step="student" id="fStudent" hidden novalidate>
+                <form data-step="student" id="fStudent" role="tabpanel" aria-labelledby="tab-student" hidden novalidate>
                     <div class="field">
                         <label for="sCode">Sinf kodi</label>
                         <input id="sCode" required placeholder="FZ-7K3Q" autocomplete="off" style="text-transform:uppercase">
@@ -85,7 +85,7 @@
                 </form>
 
                 <!-- O'qituvchi -->
-                <form data-step="teacher" id="fTeacher" hidden novalidate>
+                <form data-step="teacher" id="fTeacher" role="tabpanel" aria-labelledby="tab-teacher" hidden novalidate>
                     <div class="row">
                         <div class="field"><label for="tLast">Familiya</label><input id="tLast" required autocomplete="family-name"></div>
                         <div class="field"><label for="tFirst">Ism</label><input id="tFirst" required autocomplete="given-name"></div>
@@ -151,9 +151,9 @@
         </div>
     </main>
 
-    <script src="theme.js?v=20261101h"></script>
-    <script src="api.js?v=20261101h"></script>
-    <script src="app.js?v=20261101h"></script>
-    <script src="kirish.js?v=20261101h"></script>
+    <script src="theme.js?v=20261101i"></script>
+    <script src="api.js?v=20261101i"></script>
+    <script src="app.js?v=20261101i"></script>
+    <script src="kirish.js?v=20261101i"></script>
 </body>
 </html>

@@ -178,7 +178,7 @@ window.Fizika.esc = function (s) {
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261101h';
+    var I18N_VER = '20261101i';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----

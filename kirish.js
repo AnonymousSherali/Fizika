@@ -1,4 +1,4 @@
-/* kirish.html sahifasining skripti (avval HTML ichida edi). */
+/* Kirish sahifasi (kirish.html): kirish, o'quvchi va o'qituvchi ro'yxatdan o'tishi, tasdiqlash, parolni tiklash. */
 (function () {
     var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
     var next = new URLSearchParams(location.search).get('next');
@@ -7,7 +7,9 @@
     function show(step) {
         document.querySelectorAll('[data-step]').forEach(function (f) { f.hidden = f.dataset.step !== step; });
         document.querySelectorAll('[data-tab]').forEach(function (b) {
-            b.setAttribute('aria-selected', String(b.dataset.tab === step));
+            var on = b.dataset.tab === step;
+            b.setAttribute('aria-selected', String(on));
+            b.tabIndex = on ? 0 : -1;   // tablar orasida — strelkalar, sahifaga — Tab (WAI-ARIA tabs)
         });
         FA.msg('msg', 'info', '');
         var first = document.querySelector('[data-step="' + step + '"] input');
@@ -26,8 +28,18 @@
     function fail(e) { FA.msg('msg', 'err', FA.errText(e)); }
     function busy(form, on) { form.querySelectorAll('button').forEach(function (b) { b.disabled = on; }); }
 
-    document.querySelectorAll('[data-tab]').forEach(function (b) {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-tab]'));
+    tabs.forEach(function (b, i) {
         b.onclick = function () { show(b.dataset.tab); };
+        // Klaviatura: ← → (va Home/End) bilan tab almashtirish
+        b.onkeydown = function (e) {
+            var j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+            if (j === undefined) return;
+            e.preventDefault();
+            var t = tabs[(j + tabs.length) % tabs.length];
+            show(t.dataset.tab);
+            t.focus();
+        };
     });
     document.querySelectorAll('[data-goto]').forEach(function (a) {
         a.onclick = function (e) { e.preventDefault(); show(a.dataset.goto); };

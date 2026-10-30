@@ -160,6 +160,10 @@ Apache hostingda xuddi shu siyosat `.htaccess` da (ikkalasi bir xilligini test t
 **Proksi va fayllar.** `NUM_PROXIES=1` (nginx ortida; mijoz IP si soxtalashtirilmaydi),
 `MEDIA_X_ACCEL=true` (o'quvchi ishlari va ishlanmalar faqat ruxsat bilan, nginx orqali beriladi).
 
+**O'rnatgandan keyin tekshirish:** `scripts/smoke_check.sh https://site.uz` — sahifalar, API, admin, CSP va
+xavfsizlik sarlavhalari, yopiq yo'llar (16 ta tekshiruv). CI'da xuddi shu skript Docker'da ko'tarilgan tizimga
+qarshi ishga tushadi (`.github/workflows/deploy-smoke.yml`).
+
 **Xatolar monitoringi:** `.env` da `SENTRY_DSN=...` — server xatolari Sentry'ga yuboriladi (shaxsiy ma'lumotlarsiz).
 
 **Zaxira nusxa (har kecha):**

@@ -161,6 +161,10 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Qo'llanmalarning ruscha varianti | ✅ | `hujjatlar/qollanma_oqituvchi_ru.md`, `hujjatlar/qollanma_admin_ru.md` |
 | Avtomatik sinov «admin panel → sayt» (10 holat) | ✅ | `e2e/admin_to_site.js` |
 | OWASP ZAP skanerlash | ⬜ | staging serverda (`zap-baseline.py -t https://...`) |
+| Docker tutun sinovi CI'da: butun tizim compose bilan ko'tarilib, nginx orqali tekshiriladi (`deploy-smoke.yml`) | ✅ | `scripts/smoke_check.sh` — serverda o'rnatgandan keyin ham ishlatiladi |
+| `.env.example`: qator oxiridagi izoh Docker'da qiymat bo'lib qolardi (bo'sh SECRET_KEY o'rniga izoh matni) | ✅ | production kuchsiz/izoh kalitni rad etadi |
+| Railway sozlamalari olib tashlandi (buyurtmachi qarori) | ✅ | |
+| Kirish sahifasi tablari: klaviatura (← → Home End), aria-controls/tabpanel | ✅ | |
 | CD (teg → production deploy) | ⬜ | server tanlangach |
 | ClamAV (yuklangan fayllarni antivirus tekshiruvi) | ⬜ | ixtiyoriy |
 | Production (O'zbekistondagi server, TZ 11.1) | ⬜ | buyurtmachi serveri kerak |

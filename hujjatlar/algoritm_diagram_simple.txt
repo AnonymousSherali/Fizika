@@ -45,7 +45,7 @@
     ┌───────┘   │   └───────┐
     ▼           ▼           ▼
 ┌────────┐ ┌────────┐ ┌────────┐
-│Netlify │ │Railway │ │Vercel  │
+│Netlify │ │  VPS   │ │Vercel  │
 └───┬────┘ └───┬────┘ └───┬────┘
     └──────────┴──────────┘
                │
@@ -179,7 +179,7 @@ Developer (👨‍💻)
  │        │        │
  ▼        ▼        ▼
 
-NETLIFY      RAILWAY      VERCEL
+NETLIFY      VPS          VERCEL
    │            │            │
    ▼            ▼            ▼
 ┌──────┐    ┌──────┐    ┌──────┐
@@ -290,11 +290,11 @@ Frontend:
 
 Backend:
   ├─ Static Hosting (No server needed)
-  └─ Python HTTP Server (Railway uchun)
+  └─ Django + PostgreSQL (backend/, Docker + nginx)
 
 Tools:
   ├─ Git/GitHub (Version Control)
-  ├─ Netlify/Railway/Vercel (Hosting)
+  ├─ Netlify/Vercel/VPS (Hosting)
   └─ Canvas API (Graphics)
 
 Files:
@@ -350,7 +350,7 @@ METRICS:
    HTML5 + CSS3 + JavaScript (Canvas API)
 
 4. DEPLOY:
-   GitHub → (Netlify/Railway/Vercel) → Live Website
+   GitHub → (Netlify/Vercel/VPS) → Live Website
 
 5. FOYDALANUVCHILAR:
    10-11 sinf o'quvchilari va o'qituvchilar

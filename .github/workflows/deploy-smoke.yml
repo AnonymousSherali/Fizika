@@ -1,0 +1,56 @@
+# Docker tutun sinovi: butun tizim (nginx + Django + Celery + PostgreSQL + Redis) docker compose bilan
+# ko'tariladi va nginx orqali tekshiriladi (backend/scripts/smoke_check.sh) — o'rnatish buzilmaganini kafolatlaydi.
+name: deploy-smoke
+
+on:
+  push:
+    paths: ["backend/**", "*.html", "*.js", "modellar/**", "testlar/**", ".htaccess", ".github/workflows/deploy-smoke.yml"]
+  pull_request:
+    paths: ["backend/**", "*.html", "*.js", "modellar/**", "testlar/**", ".htaccess", ".github/workflows/deploy-smoke.yml"]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: .env (sinov qiymatlari)
+        run: |
+          cp .env.example .env
+          sed -i "s|^DJANGO_SECRET_KEY=.*|DJANGO_SECRET_KEY=smoke-$(openssl rand -hex 32)|" .env
+          sed -i "s|^DJANGO_ALLOWED_HOSTS=.*|DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1|" .env
+          sed -i "s|^SECURE_SSL_REDIRECT=.*|SECURE_SSL_REDIRECT=false|" .env
+          sed -i "s|^EMAIL_BACKEND=.*|EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend|" .env
+      - name: Ko'tarish (docker compose up --build)
+        run: docker compose up -d --build
+      - name: Migratsiya va boshlang'ich ma'lumotlar
+        run: |
+          for i in $(seq 1 30); do docker compose exec -T api python manage.py check --deploy --fail-level ERROR && break; sleep 2; done
+          docker compose exec -T api python manage.py migrate --noinput
+          docker compose exec -T api python manage.py import_simulations
+          docker compose exec -T api python manage.py import_quiz_bank
+          docker compose exec -T api python manage.py import_lesson_plans
+          docker compose exec -T api python manage.py import_i18n
+      - name: nginx orqali tekshiruv
+        run: |
+          for i in $(seq 1 30); do curl -sf http://localhost/api/v1/health/ && break; sleep 2; done
+          bash scripts/smoke_check.sh http://localhost
+      - name: Fon vazifalari ishlayaptimi (worker, beat)
+        run: |
+          sleep 5
+          docker compose ps --status running --services | tee /tmp/running
+          grep -qx worker /tmp/running && grep -qx beat /tmp/running
+      - name: Zaxira nusxa skripti (Docker rejimi)
+        run: |
+          # backup.sh DATABASE_URL ni .env dan o'zi o'qiydi (qiymatlarda bo'sh joy bor — source qilinmaydi)
+          COMPOSE=1 BACKUP_DIR=/tmp/fizika-backup bash scripts/backup.sh
+          ls -la /tmp/fizika-backup/db /tmp/fizika-backup/media
+      - name: Loglar (xato bo'lsa)
+        if: failure()
+        run: docker compose logs --tail=150
+      - name: To'xtatish
+        if: always()
+        run: docker compose down -v

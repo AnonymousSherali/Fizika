@@ -256,8 +256,8 @@ function draw1() {
     drawBox(980, 700, 130, 70, C.red, 'Apache hosting', '🖥️');
     arrow(1130, 580, 1045, 700, 'cPanel');
 
-    drawBox(1150, 700, 130, 70, C.red, 'Railway', '🚂');
-    arrow(1190, 595, 1215, 700, 'Python');
+    drawBox(1150, 700, 130, 70, C.red, 'VPS (Docker)', '🐳');
+    arrow(1190, 595, 1215, 700, 'nginx');
 
     drawBox(1320, 700, 130, 70, C.red, 'Oflayn (fayl)', '💻');
     arrow(1250, 580, 1385, 700, 'Maktab');
@@ -363,7 +363,7 @@ function draw3() {
     drawBox(450, 680, 180, 85, C.green, 'Apache hosting', '🖥️');
     arrow(700, 520, 540, 680, 'FTP/ZIP');
 
-    drawBox(750, 680, 180, 85, C.green, 'Railway', '🚂');
+    drawBox(750, 680, 180, 85, C.green, 'VPS (Docker)', '🐳');
     arrow(750, 535, 840, 680);
 
     drawBox(1050, 680, 180, 85, C.green, 'Oflayn (fayl)', '💻');
