@@ -1,4 +1,4 @@
-"""3-bosqich: bildirishnomalar (FT-9, FT-5.8), statistika va eksport (FT-8)."""
+"""Bildirishnomalar (FT-9, FT-5.8), statistika va eksport (FT-8)."""
 import io
 import uuid
 from datetime import timedelta

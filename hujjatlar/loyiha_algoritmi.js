@@ -1,0 +1,551 @@
+/* loyiha_algoritmi.html sahifasining skripti (avval HTML ichida edi). */
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+
+let currentDiagram = 0;
+let currentZoom = 1;
+
+const C = {
+    green: '#28a745',
+    blue: '#007bff',
+    yellow: '#ffc107',
+    cyan: '#17a2b8',
+    red: '#dc3545',
+    purple: '#6f42c1',
+    text: '#212529',
+    arrow: '#495057'
+};
+
+function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+}
+
+function shade(color, percent) {
+    let R = parseInt(color.substring(1,3),16);
+    let G = parseInt(color.substring(3,5),16);
+    let B = parseInt(color.substring(5,7),16);
+    R = Math.min(255, Math.max(0, parseInt(R * (100 + percent) / 100)));
+    G = Math.min(255, Math.max(0, parseInt(G * (100 + percent) / 100)));
+    B = Math.min(255, Math.max(0, parseInt(B * (100 + percent) / 100)));
+    return "#" + R.toString(16).padStart(2,'0') + G.toString(16).padStart(2,'0') + B.toString(16).padStart(2,'0');
+}
+
+function wrapText(text, x, y, maxW, lineH) {
+    const words = text.split(' ');
+    let line = '';
+    const lines = [];
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxW && n > 0) {
+            lines.push(line);
+            line = words[n] + ' ';
+        } else {
+            line = testLine;
+        }
+    }
+    lines.push(line);
+    const startY = y - (lines.length - 1) * lineH / 2;
+    for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], x, startY + i * lineH);
+    }
+}
+
+function drawBox(x, y, w, h, color, text, icon = '') {
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 4;
+
+    const grad = ctx.createLinearGradient(x, y, x, y + h);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, shade(color, -20));
+    ctx.fillStyle = grad;
+    roundRect(x, y, w, h, 12);
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = shade(color, -40);
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (icon) {
+        ctx.font = '28px Arial';
+        ctx.fillText(icon, x + w/2, y + h/2 - 18);
+        ctx.font = 'bold 16px Arial';
+        wrapText(text, x + w/2, y + h/2 + 18, w - 25, 20);
+    } else {
+        ctx.font = 'bold 16px Arial';
+        wrapText(text, x + w/2, y + h/2, w - 25, 20);
+    }
+}
+
+function drawCirc(x, y, r, color, text, icon = '') {
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 4;
+
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, shade(color, -20));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = shade(color, -40);
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (icon) {
+        ctx.font = '32px Arial';
+        ctx.fillText(icon, x, y - 15);
+        ctx.font = 'bold 14px Arial';
+        wrapText(text, x, y + 20, r * 1.6, 18);
+    } else {
+        ctx.font = 'bold 16px Arial';
+        wrapText(text, x, y, r * 1.6, 18);
+    }
+}
+
+function drawDiam(x, y, w, h, color, text) {
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 4;
+
+    const grad = ctx.createLinearGradient(x - w/2, y, x + w/2, y);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, shade(color, -20));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(x, y - h/2);
+    ctx.lineTo(x + w/2, y);
+    ctx.lineTo(x, y + h/2);
+    ctx.lineTo(x - w/2, y);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = shade(color, -40);
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = C.text;
+    ctx.font = 'bold 15px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    wrapText(text, x, y, w - 45, 19);
+}
+
+function arrow(x1, y1, x2, y2, label = '', dash = false) {
+    ctx.strokeStyle = C.arrow;
+    ctx.lineWidth = 3;
+    if (dash) ctx.setLineDash([10, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.fillStyle = C.arrow;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 18 * Math.cos(angle - Math.PI/6), y2 - 18 * Math.sin(angle - Math.PI/6));
+    ctx.lineTo(x2 - 18 * Math.cos(angle + Math.PI/6), y2 - 18 * Math.sin(angle + Math.PI/6));
+    ctx.closePath();
+    ctx.fill();
+
+    if (label) {
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(mx - 40, my - 12, 80, 24);
+        ctx.strokeStyle = C.arrow;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(mx - 40, my - 12, 80, 24);
+        ctx.fillStyle = C.arrow;
+        ctx.font = 'bold 13px Arial';
+        ctx.fillText(label, mx, my);
+    }
+}
+
+function border(x, y, w, h, color, label) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.setLineDash([18, 8]);
+    roundRect(x, y, w, h, 15);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (label) {
+        ctx.fillStyle = color;
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, x + 25, y + h + 35);
+    }
+}
+
+// DIAGRAMMA 1 - FAQAT 2 TA MODEL
+// Fon oq bilan to'ldiriladi: aks holda yuklab olingan PNG shaffof bo'lib,
+// qorong'i rasm ko'ruvchida qora matn ko'rinmasdi
+function clearBg() {
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function draw1() {
+    clearBg();
+    ctx.fillStyle = C.text;
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('UMUMIY LOYIHA ARXITEKTURASI', 1200, 50);
+
+    drawCirc(200, 140, 60, C.green, 'START', '🚀');
+    drawBox(120, 230, 160, 80, C.green, 'Talablarni Aniqlash', '📋');
+    arrow(200, 200, 200, 230);
+
+    drawBox(120, 340, 160, 80, C.green, 'UI/UX Dizayn', '🎨');
+    arrow(200, 310, 200, 340);
+
+    // Interaktiv qism
+    drawBox(100, 480, 200, 95, C.cyan, '10 ta Interaktiv Model', '🎮');
+    arrow(160, 420, 200, 480);
+
+    drawBox(350, 480, 200, 95, C.cyan, 'Laboratoriya Jurnali', '📋');
+    arrow(240, 420, 450, 480);
+
+    drawBox(800, 230, 180, 80, C.green, 'Dars Ishlanma', '📚');
+    arrow(280, 270, 800, 270);
+
+    drawBox(800, 340, 180, 80, C.green, 'Testlar', '📝');
+    arrow(280, 380, 800, 380);
+
+    drawBox(800, 450, 180, 80, C.green, 'Metodika', '👨‍🏫');
+    arrow(550, 527, 800, 490);
+
+    drawBox(1100, 320, 180, 90, C.yellow, 'GitHub Repo', '🔧');
+    arrow(980, 270, 1100, 350);
+    arrow(980, 380, 1100, 370);
+    arrow(980, 490, 1100, 390);
+
+    drawDiam(1190, 540, 180, 110, C.yellow, 'Deploy Platform?');
+    arrow(1190, 410, 1190, 485);
+
+    drawBox(980, 700, 130, 70, C.red, 'Apache hosting', '🖥️');
+    arrow(1130, 580, 1045, 700, 'cPanel');
+
+    drawBox(1150, 700, 130, 70, C.red, 'Railway', '🚂');
+    arrow(1190, 595, 1215, 700, 'Python');
+
+    drawBox(1320, 700, 130, 70, C.red, 'Oflayn (fayl)', '💻');
+    arrow(1250, 580, 1385, 700, 'Maktab');
+
+    drawCirc(1215, 880, 70, C.purple, 'LIVE SITE', '🌍');
+    arrow(1045, 770, 1160, 830);
+    arrow(1215, 770, 1215, 810);
+    arrow(1385, 770, 1270, 830);
+
+    drawBox(1500, 950, 180, 80, C.purple, 'Users', '👥');
+    arrow(1280, 910, 1500, 990);
+
+    border(940, 820, 550, 240, C.purple, '🌐 JONLI INTERNET');
+}
+
+// DIAGRAMMA 2 - O'ZGARMAYDI
+function draw2() {
+    clearBg();
+    ctx.fillStyle = C.text;
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('MODEL ISHLASH ALGORITMI', 1200, 50);
+
+    drawCirc(200, 140, 60, C.purple, 'User', '👤');
+    drawBox(120, 230, 160, 75, C.green, 'Brauzer', '🌐');
+    arrow(200, 200, 200, 230);
+
+    drawBox(120, 335, 160, 75, C.green, 'HTML', '📄');
+    arrow(200, 305, 200, 335);
+
+    drawBox(120, 440, 160, 75, C.green, 'JavaScript', '⚙️');
+    arrow(200, 410, 200, 440);
+
+    drawBox(120, 545, 160, 75, C.cyan, 'Canvas', '🎨');
+    arrow(200, 515, 200, 545);
+
+    drawBox(380, 545, 180, 75, C.green, 'Event Listeners', '👆');
+    arrow(280, 582, 380, 582);
+
+    drawDiam(470, 720, 180, 110, C.yellow, 'User Harakat?');
+    arrow(470, 620, 470, 665);
+
+    drawBox(200, 860, 150, 65, C.green, 'Slider', '🎚️');
+    arrow(415, 760, 275, 860, 'Slider');
+
+    drawBox(400, 860, 150, 65, C.green, 'Button', '🔘');
+    arrow(470, 775, 475, 860, 'Click');
+
+    drawBox(600, 860, 150, 65, C.green, 'Canvas', '🖱️');
+    arrow(525, 760, 675, 860, 'Move');
+
+    drawBox(900, 750, 170, 75, C.cyan, 'State Update', '💾');
+    arrow(350, 892, 900, 787);
+    arrow(550, 892, 900, 787);
+    arrow(750, 892, 900, 787);
+
+    drawBox(900, 620, 170, 75, C.green, 'Calculate', '🧮');
+    arrow(985, 750, 985, 695);
+
+    drawBox(900, 490, 170, 75, C.green, 'Draw', '✏️');
+    arrow(985, 620, 985, 565);
+
+    drawDiam(985, 370, 170, 100, C.yellow, 'Animate?');
+    arrow(985, 490, 985, 420);
+
+    drawBox(1190, 345, 190, 70, C.green, 'Request Frame', '🎬');
+    arrow(1070, 370, 1190, 380, 'Ha');
+
+    ctx.setLineDash([8, 4]);
+    arrow(1380, 415, 1380, 650);
+    arrow(1380, 650, 1070, 657);
+    ctx.setLineDash([]);
+
+    drawCirc(985, 240, 65, C.red, 'Display', '📺');
+    arrow(985, 320, 985, 305, 'Yo\'q');
+}
+
+// DIAGRAMMA 3 - O'ZGARMAYDI
+function draw3() {
+    clearBg();
+    ctx.fillStyle = C.text;
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('DEPLOY JARAYONI', 1200, 50);
+
+    drawCirc(200, 140, 60, C.purple, 'Developer', '👨‍💻');
+
+    drawBox(120, 230, 160, 80, C.green, 'Local Dev', '💻');
+    arrow(200, 200, 200, 230);
+
+    drawBox(120, 340, 160, 80, C.green, 'Git Commit', '📝');
+    arrow(200, 310, 200, 340);
+
+    drawBox(120, 450, 160, 80, C.cyan, 'Git Push', '☁️');
+    arrow(200, 420, 200, 450);
+
+    drawBox(400, 420, 200, 110, C.blue, 'GitHub Repo', '🔧');
+    arrow(280, 490, 400, 475);
+
+    drawDiam(750, 475, 200, 120, C.yellow, 'Platform?');
+    arrow(600, 475, 650, 475);
+
+    drawBox(450, 680, 180, 85, C.green, 'Apache hosting', '🖥️');
+    arrow(700, 520, 540, 680, 'FTP/ZIP');
+
+    drawBox(750, 680, 180, 85, C.green, 'Railway', '🚂');
+    arrow(750, 535, 840, 680);
+
+    drawBox(1050, 680, 180, 85, C.green, 'Oflayn (fayl)', '💻');
+    arrow(800, 520, 1140, 680, 'ZIP');
+
+    drawBox(450, 805, 180, 75, C.green, 'Build', '🔨');
+    arrow(540, 765, 540, 805);
+
+    drawBox(750, 805, 180, 75, C.green, 'Build', '📦');
+    arrow(840, 765, 840, 805);
+
+    drawBox(1050, 805, 180, 75, C.green, 'Build', '⚡');
+    arrow(1140, 765, 1140, 805);
+
+    drawCirc(540, 970, 65, C.red, 'Live!', '✅');
+    arrow(540, 880, 540, 905);
+
+    drawCirc(840, 970, 65, C.red, 'Live!', '✅');
+    arrow(840, 880, 840, 905);
+
+    drawCirc(1140, 970, 65, C.red, 'Live!', '✅');
+    arrow(1140, 880, 1140, 905);
+
+    drawBox(1450, 420, 200, 110, C.cyan, 'Domain', '🌍');
+    arrow(540, 1035, 1500, 530);
+    arrow(840, 1035, 1520, 530);
+    arrow(1140, 1035, 1560, 530);
+
+    drawCirc(1550, 740, 75, C.purple, 'Users', '👥');
+    arrow(1550, 530, 1550, 665);
+
+    drawBox(1380, 920, 190, 80, C.green, 'Analytics', '📊');
+    arrow(1550, 815, 1520, 920);
+
+    border(400, 900, 870, 150, C.red, '✅ LIVE SITES');
+}
+
+// DIAGRAMMA 4 - FAQAT 2 TA MODEL
+function draw4() {
+    clearBg();
+    ctx.fillStyle = C.text;
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('FOYDALANUVCHI OQIMI', 1200, 50);
+
+    drawCirc(200, 140, 60, C.purple, 'O\'quvchi', '👨‍🎓');
+
+    drawBox(120, 230, 160, 75, C.green, 'Sayt Kirish', '🌐');
+    arrow(200, 200, 200, 230);
+
+    drawBox(120, 335, 160, 75, C.blue, 'Index.html', '🏠');
+    arrow(200, 305, 200, 335);
+
+    drawDiam(200, 490, 200, 110, C.yellow, 'Qaysi Model?');
+    arrow(200, 410, 200, 435);
+
+    // REZERFORD
+    drawBox(50, 640, 220, 85, C.cyan, 'Rezerford Tajribasi', '⚛️');
+    arrow(130, 530, 160, 640, 'Atom');
+
+    drawBox(50, 755, 220, 75, C.green, 'Sozlash', '⚙️');
+    arrow(160, 725, 160, 755);
+
+    drawBox(50, 860, 220, 75, C.green, 'Tajriba', '🧪');
+    arrow(160, 830, 160, 860);
+
+    drawBox(50, 965, 220, 75, C.red, 'Tahlil', '📊');
+    arrow(160, 935, 160, 965);
+
+    border(30, 610, 260, 470, C.red, '⚛️ Rezerford Model');
+
+    // KEPLER
+    drawBox(550, 640, 220, 85, C.cyan, 'Kepler Qonunlari', '🪐');
+    arrow(270, 530, 660, 640, 'Sayyora');
+
+    drawDiam(660, 800, 180, 100, C.yellow, 'Qonun?');
+    arrow(660, 725, 660, 750);
+
+    drawBox(880, 750, 160, 60, C.green, '1. Ellips', '○');
+    arrow(750, 800, 880, 780, '1');
+
+    drawBox(880, 830, 160, 60, C.green, '2. Yuzalar', '△');
+    arrow(750, 800, 880, 860, '2');
+
+    drawBox(880, 910, 160, 60, C.green, '3. Davr', '⊙');
+    arrow(750, 800, 880, 940, '3');
+
+    drawBox(550, 950, 220, 75, C.red, 'Animatsiya', '👁️');
+    arrow(1040, 780, 770, 987);
+    arrow(1040, 860, 770, 987);
+    arrow(1040, 940, 770, 987);
+
+    border(520, 610, 550, 455, C.red, '🪐 Kepler Model');
+
+    // DARS MATERIALLARI
+    drawBox(1350, 640, 200, 75, C.green, 'Dars Ishlanma', '📚');
+    arrow(290, 490, 1350, 677);
+
+    drawBox(1350, 745, 200, 75, C.green, 'Testlar', '✏️');
+    arrow(290, 490, 1350, 782);
+
+    drawBox(1350, 850, 200, 75, C.green, 'Metodika', '👨‍🏫');
+    arrow(290, 490, 1350, 887);
+
+    // BILIM OLISH
+    drawCirc(1750, 800, 75, C.red, 'Bilim Olish!', '🎓');
+    arrow(1550, 677, 1680, 755);
+    arrow(1550, 782, 1690, 790);
+    arrow(1550, 887, 1680, 835);
+
+    // DO'STLAR
+    drawBox(1640, 970, 220, 75, C.purple, 'Do\'stlar Bilan Bo\'lishish', '👥');
+    arrow(1750, 875, 1750, 970);
+
+    // SIKL
+    ctx.setLineDash([8, 4]);
+    arrow(1750, 1045, 1750, 1130);
+    arrow(1750, 1130, 200, 1130);
+    arrow(200, 1130, 200, 200);
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = C.blue;
+    ctx.font = 'bold 22px Arial';
+    ctx.fillText('🔄 O\'rganish Sikli: Qayta Qaytish va Yangi Bilim', 900, 1180);
+}
+
+function changeDiagram(n) {
+    currentDiagram = n;
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach((t, i) => {
+        t.classList.toggle('active', i === n);
+        t.setAttribute('aria-selected', i === n ? 'true' : 'false');
+    });
+
+    if (n === 0) draw1();
+    else if (n === 1) draw2();
+    else if (n === 2) draw3();
+    else if (n === 3) draw4();
+}
+
+// transform: scale() layoutni o'zgartirmaydi - kattalashtirilgan qismga
+// scroll qilib bo'lmaydi. Shuning uchun CSS o'lchamini o'zgartiramiz.
+function applyZoom() {
+    canvas.style.width = (canvas.width * currentZoom) + 'px';
+    canvas.style.height = (canvas.height * currentZoom) + 'px';
+    document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+}
+
+function zoomIn() {
+    currentZoom = Math.min(currentZoom + 0.1, 2);
+    applyZoom();
+}
+
+function zoomOut() {
+    currentZoom = Math.max(currentZoom - 0.1, 0.5);
+    applyZoom();
+}
+
+function downloadDiagram() {
+    const names = ['arxitektura', 'model-ishlash', 'deploy', 'user-flow'];
+    const link = document.createElement('a');
+    link.download = `fizika-${names[currentDiagram]}.png`;
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
+}
+
+function printDiagram() {
+    const url = canvas.toDataURL('image/png', 1.0);
+    const w = window.open('');
+    if (!w) {
+        alert('Chop etish oynasi bloklandi.\n\nBrauzer sozlamalarida bu sayt uchun ' +
+              'qalqib chiquvchi oynalarga ruxsat bering yoki "💾 Yuklab Olish" ' +
+              'tugmasi bilan rasmni saqlab, keyin chop eting.');
+        return;
+    }
+    w.document.write('<html><head><title>Print</title></head><body style="margin:0;text-align:center;">');
+    w.document.write('<img src="' + url + '" style="max-width:100%;">');
+    w.document.write('</body></html>');
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 250);
+}
+
+draw1();
+applyZoom();

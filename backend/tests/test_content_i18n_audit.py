@@ -1,4 +1,4 @@
-"""4-bosqich: dars ishlanmalar (FT-7), tarjimalar, parametrlangan masalalar (FT-6.2), audit (FT-11)."""
+"""Dars ishlanmalar (FT-7), tarjimalar, parametrlangan masalalar (FT-6.2), audit (FT-11)."""
 import io
 import zipfile
 from datetime import timedelta

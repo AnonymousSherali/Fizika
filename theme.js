@@ -3,6 +3,15 @@
    Barcha sahifalarda <script src="theme.js"></script> bilan ulanadi.
    Suzuvchi tugmalar avtomatik qo'shiladi.
    ============================================================ */
+/* Umumiy yordamchilar — barcha sahifa skriptlari shu yerdan oladi (theme.js har sahifada birinchi yuklanadi) */
+window.Fizika = window.Fizika || {};
+/** Matnni HTML ichiga xavfsiz qo'yish uchun (serverdan, admin paneldan kelgan har qanday matn) */
+window.Fizika.esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+};
+
 (function () {
     'use strict';
 
@@ -127,7 +136,7 @@
         };
         document.head.appendChild(d);
     }
-    var I18N_VER = '20261101e';
+    var I18N_VER = '20261101g';
     window.fizikaLang = getLang;
 
     // ----- Scroll-to-top ko'rinishi -----

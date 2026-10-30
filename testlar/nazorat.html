@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../img/icons/icon-192.png" type="image/png">
     <title>Nazorat testi — Fizika 10–11</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101e">
-    <link rel="stylesheet" href="../app.css?v=20261101e">
+    <link rel="stylesheet" href="../styles.css?v=20261101g">
+    <link rel="stylesheet" href="../app.css?v=20261101g">
     <style>
         .qbox { max-width: 760px; margin: 0 auto; }
         .qhead { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-3); }
@@ -56,171 +56,9 @@
         </div>
     </main>
 
-    <script src="../theme.js?v=20261101e"></script>
-    <script src="../api.js?v=20261101e"></script>
-    <script src="../app.js?v=20261101e"></script>
-    <script>
-    (function () {
-        var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
-        var q = new URLSearchParams(location.search);
-        var assignmentId = q.get('topshiriq'), resultId = q.get('natija');
-        var attempt = null, cur = 0, tick = null, assignment = null;
-        var LET = ['A', 'B', 'C', 'D'];
-
-        FA.boot({ login: true, active: '' }).then(function () {
-            if (resultId) return showResult(resultId);
-            if (!assignmentId) {
-                $('view').innerHTML = '<p>Topshiriq tanlanmagan. <a href="../oquvchi/index.html">Topshiriqlarim</a></p>';
-                return;
-            }
-            return api.get('assignments/' + assignmentId + '/').then(intro);
-        }, function () {}).catch(function (e) { FA.msg('msg', 'err', FA.errText(e)); });
-
-        function intro(a) {
-            assignment = a;
-            $('title').textContent = '📝 ' + a.title;
-            $('sub').textContent = 'O\'qituvchi: ' + a.teacher_name + (a.due_at ? ' · Muddat: ' + FA.date(a.due_at) : '');
-            var left = a.attempts_left;
-            $('view').innerHTML =
-                (a.instructions ? '<p>' + FA.esc(a.instructions) + '</p>' : '') +
-                '<ul class="muted" style="margin:12px 0 0 18px;line-height:1.8">' +
-                '<li>Urinishlar: ' + left + ' / ' + a.max_attempts + ' qoldi</li>' +
-                '<li>Har bir javob darhol serverga saqlanadi — internet uzilsa, qayta kirib davom ettirasiz</li>' +
-                '<li>Asosiy savol — 1 ball, chuqur — 2 ball, hisoblash masalasi — 5 ball</li></ul>' +
-                (a.my_grade ? '<p style="margin-top:12px">Joriy baho: <b>' + a.my_grade.grade + '</b></p>' : '') +
-                '<div class="actions">' + (left > 0 && a.my_status !== 'overdue'
-                    ? '<button class="btn-a" id="startBtn">▶ Boshlash</button>' : '<span class="badge overdue">Urinish qolmagan</span>') +
-                '<a class="btn-a ghost" href="../oquvchi/index.html">← Topshiriqlarim</a></div>';
-            var b = $('startBtn');
-            if (b) b.onclick = function () {
-                b.disabled = true;
-                api.post('quiz/attempts/', { assignment_id: assignmentId }).then(function (at) {
-                    attempt = at;
-                    // Davom ettirilgan urinish: javob darhol ko'rsatiladigan rejimda berilgan javoblar qulflanadi
-                    if (at.show_answers === 'immediately') {
-                        at.items.forEach(function (x) { if (x.answered) x._locked = true; });
-                    }
-                    cur = firstUnanswered(); render(); startTimer();
-                }, function (e) { b.disabled = false; FA.msg('msg', 'err', FA.errText(e)); });
-            };
-        }
-
-        function firstUnanswered() {
-            for (var i = 0; i < attempt.items.length; i++) if (!attempt.items[i].answered) return i;
-            return 0;
-        }
-
-        function startTimer() {
-            clearInterval(tick);
-            if (attempt.remaining_seconds == null) return;
-            var end = Date.now() + attempt.remaining_seconds * 1000;
-            tick = setInterval(function () {
-                var s = Math.max(0, Math.round((end - Date.now()) / 1000));
-                var el = $('timer');
-                if (el) {
-                    el.textContent = '⏱ ' + Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2);
-                    el.classList.toggle('low', s < 60);
-                }
-                if (s <= 0) { clearInterval(tick); finish(true); }
-            }, 500);
-        }
-
-        function render() {
-            var it = attempt.items[cur], n = attempt.items.length;
-            var answered = attempt.items.filter(function (x) { return x.answered; }).length;
-            var body;
-            if (it.type === 'mcq') {
-                body = '<div class="opts" role="radiogroup">' + it.options.map(function (o, i) {
-                    var sel = it.given_answer === String(i);
-                    var cls = sel && it._ok === true ? ' ok' : (sel && it._ok === false ? ' no' : '');
-                    return '<button type="button" class="opt' + cls + '" role="radio" aria-checked="' + sel + '" data-i="' + i + '"' +
-                        (it._locked ? ' disabled' : '') + '><span class="l">' + LET[i] + '</span><span>' + FA.esc(o) + '</span></button>';
-                }).join('') + '</div>';
-            } else {
-                body = '<div class="row"><div class="field"><label for="calc">Javob (' + FA.esc(it.unit || '') + ')</label>' +
-                    '<input id="calc" inputmode="decimal" autocomplete="off" value="' + FA.esc(it.given_answer || '') + '"' +
-                    (it._locked ? ' disabled' : '') + ' placeholder="masalan 4,22·10^7"></div>' +
-                    '<button class="btn-a" id="calcBtn" style="margin-bottom:12px"' + (it._locked ? ' disabled' : '') + '>Saqlash</button></div>' +
-                    (it._ok != null ? '<p>' + (it._ok ? '✅ To\'g\'ri' : '❌ Noto\'g\'ri') + '</p>' : '');
-            }
-            $('view').innerHTML =
-                // Har bir qism alohida matn tugunida — ruscha rejimda lug'at bo'yicha to'g'ri tarjima qilinsin
-                '<div class="qhead"><span class="muted"><span>Savol ' + (cur + 1) + ' / ' + n + '</span> · <span>' + FA.esc(it.topic) +
-                '</span> · <span>' + it.points + ' ball</span></span><span class="timer" id="timer"' + (attempt.remaining_seconds == null ? ' hidden' : '') + '></span></div>' +
-                '<div class="qtext">' + FA.esc(it.text) + '</div>' + body +
-                '<div class="actions"><button class="btn-a ghost" id="prev"' + (cur === 0 ? ' disabled' : '') + '>← Oldingi</button>' +
-                (cur < n - 1 ? '<button class="btn-a ghost" id="next">Keyingi →</button>' : '') +
-                '<button class="btn-a" id="fin" style="margin-left:auto">✓ Yakunlash (' + answered + '/' + n + ')</button></div>' +
-                '<div class="dots">' + attempt.items.map(function (x, i) {
-                    return '<button class="dot' + (x.answered ? ' done' : '') + (i === cur ? ' cur' : '') + '" data-go="' + i + '" aria-label="' +
-                        (i + 1) + '-savol">' + (i + 1) + '</button>';
-                }).join('') + '</div>';
-            document.querySelectorAll('.opt').forEach(function (b) { b.onclick = function () { send(it, b.dataset.i); }; });
-            var cb = $('calcBtn');
-            if (cb) {
-                cb.onclick = function () { send(it, $('calc').value); };
-                $('calc').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); send(it, this.value); } };
-            }
-            $('prev').onclick = function () { cur--; render(); };
-            if ($('next')) $('next').onclick = function () { cur++; render(); };
-            $('fin').onclick = function () { finish(false); };
-            document.querySelectorAll('[data-go]').forEach(function (d) { d.onclick = function () { cur = +d.dataset.go; render(); }; });
-        }
-
-        function send(it, value) {
-            FA.msg('msg', 'info', '');
-            api.post('quiz/attempts/' + attempt.id + '/answer/', { item_id: it.item_id, answer: String(value) }).then(function (r) {
-                it.given_answer = String(value);
-                it.answered = true;
-                if (r.is_correct !== null) { it._ok = r.is_correct; it._locked = true; }
-                render();
-                // Faqat shu savol hali ekranda bo'lsa keyingisiga o'tiladi: tez bosish yoki «Keyingi» tugmasi
-                // bilan birga kelgan javob savolni o'tkazib yubormasin
-                var at = attempt.items.indexOf(it);
-                if (r.is_correct === null && it.type === 'mcq' && at === cur && cur < attempt.items.length - 1) {
-                    setTimeout(function () { if (cur === at) { cur = at + 1; render(); } }, 250);
-                }
-            }, function (e) {
-                FA.msg('msg', 'err', FA.errText(e));
-                // Asl (tarjima qilinmagan) server xabari bo'yicha — ruscha rejimda ham ishlasin
-                if (/Vaqt tugagan|yakunlangan/.test(e && e.message || '')) finish(true);
-            });
-        }
-
-        function finish(auto) {
-            var left = attempt.items.filter(function (x) { return !x.answered; }).length;
-            if (!auto && left && !confirm(left + ' ta savolga javob berilmagan. Baribir yakunlaysizmi?')) return;
-            clearInterval(tick);
-            api.post('quiz/attempts/' + attempt.id + '/finish/').then(function (r) {
-                history.replaceState(null, '', '?natija=' + r.id);
-                drawResult(r, auto);
-            }, function (e) { FA.msg('msg', 'err', FA.errText(e)); });
-        }
-
-        function showResult(id) {
-            return api.get('quiz/attempts/' + id + '/result/').then(function (r) { drawResult(r, false); });
-        }
-
-        function drawResult(r, auto) {
-            var gradeText = { 5: '🏆 «5» — A\'lo', 4: '⭐ «4» — Yaxshi', 3: '✓ «3» — Qoniqarli', 2: '✗ «2» — Qoniqarsiz' }[r.grade] || '';
-            var tags = Object.keys(r.topic_breakdown || {});
-            $('view').innerHTML = (auto ? '<div class="msg info">⏱ Vaqt tugadi — test avtomatik yakunlandi</div>' : '') +
-                '<div class="score"><div class="pct">' + Math.round(r.percent) + '%</div><div class="muted">' + r.score + ' / ' + r.max_score +
-                ' ball</div><div class="grade">' + gradeText + '</div></div>' +
-                '<div class="bars">' + tags.map(function (t) {
-                    var b = r.topic_breakdown[t], pc = Math.round(b.ok / b.all * 100);
-                    var col = pc >= 75 ? 'var(--a-ok)' : pc >= 50 ? 'var(--a-warn)' : 'var(--a-bad)';
-                    return '<div><div class="bar-h"><span>' + FA.esc(t) + '</span><span>' + b.ok + '/' + b.all + '</span></div>' +
-                        '<div class="bar"><i style="width:' + pc + '%;background:' + col + '"></i></div></div>';
-                }).join('') + '</div>' +
-                (r.review === null ? '<p class="msg info">To\'g\'ri javoblar o\'qituvchi belgilagan vaqtda ko\'rinadi.</p>'
-                    : (r.review.length ? '<h3>Xato javoblar</h3>' + r.review.map(function (x) {
-                        return '<div class="rev"><b>' + FA.esc(x.text) + '</b><p>❌ Sizning javobingiz: ' + FA.esc(x.given || 'belgilanmagan') +
-                            '<br>✅ To\'g\'ri javob: ' + FA.esc(x.correct) + '</p>' + (x.explanation ? '<p>💡 ' + FA.esc(x.explanation) + '</p>' : '') + '</div>';
-                    }).join('') : '<p class="msg ok">🎉 Barcha savollarga to\'g\'ri javob berdingiz!</p>')) +
-                '<div class="actions"><a class="btn-a" href="../oquvchi/index.html">← Topshiriqlarim</a></div>';
-        }
-    })();
-    </script>
+    <script src="../theme.js?v=20261101g"></script>
+    <script src="../api.js?v=20261101g"></script>
+    <script src="../app.js?v=20261101g"></script>
+    <script src="nazorat.js?v=20261101g"></script>
 </body>
 </html>

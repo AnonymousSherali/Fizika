@@ -19,7 +19,7 @@ def _ru_dict():
 
 def test_every_bank_text_has_russian_translation():
     ru = _ru_dict()
-    page = (Path(settings.FRONTEND_DIR) / "testlar" / "testlar_online.html").read_text(encoding="utf-8")
+    page = (Path(settings.FRONTEND_DIR) / "testlar" / "bank.js").read_text(encoding="utf-8")
     texts = []
     for q in grab(page, "questions"):
         texts += [q["q"], q.get("ex", "")] + q["o"]

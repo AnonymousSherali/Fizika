@@ -7,11 +7,7 @@
     var api = window.FizikaAPI;
     var ROOT = api ? api.root : '';
 
-    function esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-    }
+    var esc = window.Fizika.esc;   // theme.js
 
     // Bildirishnoma havolasi faqat sayt ichidagi nisbiy yo'l bo'lishi mumkin (javascript:, //boshqa-sayt — yo'q)
     function safeUrl(u) {

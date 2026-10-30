@@ -1,0 +1,851 @@
+/* fotoeffekt_model.html sahifasining skripti (avval HTML ichida edi). */
+const canvas = document.getElementById('photoCanvas');
+const ctx = canvas.getContext('2d');
+
+// Rejimga mos palitra — kanvas JS bilan chizilgani uchun CSS filter ish bermaydi
+const LIGHT = { bg1: '#fff1f2', bg2: '#ffe4e6', ink: '#4c0519', muted: '#9f5566', grid: 'rgba(190,18,60,0.12)',
+                glass: 'rgba(255,255,255,0.55)', glassEdge: '#c9a3ad', glassHi: 'rgba(255,255,255,0.9)',
+                plate1: '#e2e8f0', plate2: '#94a3b8', plateEdge: '#475569', mesh: '#64748b',
+                wire: '#475569', electron: '#1d4ed8', eHalo: 'rgba(29,78,216,0.18)', halo: 'rgba(15,23,42,0.35)',
+                panel: 'rgba(255,255,255,0.82)', panelEdge: 'rgba(190,18,60,0.22)',
+                field: 'rgba(124,58,237,0.75)', lamp1: '#475569', lamp2: '#1e293b',
+                lcd: '#0f172a', lcdText: '#4ade80', plus: '#dc2626', minus: '#2563eb',
+                theory: '#f59e0b', barA: '#94a3b8', barE: '#e11d48', curve: '#be123c' };
+const DARK  = { bg1: '#1a0b10', bg2: '#22101a', ink: '#ffe4e6', muted: '#c4a1aa', grid: 'rgba(253,164,175,0.12)',
+                glass: 'rgba(255,255,255,0.04)', glassEdge: '#6b4552', glassHi: 'rgba(255,255,255,0.18)',
+                plate1: '#cbd5e1', plate2: '#475569', plateEdge: '#e2e8f0', mesh: '#94a3b8',
+                wire: '#94a3b8', electron: '#7dd3fc', eHalo: 'rgba(125,211,252,0.2)', halo: 'rgba(0,0,0,0)',
+                panel: 'rgba(40,16,26,0.9)', panelEdge: 'rgba(253,164,175,0.25)',
+                field: 'rgba(196,181,253,0.85)', lamp1: '#64748b', lamp2: '#334155',
+                lcd: '#020617', lcdText: '#4ade80', plus: '#f87171', minus: '#60a5fa',
+                theory: '#fbbf24', barA: '#64748b', barE: '#fb7185', curve: '#fda4af' };
+function P() { return (window.isDarkTheme && window.isDarkTheme()) ? DARK : LIGHT; }
+
+// ----- Doimiylar -----
+const H_PL = 6.63e-34, C_L = 3e8, E_CH = 1.6e-19;
+const HC_EVNM = H_PL * C_L / E_CH * 1e9;   // ≈ 1243 eV·nm
+
+const metals = {
+    cs: { name: 'Sezyi',   sym: 'Cs', A: 1.9 },
+    k:  { name: 'Kaliy',   sym: 'K',  A: 2.3 },
+    na: { name: 'Natriy',  sym: 'Na', A: 2.28 },
+    zn: { name: 'Rux',     sym: 'Zn', A: 4.3 },
+    pt: { name: 'Platina', sym: 'Pt', A: 5.3 }
+};
+
+// ----- Geometriya (kanvas, px) -----
+const CY = 225;            // fotoelement o'qi
+const KX = 152;            // katod sirti
+const GAP = 170;           // katod–anod masofasi
+const AX = KX + GAP;       // anod to'ri
+const HH = 145;            // plastinalar yarim balandligi
+const SPOT = 38;           // yorug'lik dog'i yarim kengligi
+const LAMP_X = 452;        // manba chiqish teshigi
+const PH_SPEED = 650;      // fotonlarning ko'rinma tezligi, px/s
+const V0 = 200;            // 1 eV kinetik energiyali elektron tezligi, px/s
+const THETA_MAX = 0.75;    // sin(θmax): uchib chiqish konusi ≈ ±49°
+const RATE100 = 160;       // 100% intensivlikda fotonlar soni, 1/s
+const WIN = 1.5;           // tokni o'lchash oynasi, s
+const KI = 0.1;            // 1 elektron/s ↔ 0.1 nA
+
+let state = {
+    metal: 'cs', lam: 500, inten: 100, U: 0,
+    running: false, time: 0,
+    photons: [], electrons: [], flashes: [],
+    spawnAcc: 0,
+    hits: [],          // anodga yetish vaqtlari
+    emits: [],         // katoddan chiqish vaqtlari
+    measStart: 0,      // o'lchash oynasi boshlangan vaqt
+    lastRec: -1,
+    series: [],        // I–U nuqtalari: { key, label, pts: Map(U→I) }
+};
+
+let animationId = null;
+let lastTimestamp = null;
+
+// ----- Fizika -----
+function A() { return metals[state.metal].A; }
+function hnu() { return HC_EVNM / state.lam; }                 // eV
+function ekMax() { return Math.max(0, hnu() - A()); }          // eV
+function lamKr() { return HC_EVNM / A(); }                     // nm
+function accel() { return V0 * V0 / 2 * state.U / GAP; }       // px/s² (o'ngga musbat)
+
+// a·τ²/2 + b·τ + c = 0 ning eng kichik musbat ildizi (yo'q bo'lsa null)
+function firstRoot(a, b, c) {
+    const eps = 1e-9;
+    if (Math.abs(a) < 1e-9) {
+        if (Math.abs(b) < 1e-12) return null;
+        const t = -c / b;
+        return t > eps ? t : null;
+    }
+    const A2 = a / 2, disc = b * b - 4 * A2 * c;
+    if (disc < 0) return null;
+    const s = Math.sqrt(disc);
+    const r = [(-b - s) / (2 * A2), (-b + s) / (2 * A2)].filter(t => t > eps).sort((x, y) => x - y);
+    return r.length ? r[0] : null;
+}
+
+// Elektron taqdiri: x — katoddan masofa, y — o'qdan siljish (px)
+function computeFate(e, a) {
+    const tA = firstRoot(a, e.vx, e.x0 - GAP);       // anod tekisligiga yetish
+    if (tA !== null) {
+        const yA = e.y0 + e.vy * tA;
+        return Math.abs(yA) <= HH ? { type: 'anode', t: tA } : { type: 'lost', t: tA };
+    }
+    const tK = firstRoot(a, e.vx, e.x0);              // katodga qaytish
+    if (tK !== null) {
+        const yK = e.y0 + e.vy * tK;
+        return Math.abs(yK) <= HH ? { type: 'back', t: tK } : { type: 'lost', t: tK };
+    }
+    return { type: 'lost', t: 4 };
+}
+
+function newElectron(y0) {
+    // Energiya ulushi f ∈ [0,1] (tez elektronlar ko'proq), yo'nalish ±θmax konusida
+    const f = Math.cbrt(Math.random());
+    const th = Math.asin(THETA_MAX * (2 * Math.random() - 1));
+    const v = V0 * Math.sqrt(f * ekMax());
+    return { x0: 0, y0: y0, vx: v * Math.cos(th), vy: v * Math.sin(th), t0: state.time, f: f };
+}
+
+function launch(y0) {
+    const e = newElectron(y0);
+    e.fate = computeFate(e, accel());
+    state.electrons.push(e);
+    state.emits.push(state.time);
+}
+
+// Kuchlanish o'zgarganda uchib yurgan elektronlar yangi maydonda davom etadi
+function rebaseElectrons() {
+    const a0 = state.electronsA;
+    state.electrons.forEach(e => {
+        const tau = state.time - e.t0;
+        e.x0 = e.x0 + e.vx * tau + a0 * tau * tau / 2;
+        e.y0 = e.y0 + e.vy * tau;
+        e.vx = e.vx + a0 * tau;
+        e.t0 = state.time;
+        e.fate = computeFate(e, accel());
+    });
+    state.electronsA = accel();
+}
+
+function resetWindow() {
+    state.hits = [];
+    state.emits = [];
+    state.measStart = state.time;
+    state.lastRec = -1;
+}
+
+function measuring() { return state.time - state.measStart >= WIN; }
+function measuredI() {
+    if (!measuring()) return null;
+    const t0 = state.time - WIN;
+    const n = state.hits.filter(t => t > t0).length;
+    return n / WIN * KI;
+}
+function measuredFrac() {
+    if (!measuring()) return null;
+    const t0 = state.time - WIN;
+    const ne = state.emits.filter(t => t > t0).length;
+    const nh = state.hits.filter(t => t > t0).length;
+    return ne > 0 ? Math.min(1, nh / ne) : null;
+}
+
+function seriesKey() { return state.metal + '|' + state.lam + '|' + state.inten; }
+function currentSeries(create) {
+    const key = seriesKey();
+    let s = state.series.find(x => x.key === key);
+    if (!s && create) {
+        s = { key: key, label: metals[state.metal].sym + ' · ' + state.lam + ' nm · ' + state.inten + '%', pts: new Map() };
+        state.series.push(s);
+        if (state.series.length > 4) state.series.shift();
+    }
+    if (s) { // oxirgi ishlatilgan seriya ro'yxat oxirida turadi
+        state.series.splice(state.series.indexOf(s), 1);
+        state.series.push(s);
+    }
+    return s || null;
+}
+function uKey(U) { return Math.round(U * 100) / 100; }
+
+// I–U grafigidan to'xtatuvchi kuchlanish: tok nolga teng bo'lgan eng katta U
+function measuredUt() {
+    const s = state.series.find(x => x.key === seriesKey());
+    if (!s || s.pts.size < 2) return null;
+    const pts = [...s.pts.entries()].sort((a, b) => a[0] - b[0]);
+    const pos = pts.filter(p => p[1] > 0);
+    if (!pos.length) return null;
+    const uPos = pos[0][0];
+    const zeros = pts.filter(p => p[1] === 0 && p[0] < uPos);
+    if (!zeros.length) return null;
+    // Chegara — tok nol bo'lgan oxirgi nuqta va tok paydo bo'lgan nuqta o'rtasida
+    return -(zeros[zeros.length - 1][0] + uPos) / 2;
+}
+
+function updatePhysics(dt) {
+    state.time += dt;
+    const t = state.time;
+    // Fotonlar manbadan chiqadi
+    state.spawnAcc += RATE100 * state.inten / 100 * dt;
+    while (state.spawnAcc >= 1) {
+        state.spawnAcc -= 1;
+        const ys = CY + (Math.random() * 2 - 1) * 26;
+        const yt = CY + (Math.random() * 2 - 1) * SPOT;
+        const len = Math.hypot(LAMP_X - KX, ys - yt);
+        state.photons.push({ xs: LAMP_X, ys: ys, xt: KX, yt: yt, len: len, t0: t - Math.random() * dt });
+    }
+    // Fotonlar katodga yetganda
+    const keep = [];
+    const ok = ekMax() > 0;
+    for (const ph of state.photons) {
+        if ((t - ph.t0) * PH_SPEED >= ph.len) {
+            if (ok) launch(ph.yt - CY);
+            else state.flashes.push({ x: KX, y: ph.yt, t0: t, kind: 'absorb' });
+        } else keep.push(ph);
+    }
+    state.photons = keep;
+    // Elektronlar
+    const aliveE = [];
+    for (const e of state.electrons) {
+        const tau = t - e.t0;
+        if (tau >= e.fate.t) {
+            if (e.fate.type === 'anode') {
+                state.hits.push(e.t0 + e.fate.t);
+                state.flashes.push({ x: AX, y: CY + e.y0 + e.vy * e.fate.t, t0: t, kind: 'hit' });
+                continue;
+            }
+            if (e.fate.type === 'back') continue;
+            // 'lost' — elektron yon tomonga uchib ketadi, shisha devorgacha ko'rinadi
+            if (tau > e.fate.t + 0.6) continue;
+        }
+        // Shisha devorga yetgan elektron yutiladi
+        const xr = e.x0 + e.vx * tau + state.electronsA * tau * tau / 2;
+        const yr = e.y0 + e.vy * tau;
+        if (Math.abs(yr) > TUBE.h / 2 - 6 || xr > TUBE.x + TUBE.w - KX - 6 || xr < -2) continue;
+        aliveE.push(e);
+    }
+    state.electrons = aliveE;
+    state.flashes = state.flashes.filter(f => t - f.t0 < 0.35);
+    // Eski vaqt belgilarini tozalash
+    const cut = t - WIN - 0.1;
+    while (state.hits.length && state.hits[0] < cut) state.hits.shift();
+    while (state.emits.length && state.emits[0] < cut) state.emits.shift();
+    // I–U nuqtasini avtomatik yozish (har 0.5 s)
+    if (measuring() && t - state.lastRec >= 0.5) {
+        state.lastRec = t;
+        currentSeries(true).pts.set(uKey(state.U), measuredI());
+    }
+}
+
+// To'liq I–U xarakteristikasini simulyatsiyaning o'zidan (Monte-Karlo) olish
+function sweepIU() {
+    const s = currentSeries(true);
+    s.pts.clear();
+    const N = Math.round(RATE100 * state.inten / 100 * WIN);
+    const ok = ekMax() > 0;
+    for (let k = -60; k <= 60; k++) {
+        const U = k * 0.05;
+        const a = V0 * V0 / 2 * U / GAP;
+        let n = 0;
+        if (ok) {
+            for (let i = 0; i < N; i++) {
+                const e = newElectron((Math.random() * 2 - 1) * SPOT);
+                if (computeFate(e, a).type === 'anode') n++;
+            }
+        }
+        s.pts.set(uKey(U), n / WIN * KI);
+    }
+    updateStats();
+    if (!state.running) draw();
+}
+
+// ----- Sozlamalar -----
+function clearFlight() {
+    state.photons = [];
+    state.electrons = [];
+    state.flashes = [];
+}
+function onSettingChanged(clear) {
+    if (clear) clearFlight();
+    resetWindow();
+    updateStats();
+    if (!state.running) draw();
+}
+
+document.getElementById('lamSlider').oninput = function() {
+    state.lam = parseInt(this.value);
+    document.getElementById('lamValue').textContent = state.lam + ' nm';
+    onSettingChanged(true);
+};
+document.getElementById('intSlider').oninput = function() {
+    state.inten = parseInt(this.value);
+    document.getElementById('intValue').textContent = state.inten + '%';
+    onSettingChanged(false);
+};
+document.getElementById('uSlider').oninput = function() {
+    state.U = Math.round(parseFloat(this.value) * 100) / 100;
+    document.getElementById('uValue').textContent = (state.U > 0 ? '+' : '') + state.U.toFixed(2) + ' V';
+    rebaseElectrons();
+    onSettingChanged(false);
+};
+
+function selectMetal(key, evt) {
+    document.querySelectorAll('.metal-selector .planet-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+    });
+    const t = (evt || window.event) ? (evt || window.event).target : null;
+    if (t) {
+        const btn = t.closest ? t.closest('.planet-btn') : t;
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+    }
+    state.metal = key;
+    onSettingChanged(true);
+}
+
+// ----- Formatlash -----
+function f2(v) { return v.toFixed(2); }
+function updateStats() {
+    const nu = C_L / (state.lam * 1e-9);
+    document.getElementById('nuValue').textContent = (nu / 1e14).toFixed(2) + '·10¹⁴ Hz';
+    document.getElementById('hnuValue').textContent = f2(hnu()) + ' eV';
+    document.getElementById('aValue').textContent = A() + ' eV';
+    const ok = hnu() >= A();
+    document.getElementById('ekValue').textContent = ok ? f2(ekMax()) + ' eV' : 'fotoeffekt yo\'q';
+    document.getElementById('lkrValue').textContent = Math.round(lamKr()) + ' nm';
+    document.getElementById('utValue').textContent = ok ? f2(ekMax()) + ' V' : '-';
+    const I = measuredI();
+    document.getElementById('curValue').textContent = I === null
+        ? (state.running ? 'o\'lchanmoqda…' : '-') : I.toFixed(1) + ' nA';
+    const fr = measuredFrac();
+    document.getElementById('fracValue').textContent = fr === null ? '-' : Math.round(fr * 100) + '%';
+    const ut = measuredUt();
+    document.getElementById('utMeasValue').textContent = ut === null ? '-' : '≈ ' + f2(ut) + ' V';
+    document.getElementById('lamWarn').hidden = ok;
+    document.getElementById('lamNote').hidden = !ok;
+}
+
+// ----- Chizish -----
+// To'lqin uzunligi → rang (UB nurlar binafsha-kulrang)
+function waveRGB(l) {
+    if (l < 380) return [167, 139, 250];
+    let r = 0, g = 0, b = 0;
+    if (l < 440) { r = -(l - 440) / 60; b = 1; }
+    else if (l < 490) { g = (l - 440) / 50; b = 1; }
+    else if (l < 510) { g = 1; b = -(l - 510) / 20; }
+    else if (l < 580) { r = (l - 510) / 70; g = 1; }
+    else if (l < 645) { r = 1; g = -(l - 645) / 65; }
+    else { r = 1; }
+    let k = 1;
+    if (l < 420) k = 0.45 + 0.55 * (l - 380) / 40;
+    else if (l > 645) k = 0.55 + 0.45 * (700 - l) / 55;
+    return [r, g, b].map(v => Math.round(255 * Math.pow(v * k, 0.8)));
+}
+function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+
+function rr(x, y, w, h, r) {
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+}
+
+const TUBE = { x: 70, y: CY - 173, w: 362, h: 346, r: 60 };
+function drawTube(p) {
+    const x = TUBE.x, y = TUBE.y, w = TUBE.w, h = TUBE.h;
+    rr(x, y, w, h, TUBE.r);
+    ctx.fillStyle = p.glass;
+    ctx.fill();
+    ctx.strokeStyle = p.glassEdge;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    // shisha yaltirashi
+    ctx.strokeStyle = p.glassHi;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(x + 62, y + 62, 46, Math.PI * 1.05, Math.PI * 1.45);
+    ctx.stroke();
+    ctx.fillStyle = p.muted;
+    ctx.font = 'italic 13px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText('vakuum', x + w - 22, y + h - 16);
+}
+
+function drawPlates(p) {
+    // Katod
+    const gr = ctx.createLinearGradient(KX - 14, 0, KX, 0);
+    gr.addColorStop(0, p.plate2);
+    gr.addColorStop(1, p.plate1);
+    ctx.fillStyle = gr;
+    ctx.fillRect(KX - 12, CY - HH, 12, 2 * HH);
+    ctx.strokeStyle = p.plateEdge;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(KX - 12, CY - HH, 12, 2 * HH);
+    // Anod — to'r (yorug'likni o'tkazadi)
+    ctx.strokeStyle = p.mesh;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(AX, CY - HH); ctx.lineTo(AX, CY + HH); ctx.stroke();
+    ctx.lineWidth = 1.2;
+    for (let yy = CY - HH; yy <= CY + HH; yy += 12) {
+        ctx.beginPath(); ctx.moveTo(AX - 4, yy); ctx.lineTo(AX + 4, yy); ctx.stroke();
+    }
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Katod (' + metals[state.metal].sym + ')', KX - 6, CY - HH - 10);
+    ctx.fillText('Anod (to\'r)', AX, CY - HH - 10);
+    // Qutblar
+    ctx.font = 'bold 18px Arial';
+    if (state.U !== 0) {
+        const anodePlus = state.U > 0;
+        ctx.fillStyle = anodePlus ? p.plus : p.minus;
+        ctx.fillText(anodePlus ? '+' : '−', AX + 18, CY + HH - 4);
+        ctx.fillStyle = anodePlus ? p.minus : p.plus;
+        ctx.fillText(anodePlus ? '−' : '+', KX - 28, CY + HH - 4);
+    }
+}
+
+function drawField(p) {
+    const mid = (KX + AX) / 2;
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = p.muted;
+    const txt = state.U > 0 ? 'tezlatuvchi maydon' : state.U < 0 ? 'tormozlovchi maydon' : 'maydon yo\'q (U = 0)';
+    ctx.fillText(txt, mid, CY + HH - 8);
+    if (state.U === 0) return;
+    // E vektori: + dan − ga. U > 0 da anod musbat → E chapga
+    const dir = state.U > 0 ? -1 : 1;
+    const L = 30 + 60 * Math.min(1, Math.abs(state.U) / 3);
+    ctx.strokeStyle = p.field;
+    ctx.fillStyle = p.field;
+    ctx.lineWidth = 2;
+    for (const yy of [CY - HH + 22, CY + HH - 32]) {
+        const x1 = mid - dir * L / 2, x2 = mid + dir * L / 2;
+        ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x2, yy); ctx.lineTo(x2 - dir * 9, yy - 5); ctx.lineTo(x2 - dir * 9, yy + 5);
+        ctx.closePath(); ctx.fill();
+    }
+    ctx.font = 'italic bold 14px Georgia, serif';
+    ctx.fillText('E', mid + dir * (L / 2 + 12), CY - HH + 27);
+}
+
+function drawLamp(p) {
+    const c = waveRGB(state.lam);
+    // Nur dastasi
+    const bg = ctx.createLinearGradient(LAMP_X, 0, KX, 0);
+    bg.addColorStop(0, rgba(c, 0.30 * state.inten / 100 + 0.06));
+    bg.addColorStop(1, rgba(c, 0.16 * state.inten / 100 + 0.04));
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.moveTo(LAMP_X, CY - 28); ctx.lineTo(KX, CY - SPOT); ctx.lineTo(KX, CY + SPOT); ctx.lineTo(LAMP_X, CY + 28);
+    ctx.closePath(); ctx.fill();
+    // Manba korpusi
+    const lg = ctx.createLinearGradient(0, CY - 44, 0, CY + 44);
+    lg.addColorStop(0, p.lamp1);
+    lg.addColorStop(1, p.lamp2);
+    ctx.fillStyle = lg;
+    rr(LAMP_X, CY - 44, 76, 88, 10);
+    ctx.fill();
+    ctx.fillStyle = rgba(c, 0.95);
+    rr(LAMP_X - 6, CY - 30, 10, 60, 3);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(state.inten + '%', LAMP_X + 40, CY + 5);
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('λ = ' + state.lam + ' nm', LAMP_X + 38, CY - 56);
+    ctx.font = '13px Arial';
+    ctx.fillStyle = p.muted;
+    ctx.fillText(state.lam < 380 ? 'ultrabinafsha' : 'yorug\'lik', LAMP_X + 38, CY + 64);
+    ctx.fillText('manbai', LAMP_X + 38, CY + 80);
+}
+
+function drawPhotons(p) {
+    const c = waveRGB(state.lam);
+    const wl = 4 + state.lam / 70;     // ko'rinma to'lqin uzunligi, px
+    const half = 14;
+    for (const ph of state.photons) {
+        const s = Math.min(1, (state.time - ph.t0) * PH_SPEED / ph.len);
+        const ux = (ph.xt - ph.xs) / ph.len, uy = (ph.yt - ph.ys) / ph.len;
+        const cx = ph.xs + (ph.xt - ph.xs) * s, cy = ph.ys + (ph.yt - ph.ys) * s;
+        const nx = -uy, ny = ux;
+        const pathPts = [];
+        for (let d = -half; d <= half; d += 1) {
+            const env = Math.exp(-(d * d) / (2 * 6 * 6));
+            const amp = 5 * env * Math.sin(2 * Math.PI * d / wl);
+            pathPts.push([cx + ux * d + nx * amp, cy + uy * d + ny * amp]);
+        }
+        for (const [col, lw] of [[p.halo, 4], [rgba(c, 1), 2]]) {
+            ctx.strokeStyle = col;
+            ctx.lineWidth = lw;
+            ctx.beginPath();
+            pathPts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
+            ctx.stroke();
+        }
+    }
+}
+
+function drawElectrons(p) {
+    const a = state.electronsA;
+    ctx.save();
+    rr(TUBE.x + 2, TUBE.y + 2, TUBE.w - 4, TUBE.h - 4, TUBE.r - 2);
+    ctx.clip();
+    for (const e of state.electrons) {
+        const tau = state.time - e.t0;
+        const x = KX + e.x0 + e.vx * tau + a * tau * tau / 2;
+        const y = CY + e.y0 + e.vy * tau;
+        let alpha = 1;
+        if (e.fate.type === 'lost' && tau > e.fate.t) alpha = Math.max(0, 1 - (tau - e.fate.t) / 0.6);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.eHalo;
+        ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = p.electron;
+        ctx.beginPath(); ctx.arc(x, y, 3.6, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    for (const f of state.flashes) {
+        const k = (state.time - f.t0) / 0.35;
+        ctx.strokeStyle = f.kind === 'hit' ? p.electron : rgba(waveRGB(state.lam), 1);
+        ctx.globalAlpha = 1 - k;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.arc(f.x, f.y, 3 + 7 * k, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    if (ekMax() <= 0) {
+        ctx.fillStyle = p.ink;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('hν < A:', (KX + AX) / 2, CY - 52);
+        ctx.fillText('elektronlar chiqmaydi', (KX + AX) / 2, CY - 34);
+    }
+}
+
+function drawCircuit(p) {
+    const yB = 470, xK = KX - 6, xA = AX, xAm = 200, xBat = 270;
+    ctx.strokeStyle = p.wire;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(xK, CY + HH); ctx.lineTo(xK, yB); ctx.lineTo(xAm - 20, yB);
+    ctx.moveTo(xAm + 20, yB); ctx.lineTo(xBat - 8, yB);
+    ctx.moveTo(xBat + 8, yB); ctx.lineTo(xA, yB); ctx.lineTo(xA, CY + HH);
+    ctx.stroke();
+    // Ampermetr
+    ctx.fillStyle = p.panel;
+    ctx.beginPath(); ctx.arc(xAm, yB, 20, 0, Math.PI * 2); ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 15px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('nA', xAm, yB + 5);
+    // Manba: uzun chiziq (+) anod tomonda bo'lsa U > 0
+    if (state.U !== 0) {
+        const plusRight = state.U > 0;
+        const xl = xBat - 7, xr = xBat + 7;
+        const longX = plusRight ? xr : xl, shortX = plusRight ? xl : xr;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(longX, yB - 18); ctx.lineTo(longX, yB + 18); ctx.stroke();
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(shortX, yB - 9); ctx.lineTo(shortX, yB + 9); ctx.stroke();
+        ctx.font = 'bold 14px Arial';
+        ctx.fillStyle = p.plus;  ctx.fillText('+', longX + (plusRight ? 10 : -10), yB - 20);
+        ctx.fillStyle = p.minus; ctx.fillText('−', shortX + (plusRight ? -10 : 10), yB - 20);
+    } else {
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(xBat - 8, yB); ctx.lineTo(xBat + 8, yB); ctx.stroke();
+    }
+    // Potensiometr belgisi (o'zgaruvchan manba)
+    ctx.strokeStyle = p.muted;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(xBat - 18, yB + 22); ctx.lineTo(xBat + 18, yB - 22); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xBat + 18, yB - 22); ctx.lineTo(xBat + 10, yB - 20); ctx.moveTo(xBat + 18, yB - 22); ctx.lineTo(xBat + 16, yB - 14); ctx.stroke();
+    // Raqamli displeylar
+    const bx = 90, by = 512, bw = 300, bh = 70;
+    ctx.fillStyle = p.lcd;
+    ctx.strokeStyle = p.panelEdge;
+    ctx.lineWidth = 2;
+    rr(bx, by, bw, bh, 10);
+    ctx.fill(); ctx.stroke();
+    const I = measuredI();
+    ctx.fillStyle = p.lcdText;
+    ctx.font = 'bold 22px "Courier New", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('I = ' + (I === null ? (state.running ? '…' : '--') : I.toFixed(1)) + ' nA', bx + 16, by + 30);
+    ctx.fillStyle = '#fda4af';
+    ctx.fillText('U = ' + (state.U > 0 ? '+' : '') + state.U.toFixed(2) + ' V', bx + 16, by + 58);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText('ampermetr', bx + bw - 12, by + 26);
+    ctx.fillText('voltmetr', bx + bw - 12, by + 54);
+}
+
+function panel(p, x, y, w, h) {
+    ctx.fillStyle = p.panel;
+    ctx.strokeStyle = p.panelEdge;
+    ctx.lineWidth = 1.5;
+    rr(x, y, w, h, 12);
+    ctx.fill(); ctx.stroke();
+}
+
+function drawReadout(p) {
+    const x = 548, y = 12, w = 240, h = 196;
+    panel(p, x, y, w, h);
+    const ok = ekMax() > 0;
+    const nu = C_L / (state.lam * 1e-9);
+    const lines = [
+        ['ν', (nu / 1e14).toFixed(2) + '·10¹⁴ Hz'],
+        ['hν', f2(hnu()) + ' eV'],
+        ['A', A() + ' eV (' + metals[state.metal].sym + ')'],
+        ['Eₖ max', ok ? f2(ekMax()) + ' eV' : '0 (yo\'q)'],
+        ['λkr', Math.round(lamKr()) + ' nm'],
+        ['Uₜ', ok ? f2(ekMax()) + ' V' : '—']
+    ];
+    ctx.fillStyle = p.muted;
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Eynshteyn: hν = A + Eₖ max', x + 14, y + 22);
+    lines.forEach((ln, i) => {
+        const yy = y + 50 + i * 25;
+        ctx.fillStyle = p.ink;
+        ctx.font = 'italic bold 16px Georgia, serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(ln[0] + ' =', x + 14, yy);
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(ln[1], x + w - 14, yy);
+    });
+}
+
+const SERIES_COL_L = ['#be123c', '#2563eb', '#059669', '#7c3aed'];
+const SERIES_COL_D = ['#fda4af', '#93c5fd', '#6ee7b7', '#c4b5fd'];
+
+function drawIU(p) {
+    const x = 548, y = 218, w = 240, h = 250;
+    panel(p, x, y, w, h);
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Volt-amper xarakteristikasi I(U)', x + 12, y + 20);
+    const gx = x + 44, gy = y + 34, gw = w - 58, gh = h - 106;
+    let Imax = 5;
+    state.series.forEach(s => s.pts.forEach(v => { if (v > Imax) Imax = v; }));
+    Imax = Math.ceil(Imax * 1.1 / 5) * 5;
+    const X = U => gx + (U + 3) / 6 * gw;
+    const Y = I => gy + gh - I / Imax * gh;
+    // To'r va o'qlar
+    ctx.strokeStyle = p.grid;
+    ctx.lineWidth = 1;
+    for (let u = -3; u <= 3; u++) { ctx.beginPath(); ctx.moveTo(X(u), gy); ctx.lineTo(X(u), gy + gh); ctx.stroke(); }
+    for (let i = 0; i <= 4; i++) { const yy = gy + gh * i / 4; ctx.beginPath(); ctx.moveTo(gx, yy); ctx.lineTo(gx + gw, yy); ctx.stroke(); }
+    ctx.strokeStyle = p.muted;
+    ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(0), gy); ctx.lineTo(X(0), gy + gh); ctx.stroke();
+    ctx.fillStyle = p.muted;
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'center';
+    for (let u = -3; u <= 3; u++) ctx.fillText(String(u), X(u), gy + gh + 16);
+    ctx.textAlign = 'right';
+    ctx.fillText('U, V', gx + gw - 2, gy + gh - 6);
+    ctx.textAlign = 'right';
+    ctx.fillText(String(Imax), gx - 5, gy + 5);
+    ctx.fillText(String(Imax / 2), gx - 5, gy + gh / 2 + 5);
+    ctx.fillText('0', gx - 5, gy + gh + 5);
+    ctx.save();
+    ctx.translate(x + 13, gy + gh / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillText('I, nA', 0, 0);
+    ctx.restore();
+    // Nazariy −Uₜ
+    if (ekMax() > 0 && ekMax() <= 3) {
+        const xt = X(-ekMax());
+        ctx.strokeStyle = p.theory;
+        ctx.setLineDash([5, 4]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(xt, gy); ctx.lineTo(xt, gy + gh); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = p.theory;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = xt < gx + 40 ? 'left' : 'right';
+        ctx.fillText('−Uₜ', xt + (xt < gx + 40 ? 4 : -4), gy + 14);
+    }
+    // Joriy U
+    ctx.strokeStyle = p.muted;
+    ctx.globalAlpha = 0.6;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(state.U), gy); ctx.lineTo(X(state.U), gy + gh); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Seriyalar
+    const cols = (window.isDarkTheme && window.isDarkTheme()) ? SERIES_COL_D : SERIES_COL_L;
+    const curKey = seriesKey();
+    state.series.forEach((s, si) => {
+        const pts = [...s.pts.entries()].sort((a, b) => a[0] - b[0]);
+        const col = cols[si % cols.length];
+        const isCur = s.key === curKey;
+        ctx.globalAlpha = isCur ? 1 : 0.55;
+        ctx.strokeStyle = col;
+        ctx.fillStyle = col;
+        ctx.lineWidth = isCur ? 2.2 : 1.5;
+        if (pts.length > 1) {
+            ctx.beginPath();
+            pts.forEach((q, i) => i ? ctx.lineTo(X(q[0]), Y(q[1])) : ctx.moveTo(X(q[0]), Y(q[1])));
+            ctx.stroke();
+        }
+        if (pts.length < 40) {
+            pts.forEach(q => { ctx.beginPath(); ctx.arc(X(q[0]), Y(q[1]), isCur ? 3.2 : 2.4, 0, Math.PI * 2); ctx.fill(); });
+        }
+        ctx.globalAlpha = 1;
+    });
+    // Legenda (oxirgi 2 ta seriya)
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'left';
+    const shown = state.series.slice(-2);
+    shown.forEach((s, i) => {
+        const si = state.series.indexOf(s);
+        const yy = y + h - (shown.length === 1 ? 14 : 30) + i * 17;
+        ctx.fillStyle = cols[si % cols.length];
+        ctx.fillRect(x + 12, yy - 9, 14, 4);
+        ctx.fillStyle = p.ink;
+        ctx.fillText(s.label + (s.key === curKey ? '  (joriy)' : ''), x + 32, yy - 3);
+    });
+    if (!state.series.length) {
+        ctx.fillStyle = p.muted;
+        ctx.textAlign = 'left';
+        ctx.fillText('U ni o\'zgartiring yoki «I–U»', x + 12, y + h - 26);
+        ctx.fillText('tugmasini bosing', x + 12, y + h - 10);
+    }
+}
+
+function drawEnergy(p) {
+    const x = 548, y = 478, w = 240, h = 110;
+    panel(p, x, y, w, h);
+    ctx.fillStyle = p.ink;
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Energiya balansi, eV', x + 12, y + 20);
+    const bx = x + 40, bw = w - 56, EM = 7;
+    const S = E => bx + Math.min(E, EM) / EM * bw;
+    const c = waveRGB(state.lam);
+    // hν
+    ctx.fillStyle = rgba(c, 0.95);
+    ctx.fillRect(bx, y + 32, S(hnu()) - bx, 16);
+    ctx.strokeStyle = p.halo === 'rgba(0,0,0,0)' ? 'rgba(255,255,255,0.25)' : 'rgba(15,23,42,0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, y + 32, S(hnu()) - bx, 16);
+    // A + Eₖ
+    ctx.fillStyle = p.barA;
+    ctx.fillRect(bx, y + 54, S(A()) - bx, 16);
+    if (ekMax() > 0) {
+        ctx.fillStyle = p.barE;
+        ctx.fillRect(S(A()), y + 54, S(hnu()) - S(A()), 16);
+    }
+    ctx.fillStyle = p.ink;
+    ctx.font = 'italic bold 14px Georgia, serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('hν', bx - 6, y + 45);
+    ctx.fillText('A', bx - 6, y + 67);
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'center';
+    if (S(A()) - bx > 24) { ctx.fillStyle = '#ffffff'; ctx.fillText('A', (bx + S(A())) / 2, y + 66); }
+    if (ekMax() > 0 && S(hnu()) - S(A()) > 22) { ctx.fillStyle = '#ffffff'; ctx.fillText('Eₖ', (S(A()) + S(hnu())) / 2, y + 66); }
+    // shkala
+    ctx.strokeStyle = p.muted;
+    ctx.fillStyle = p.muted;
+    ctx.font = '13px Arial';
+    for (let e = 0; e <= EM; e++) {
+        ctx.beginPath(); ctx.moveTo(S(e), y + 74); ctx.lineTo(S(e), y + 79); ctx.stroke();
+        ctx.fillText(String(e), S(e), y + 94);
+    }
+}
+
+function draw() {
+    const p = P();
+    const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, p.bg1);
+    bg.addColorStop(1, p.bg2);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    drawCircuit(p);
+    drawTube(p);
+    drawLamp(p);
+    drawField(p);
+    drawPlates(p);
+    drawPhotons(p);
+    drawElectrons(p);
+    drawReadout(p);
+    drawIU(p);
+    drawEnergy(p);
+}
+
+function loop(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    let dt = (timestamp - lastTimestamp) / 1000;
+    lastTimestamp = timestamp;
+    if (dt > 0.05) dt = 0.05;
+
+    if (state.running && dt > 0) {
+        updatePhysics(dt);
+        updateStats();
+    }
+    draw();
+
+    if (state.running) {
+        animationId = requestAnimationFrame(loop);
+    }
+}
+
+function startPhoto() {
+    if (!state.running) {
+        state.running = true;
+        lastTimestamp = null;
+        updateStats();
+        animationId = requestAnimationFrame(loop);
+    }
+}
+
+function pausePhoto() {
+    state.running = false;
+    if (animationId) cancelAnimationFrame(animationId);
+    updateStats();
+    draw();
+}
+
+function resetPhoto() {
+    state.running = false;
+    if (animationId) cancelAnimationFrame(animationId);
+    state.time = 0;
+    state.spawnAcc = 0;
+    clearFlight();
+    state.series = [];
+    state.electronsA = accel();
+    resetWindow();
+    updateStats();
+    draw();
+}
+
+state.electronsA = accel();
+resetPhoto();
+
+// Rejim almashganda kanvasni qayta chizamiz
+window.addEventListener('fizika:theme', function () { if (!state.running) draw(); });
+
+// ===== Umumiy vositalar uchun interfeys (model-tools.js) =====
+window.modelControls = { start: startPhoto, pause: pausePhoto, reset: resetPhoto };
+window.modelIsRunning = function () { return state.running; };
+window.labFields = [
+    { label: 'Metall',        get: function () { return metals[state.metal].name; } },
+    { label: 'A (eV)',        get: function () { return A(); } },
+    { label: 'λ (nm)',        get: function () { return state.lam; } },
+    { label: 'Intensivlik (%)', get: function () { return state.inten; } },
+    { label: 'U (V)',         get: function () { return state.U; } },
+    { label: 'hν (eV)',       get: function () { return +hnu().toFixed(2); } },
+    { label: 'Eₖ max (eV)',   get: function () { return +ekMax().toFixed(2); } },
+    { label: 'Uₜ nazariy (V)', get: function () { return +ekMax().toFixed(2); } },
+    { label: 'I o\'lch. (nA)', get: function () { return labNum('curValue'); } },
+    { label: 'Uₜ o\'lch. (V)', get: function () { const u = measuredUt(); return u === null ? '—' : +u.toFixed(2); } }
+];

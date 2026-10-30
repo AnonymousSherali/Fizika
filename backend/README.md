@@ -49,6 +49,9 @@ Nginx `http://localhost/` da statik saytni, `/api/` va `/admin/` da backendni be
 
 ## Testlar va sifat
 
+Frontend (repozitoriy ildizida): `npm ci && npm run lint` — ESLint; sayt fayllari o'zgarganda kesh versiyasi:
+`npm run version:bump`.
+
 ```bash
 pytest                     # barcha testlar
 pytest --cov               # qamrov (talab: ≥ 75%)
@@ -61,11 +64,13 @@ GitHub Actions har bir push/PR'da shularni PostgreSQL bilan bajaradi (`.github/w
 ```bash
 SITE=http://localhost:8080/ API=http://127.0.0.1:8000/api/v1/ TEACHER=+998901234500 TEACHER_PW=... node e2e/flow.js
 ```
+(`CHROMIUM=/yo'l/chromium` — tizimdagi brauzerni ishlatish uchun, ixtiyoriy.)
 (Playwright kerak: `npm i -D playwright && npx playwright install chromium`.)
 
 **Admin panel → sayt** (admin formalari orqali ma'lumot qo'shib, saytda ko'rinishini tekshiradi; faqat sinov bazasida):
 ```bash
-SITE=http://localhost:8080/ BACKEND=http://127.0.0.1:8000/ ADMIN=admin ADMIN_PW=... TEACHER=+998901234500 TEACHER_PW=... node e2e/admin_to_site.js
+SITE=http://localhost:8080/ BACKEND=http://127.0.0.1:8000/ ADMIN=admin ADMIN_PW=... TEACHER=+998901234500 TEACHER_PW=... \
+CLEAR_CACHE_CMD="python manage.py shell -c 'from django.core.cache import cache; cache.clear()'" node e2e/admin_to_site.js
 ```
 
 ## Tuzilma

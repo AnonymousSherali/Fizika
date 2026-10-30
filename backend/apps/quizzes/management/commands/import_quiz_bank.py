@@ -1,5 +1,5 @@
 """
-testlar/testlar_online.html dagi savollar banki (170 savol + 48 masala) ni bazaga ko'chiradi (FT-6.3).
+testlar/bank.js dagi savollar banki (170 savol + 48 masala) ni bazaga ko'chiradi (FT-6.3).
 Ruscha matnlar i18n-ru.js lug'atidan olinadi.
 Qayta ishga tushirish xavfsiz: har bir savol matnidan olingan kalit bo'yicha yangilanadi.
 
@@ -40,8 +40,8 @@ def js_array_to_python(js: str):
 def grab(text: str, name: str):
     start = text.find(f"const {name} = [")
     if start < 0:
-        raise CommandError(f"testlar_online.html da «{name}» topilmadi")
-    end = text.index("\n        ];", start)
+        raise CommandError(f"testlar/bank.js da «{name}» topilmadi")
+    end = text.index("\n];", start)
     return js_array_to_python(text[start + len(f"const {name} = "):end] + "\n]")
 
 
@@ -58,7 +58,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         root = Path(opts["frontend"])
-        page = root / "testlar" / "testlar_online.html"
+        page = root / "testlar" / "bank.js"
         if not page.exists():
             raise CommandError(f"{page} topilmadi")
         text = page.read_text(encoding="utf-8")
