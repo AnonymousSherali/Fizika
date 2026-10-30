@@ -771,7 +771,8 @@
         // O'qituvchi kirgan bo'lsa — kutilgan natijalar serverdan (o'qituvchi rejimi rol bo'yicha)
         if (api.isLoggedIn() && api.isTeacher()) {
             api.get('simulations/' + slug + '/expected/').then(function (rows) {
-                showTeacherBox(rows.map(function (r) { return r.text; }));
+                // Serverdagi matn admin paneldan keladi — faqat xavfsiz teglar (<b>, <sub> ...) qoldiriladi
+                showTeacherBox(rows.map(function (r) { return safeInline(r.text); }));
             }, function () { showTeacherBox(TEACHER[currentFile()]); });
         }
         if (!assignmentId) api.available().then(function (ok) { if (ok) syncTasks(api, slug); });
@@ -949,7 +950,11 @@
     function syncTasks(api, slug) {
         var ol = document.querySelector('.task-card ol');
         if (!ol) return;
-        var plain = function (t) { var d = document.createElement('div'); d.innerHTML = t; return d.textContent.replace(/\s+/g, ' ').trim(); };
+        // DOMParser hujjati «inert»: <img onerror>, <script> bajarilmaydi (createElement+innerHTML esa rasmni yuklaydi)
+        var plain = function (t) {
+            var d = new DOMParser().parseFromString(String(t == null ? '' : t), 'text/html');
+            return (d.body.textContent || '').replace(/\s+/g, ' ').trim();
+        };
         var tr = function (t) { return window.fizikaTr ? window.fizikaTr(t) : t; };
         var ru = (window.fizikaLang && window.fizikaLang()) === 'ru';
         Promise.all([api.get('simulations/' + slug + '/', { lang: 'uz' }), ru ? api.get('simulations/' + slug + '/') : null]).then(function (res) {

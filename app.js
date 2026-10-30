@@ -13,6 +13,11 @@
         });
     }
 
+    // Bildirishnoma havolasi faqat sayt ichidagi nisbiy yo'l bo'lishi mumkin (javascript:, //boshqa-sayt — yo'q)
+    function safeUrl(u) {
+        return typeof u === 'string' && /^[A-Za-z0-9_][A-Za-z0-9_\-./?=&#%]*$/.test(u) && u.indexOf('//') < 0 && !/^[a-z]+:/i.test(u);
+    }
+
     function date(iso, withTime) {
         if (!iso) return '—';
         var d = new Date(iso);
@@ -101,7 +106,7 @@
                     '<button type="button" class="linkish" id="bellAll">Hammasini o\'qilgan qilish</button></div>' +
                     (r.results.length ? r.results.map(function (x) {
                         return '<a class="bell-item' + (x.is_read ? '' : ' unread') + '" data-id="' + x.id + '" href="' +
-                            (x.url ? ROOT + esc(x.url) : '#') + '"><b>' + esc(x.title) + '</b>' +
+                            (safeUrl(x.url) ? ROOT + esc(x.url) : '#') + '"><b>' + esc(x.title) + '</b>' +
                             (x.body ? '<span>' + esc(x.body) + '</span>' : '') + '<small>' + date(x.created_at) + '</small></a>';
                     }).join('') : '<p class="muted" style="padding:12px">Bildirishnoma yo\'q</p>');
                 panel.hidden = false;

@@ -11,6 +11,7 @@ from apps.labs.analysis import safe_eval
 
 from .answers import is_close, parse_answer
 from .models import Attempt, AttemptItem, Problem, Question, Status, Topic
+from .validators import problem_is_usable, question_is_usable
 
 
 def grade_from_percent(pct: float) -> int:
@@ -53,11 +54,14 @@ def select_items(topic_keys, count, problems_count, author=None, seed=None):
         raise ValueError("Mavzu tanlanmagan")
     tids = [t.id for t in topics]
     qmap = OrderedDict((t.id, []) for t in topics)
+    # Admin panelda qo'lda buzilgan yozuv (variantlar soni noto'g'ri, formula xato) testga tushmaydi
     for q in _pool(Question, tids, author):
-        qmap[q.topic_id].append(q)
+        if question_is_usable(q):
+            qmap[q.topic_id].append(q)
     pmap = OrderedDict((t.id, []) for t in topics)
     for p in _pool(Problem, tids, author):
-        pmap[p.topic_id].append(p)
+        if problem_is_usable(p):
+            pmap[p.topic_id].append(p)
     questions = _round_robin(qmap, count, rng) if count != 0 else []
     problems = _round_robin(pmap, problems_count, rng) if problems_count else []
     return questions, problems, rng

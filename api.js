@@ -141,7 +141,8 @@
         if (health && Date.now() - healthAt < 60000) return health;
         try {
             var c = JSON.parse(sessionStorage.getItem('fizika-api-ok') || 'null');
-            if (c && c.base === base() && Date.now() - c.t < (c.v ? 60000 : 600000)) {
+            // «Server yo'q» natijasi qisqa (30 s) eslab qolinadi: bitta sekin javob sahifalarni uzoq bloklamasin
+            if (c && c.base === base() && Date.now() - c.t < (c.v ? 60000 : 30000)) {
                 healthAt = Date.now();
                 health = Promise.resolve(c.v);
                 return health;
@@ -157,8 +158,10 @@
     }
 
     // ---------- Oflayn navbat (IndexedDB) — FT-4.3 ----------
-    // Navbatdagi har bir yozuv: { key, method, path, body } — key bir xil bo'lsa eskisi almashtiriladi
+    // Navbatdagi har bir yozuv: { key, owner, method, path, body } — key bir xil bo'lsa eskisi almashtiriladi
     // (masalan bitta jurnalning oxirgi holati), shuning uchun server dublikat ko'rmaydi.
+    // owner — yozuv egasi: umumiy kompyuterda A o'quvchining jurnali B nomidan yuborilmasin
+    // (A qayta kirganda yuboriladi).
     var DB_NAME = 'fizika-outbox';
     function db() {
         return new Promise(function (resolve, reject) {
@@ -186,9 +189,13 @@
     function flush() {
         if (flushing || !isLoggedIn()) return Promise.resolve();
         flushing = true;
+        var me = (user() || {}).id;
         return tx('readonly', function (s) { return s.getAll(); }).then(function (items) {
             return (items || []).reduce(function (p, it) {
                 return p.then(function () {
+                    // Egasiz (eski versiyadagi) yozuvni kimga tegishli ekani noma'lum — o'chiriladi
+                    if (!it.owner) return tx('readwrite', function (s) { return s.delete(it.key); });
+                    if (it.owner !== me) return null;   // boshqa foydalanuvchiniki — o'zi kirganda yuboriladi
                     return request(it.method, it.path, it.body).then(function (res) {
                         emit('fizika:synced', { key: it.key, result: res });
                         return tx('readwrite', function (s) { return s.delete(it.key); });
@@ -207,10 +214,13 @@
     /** Avval to'g'ridan-to'g'ri yuboradi; tarmoq yo'q bo'lsa navbatga qo'yadi. */
     function sendOrQueue(key, method, path, body) {
         return request(method, path, body).then(function (res) {
+            // Shu kalit bilan navbatda eski nusxa qolgan bo'lsa — o'chiriladi (aks holda keyingi flush
+            // yangi saqlangan jurnalni eski holati bilan almashtirib yuborardi)
+            tx('readwrite', function (s) { return s.delete(key); }).catch(function () {});
             return { sent: true, result: res };
         }, function (e) {
             if (e.status === 0 || e.status >= 500) {
-                return enqueue({ key: key, method: method, path: path, body: body }).then(function () {
+                return enqueue({ key: key, owner: (user() || {}).id, method: method, path: path, body: body }).then(function () {
                     return { sent: false, queued: true };
                 });
             }

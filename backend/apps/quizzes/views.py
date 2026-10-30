@@ -29,6 +29,7 @@ from .serializers import (
     StartAttemptSerializer,
     TopicSerializer,
 )
+from .validators import problem_is_usable, question_is_usable
 
 
 class TopicListView(APIView):
@@ -97,6 +98,8 @@ class BankView(APIView):
         rng = random.SystemRandom()
         out_p = []
         for p in problems:
+            if not problem_is_usable(p):
+                continue
             values, ans = services.generate_params(p, rng)
             vals = {**(values or {}), "answer": ans if ans is not None else p.answer}
             out_p.append({"id": p.id, "tag": f"{p.topic.title_uz} · Hisoblash", "q": p.text("uz", values),
@@ -106,7 +109,7 @@ class BankView(APIView):
             "topics": [t.title_uz for t in topics],
             "questions": [{"id": q.id, "tag": f"{q.topic.title_uz} · {q.get_level_display()}", "q": q.text_uz,
                            "o": q.option_texts("uz"), "correct": q.correct_index, "ex": q.explanation_uz}
-                          for q in questions],
+                          for q in questions if question_is_usable(q)],
             "problems": out_p,
         })
 

@@ -4,6 +4,7 @@ from apps.simulations.serializers import lang
 
 from .models import Attempt, AttemptItem, Problem, Question, Topic, fmt_num
 from .services import answers_visible
+from .validators import option_errors, param_errors
 
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -42,11 +43,8 @@ class QuestionSerializer(serializers.ModelSerializer):
         return f"{obj.author.last_name} {obj.author.first_name}".strip() if obj.author else None
 
     def validate_options(self, v):
-        if len(v) != 4:
-            raise serializers.ValidationError("Aniq 4 ta variant bo'lishi kerak")
-        texts = [o["uz"].strip().lower() for o in v]
-        if len(set(texts)) != 4:
-            raise serializers.ValidationError("Variantlar takrorlanmasligi kerak")
+        if errors := option_errors(v):
+            raise serializers.ValidationError(errors)
         return v
 
     def validate_correct_index(self, v):
@@ -74,35 +72,16 @@ class ProblemSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Parametrlangan masala: har bir parametr [min, max, qadam], formula hisoblanadi, matnda {nom} bor."""
-        import math
-
-        from apps.labs.analysis import safe_eval
-
         params = data.get("params", getattr(self.instance, "params", None))
         formula = data.get("formula", getattr(self.instance, "formula", ""))
         if not params:
             if data.get("answer", getattr(self.instance, "answer", None)) is None:
                 raise serializers.ValidationError({"answer": ["Javobni kiriting (yoki parametr va formula bering)"]})
             return data
-        if not isinstance(params, dict):
-            raise serializers.ValidationError({"params": ['{"U": [2, 12, 0.5]} ko\'rinishida bo\'lishi kerak']})
-        sample = {}
-        for k, v in params.items():
-            ok = (isinstance(v, list) and len(v) == 3 and all(isinstance(x, int | float) for x in v)
-                  and v[2] > 0 and v[1] >= v[0])
-            if not ok or not k.isidentifier():
-                raise serializers.ValidationError({"params": [f"«{k}»: [min, max, qadam] (qadam > 0, max ≥ min)"]})
-            sample[k] = v[0]
-        if not formula:
-            raise serializers.ValidationError({"formula": ["Parametrli masala uchun javob formulasi kerak"]})
-        try:
-            sample_answer = safe_eval(formula, {**sample, "pi": math.pi})
-        except (ValueError, ZeroDivisionError, SyntaxError) as e:
-            raise serializers.ValidationError({"formula": [f"Formulani hisoblab bo'lmadi: {e}"]}) from e
         text = data.get("text_uz", getattr(self.instance, "text_uz", ""))
-        missing = [k for k in params if "{" + k + "}" not in text]
-        if missing:
-            raise serializers.ValidationError({"text_uz": [f"Matnda {{{missing[0]}}} joyi yo'q"]})
+        errors, sample_answer = param_errors(params, formula, text)
+        if errors:
+            raise serializers.ValidationError(errors)
         if data.get("answer") is None and not getattr(self.instance, "pk", None):
             data["answer"] = sample_answer  # namuna (minimal qiymatlar) — har o'quvchiga baribir qayta hisoblanadi
         return data
