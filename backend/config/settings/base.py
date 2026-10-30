@@ -118,6 +118,8 @@ STORAGES = {
 }
 MEDIA_URL = "/media/"
 MEDIA_ROOT = env.path("MEDIA_ROOT", default=BASE_DIR / "media")
+# true: maxfiy fayllarni nginx beradi (X-Accel-Redirect) — production'da yoqilgan
+MEDIA_X_ACCEL = env.bool("MEDIA_X_ACCEL", default=False)
 
 REDIS_URL = env("REDIS_URL", default="")
 CACHES = {

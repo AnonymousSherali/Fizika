@@ -8,6 +8,8 @@ ADMIN_2FA = env.bool("ADMIN_2FA", default=True)   # production'da standart — y
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # Backend nginx ortida: mijoz IP si X-Forwarded-For ning oxirgi (nginx qo'shgan) qiymati
 REST_FRAMEWORK["NUM_PROXIES"] = env.int("NUM_PROXIES", default=1)
+# Maxfiy fayllarni nginx beradi (X-Accel-Redirect, deploy/snippets/fizika-common.conf)
+MEDIA_X_ACCEL = env.bool("MEDIA_X_ACCEL", default=True)
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

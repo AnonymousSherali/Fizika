@@ -7,8 +7,8 @@
     <meta name="description" content="Fizika 10–11 platformasiga kirish va ro'yxatdan o'tish">
     <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Kirish — Fizika 10–11</title>
-    <link rel="stylesheet" href="styles.css?v=20261101d">
-    <link rel="stylesheet" href="app.css?v=20261101d">
+    <link rel="stylesheet" href="styles.css?v=20261101e">
+    <link rel="stylesheet" href="app.css?v=20261101e">
     <style>
         .auth { max-width: 480px; margin: var(--sp-7) auto; }
         .auth .panel { padding: var(--sp-6); }
@@ -151,9 +151,9 @@
         </div>
     </main>
 
-    <script src="theme.js?v=20261101d"></script>
-    <script src="api.js?v=20261101d"></script>
-    <script src="app.js?v=20261101d"></script>
+    <script src="theme.js?v=20261101e"></script>
+    <script src="api.js?v=20261101e"></script>
+    <script src="app.js?v=20261101e"></script>
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
@@ -170,7 +170,13 @@
             if (first) first.focus();
         }
         function done(user) {
-            if (next && next.charAt(0) === '/' && next.indexOf('//') !== 0) { location.href = next; return; }
+            // Faqat shu saytning o'z sahifasiga qaytariladi (/\evil.com, /%09/evil.com kabi hiylalar ham rad etiladi)
+            if (next) {
+                try {
+                    var u = new URL(next, location.href);
+                    if (u.origin === location.origin) { location.href = u.pathname + u.search + u.hash; return; }
+                } catch (e) { /* noto'g'ri manzil — e'tiborsiz */ }
+            }
             location.href = FA.root + (api.isTeacher() ? 'oqituvchi/index.html' : 'oquvchi/index.html');
         }
         function fail(e) { FA.msg('msg', 'err', FA.errText(e)); }
@@ -289,8 +295,11 @@
         }
         function loadSchools() {
             loadDistricts();
-            api.get('schools/?page_size=100&region=' + $('tRegion').value).then(function (r) {
-                $('tSchool').innerHTML = '<option value="">— ro\'yxatdan tanlang —</option>' + r.results.map(function (s) {
+            var region = $('tRegion').value;
+            api.getAll('schools/?region=' + region).then(function (list) {
+                // Viloyat tez almashtirilsa — eski so'rov javobi boshqa viloyat maktablarini ko'rsatmasin
+                if (region !== $('tRegion').value) return;
+                $('tSchool').innerHTML = '<option value="">— ro\'yxatdan tanlang —</option>' + list.map(function (s) {
                     return '<option value="' + s.id + '">' + FA.esc(s.name + ' (' + s.district + ')') + '</option>';
                 }).join('');
                 $('newSchoolRow').hidden = false;

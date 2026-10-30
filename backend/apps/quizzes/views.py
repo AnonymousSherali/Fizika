@@ -88,6 +88,7 @@ class BankView(APIView):
 
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(responses={200: dict})
     def get(self, request):
         import random
 

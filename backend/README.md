@@ -142,6 +142,15 @@ O'chirish (tavsiya etilmaydi): `.env` da `ADMIN_2FA=false`.
 `UNFOLD`, bosh sahifa `apps/core/admin_ui.py` + `templates/admin/index.html`. O'zbekcha matnlar `locale/uz/LC_MESSAGES/django.po`;
 o'zgartirgach `python scripts/compile_po.py` (gettext o'rnatilmagan bo'lsa ham ishlaydi).
 
+**HTTPS (majburiy).** `deploy/nginx.conf` — faqat 80-port (sinov uchun). Production'da `deploy/nginx-ssl.conf`:
+`site.uz` ni domeningizga almashtiring, Let's Encrypt sertifikatini oling (certbot, webroot `/var/www/certbot`),
+`docker-compose.yml` dagi nginx konfiguratsiyasini shu faylga almashtirib, `443:443` portini va
+`/etc/letsencrypt` papkasini ulang. HTTPS ishlamaguncha `.env` da `SECURE_SSL_REDIRECT=false` qoldiring
+(aks holda API so'rovlari mavjud bo'lmagan https manzilga yo'naltiriladi).
+
+**Proksi va fayllar.** `NUM_PROXIES=1` (nginx ortida; mijoz IP si soxtalashtirilmaydi),
+`MEDIA_X_ACCEL=true` (o'quvchi ishlari va ishlanmalar faqat ruxsat bilan, nginx orqali beriladi).
+
 **Xatolar monitoringi:** `.env` da `SENTRY_DSN=...` — server xatolari Sentry'ga yuboriladi (shaxsiy ma'lumotlarsiz).
 
 **Zaxira nusxa (har kecha):**
@@ -165,5 +174,10 @@ Qo'llanmalar: [`hujjatlar/qollanma_oqituvchi.md`](../hujjatlar/qollanma_oqituvch
 - **Bolalar ma'lumotlari:** o'quvchidan faqat ism, familiya va login olinadi. Production server **O'zbekistonda**
   bo'lishi shart (O'RQ-547, TZ 11.1).
 - **Frontend backendsiz ham ishlaydi:** API ishlamasa sayt hozirgidek (oflayn) ishlayveradi.
+- **Mashq va nazorat testi bitta bankdan.** Mashq sahifasi (`testlar_online.html`) internetsiz ishlashi uchun
+  barcha 170 savolni to'g'ri javoblari bilan o'z ichida saqlaydi — demak, o'quvchi umumiy bankdagi savollarning
+  javobini oldindan ko'rishi mumkin. Nazorat testida variantlar tartibi aralashtiriladi va vaqt cheklanadi, lekin
+  jiddiy nazorat uchun o'qituvchi **o'z savollarini** («Savollarim») ishlatishi tavsiya etiladi — qoralama
+  holidagi bu savollar faqat uning topshiriqlarida ishlatiladi va mashq sahifasida chiqmaydi. Shu sababli `?oqituvchi=1` dagi kutilgan natijalar ham maxfiy emas.
 - Modellar o'zgarsa: `python manage.py import_simulations` qayta ishga tushiriladi — jurnal ustunlari
   o'zgargan bo'lsa yangi sxema versiyasi yaratiladi, eski jurnallar eski versiyada qoladi.

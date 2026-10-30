@@ -23,7 +23,7 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | Docker, docker-compose, Nginx | ✅ | `Dockerfile`, `docker-compose.yml`, `deploy/nginx.conf` |
 | CI: ruff, migratsiya tekshiruvi, pytest + qamrov ≥ 75%, pip-audit | ✅ | `.github/workflows/backend.yml` |
 | Sentry | ✅ | `SENTRY_DSN` bo'lsa yoqiladi (shaxsiy ma'lumotlarsiz) |
-| CD (teg → production deploy) | ⬜ | 5-bosqich |
+| CD (teg → production deploy) | ⬜ | server tanlangach (5-bosqich jadvaliga qarang) |
 
 ## 1-bosqich — MVP ✅
 ### Autentifikatsiya va profil (accounts)
@@ -32,13 +32,13 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-1.1 O'qituvchi ro'yxati, SMS/email kod bilan tasdiqlash | ✅ | Eskiz.uz provayderi tayyor, standart — console |
 | FT-1.2 O'quvchi sinf kodi bilan ro'yxati | ✅ | |
 | FT-1.2 Excel/CSV dan ommaviy o'quvchi yaratish | ✅ | `classrooms/{id}/students/import/` |
-| FT-1.2 Login/parol kartochkalarini PDF chop etish | ⬜ | frontend sahifasi bilan (o'qituvchi paneli) |
+| FT-1.2 Login/parol kartochkalarini PDF chop etish | ✅ | o'qituvchi paneli (F-bosqich) |
 | FT-1.3 Kirish: login / telefon / email + JWT | ✅ | access 15 daq, refresh 30 kun, rotatsiya |
 | FT-1.4 Telegram orqali kirish | ➖ | buyurtmachi qarori |
 | FT-1.5 Parolni tiklash (o'qituvchi — kod, o'quvchi — o'qituvchi) | ✅ | |
 | FT-1.6 Profil: til, mavzu, kirish tarixi (10 ta) | ✅ | avatar — ⬜ (ixtiyoriy) |
 | FT-1.7 Hisobni o'chirish (30 kun) | ✅ | Celery Beat har kecha |
-| FT-1.7 Statistikani anonimlashtirish | ⬜ | test/topshiriq modullari bilan (2-bosqich) |
+| FT-1.7 Statistikani anonimlashtirish | ✅ | 2-bosqichda (test natijalari anonim qoladi) |
 | FT-1.8 10 xatodan keyin 15 daqiqa bloklash | ✅ | + DRF rate-limit |
 | Parolni almashtirish (`must_change_password`) | ✅ | |
 
@@ -58,15 +58,15 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-3.1 Katalog (15 model, uz/ru) | ✅ | `manage.py import_simulations` |
 | FT-3.2 Topshiriq qadamlari, kutilgan natijalar (faqat o'qituvchi) | ✅ | |
 | FT-3.3 Jurnal ustunlari sxemasi, versiyalash | ✅ | |
-| FT-3.4 `GET /simulations/` | ✅ | frontend ulanishi — ⬜ (9-bo'lim) |
+| FT-3.4 `GET /simulations/` | ✅ | bosh sahifa katalogi shu orqali (F-bosqich) |
 
 ### Laboratoriya jurnali (labs)
 | Band | Holat | Izoh |
 |---|---|---|
 | FT-4.1 Serverga saqlash | ✅ | |
-| FT-4.2 Avtomatik saqlash (2 s) | ⬜ | frontend `api.js` (9-bo'lim) |
-| FT-4.3 Oflayn navbat, `client_id` bilan dublikatsiz | 🟡 | server tomoni ✅, IndexedDB navbati — frontend |
-| FT-4.4 Tarix, CSV eksport | ✅ | PDF eksport — ⬜ (3-bosqich, hisobotlar bilan) |
+| FT-4.2 Avtomatik saqlash (2 s) | ✅ | F-bosqichda |
+| FT-4.3 Oflayn navbat, `client_id` bilan dublikatsiz | ✅ | IndexedDB navbati egasiga bog'langan |
+| FT-4.4 Tarix, CSV eksport | ✅ | PDF — model sahifasidagi «Hisobot (PDF)» (brauzer) |
 | FT-4.5 Serverda grafik tahlili (k, b, R², hosila natija) | ✅ | xavfsiz formula hisoblagich |
 | FT-4.6 Nazariy qiymat bilan solishtirish (xatolik %) | ✅ | |
 | O'qituvchi o'z o'quvchilarining jurnalini o'qiydi | ✅ | |
@@ -96,13 +96,13 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-5.7 Avtomatik dastlabki baho (qatorlar, R² ≥ 0,98, xatolik ≤ 5%, xulosa) | ✅ | |
 | O'qituvchi uchun sinf ro'yxati bo'yicha holat (topshirmaganlar ham) | ✅ | `assignments/{id}/submissions/` |
 | Test topshirig'i avtomatik baholanadi (eng yaxshi urinish, kechikish jarimasi) | ✅ | o'qituvchi bahoni o'zgartira oladi |
-| FT-5.8 Muddat eslatmasi | ⬜ | 3-bosqich (bildirishnomalar) |
+| FT-5.8 Muddat eslatmasi | ✅ | 3-bosqichda (Celery Beat) |
 
 ### Testlar (quizzes)
 | Band | Holat | Izoh |
 |---|---|---|
 | FT-6.1 Savollar banki (uz/ru, mavzu, daraja, qiyinlik, holat, muallif) | ✅ | ishlatilgan savol o'chirilmaydi — arxivlanadi |
-| FT-6.2 Hisoblash masalalari | ✅ | parametrlangan — ⬜ 4-bosqich |
+| FT-6.2 Hisoblash masalalari | ✅ | parametrlangan — 4-bosqichda, o'qituvchi formasi — 2-qadamda |
 | FT-6.3 170 savol + 48 masala import; Excel import | ✅ | `manage.py import_quiz_bank`, `quiz/questions/import/` |
 | FT-6.4 Serverda tekshiriladigan sessiya, javoblar mijozga yuborilmaydi, vaqt nazorati | ✅ | vaqt tugasa avtomatik yakunlanadi |
 | FT-6.5 Javob tekshiruvi frontend bilan bir xil (46 ta umumiy holat, JS'dan olingan) | ✅ | `tests/test_answers.py` |
@@ -139,7 +139,7 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-7.5 `dars_ishlanmalar/index.html` API bilan (yangi ishlanmalar qo'shiladi, statik zaxira) | ✅ | |
 | O'qituvchi panelida «Ishlanmalarim» (yuklash, holat, moderator izohi) | ✅ | |
 | FT-7.6 Tarjimalar bazada, admin panelda tahrirlanadi, `GET /i18n/ru.js` | ✅ | `import_i18n` / `export_i18n` |
-| FT-6.2 Parametrlangan masalalar (har o'quvchiga boshqa sonlar, javob formuladan) | ✅ | admin/API orqali; paneldagi forma — ⬜ |
+| FT-6.2 Parametrlangan masalalar (har o'quvchiga boshqa sonlar, javob formuladan) | ✅ | admin/API va o'qituvchi panelidagi forma (namunani ko'rish bilan) |
 | FT-11.1 Audit: kirish, parol, hisob o'chirish, rol o'zgarishi, baho (oldin/keyin), qaytarish, o'chirishlar, moderatsiya | ✅ | |
 | FT-11.2 Kim, qachon, IP, amal, obyekt, oldingi/yangi qiymat | ✅ | |
 | FT-11.3 O'zgarmas (tahrir/o'chirish taqiqlangan), 1 yil saqlanadi | ✅ | haftalik tozalash (Celery Beat) |
@@ -164,6 +164,26 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | CD (teg → production deploy) | ⬜ | server tanlangach |
 | ClamAV (yuklangan fayllarni antivirus tekshiruvi) | ⬜ | ixtiyoriy |
 | Production (O'zbekistondagi server, TZ 11.1) | ⬜ | buyurtmachi serveri kerak |
+
+## Ishga tushirish oldidan ko'rib chiqish (mustaqil kod tekshiruvi) ✅
+| Band | Holat | Izoh |
+|---|---|---|
+| XSS: admin paneldagi model qadami/kutilgan natija sahifada bajarilardi | ✅ | DOMParser + safeInline |
+| Buzilgan savol/masala (admin) mashq/nazorat testini 500 qilardi | ✅ | `Question/Problem.clean()`, yaroqsiz yozuv o'tkaziladi |
+| Ruxsatlar: yordamchi o'qituvchi boshqa sinf o'quvchilarini ko'rardi/baholardi; asosiy o'qituvchini chiqarardi | ✅ | |
+| X-Forwarded-For soxtalashtirib cheklovlarni chetlab o'tish; telefonning turli yozilishi bilan bloklashni chetlab o'tish | ✅ | `NUM_PROXIES`, hisob bo'yicha bloklash, SMS cheklovi, 6 belgili sinf kodi |
+| O'qituvchi hisobi o'chirilsa o'quvchilar baholari yo'qolardi | ✅ | `SET_NULL` |
+| Kech qayta urinish jarimasi, muddatdan keyin davom etgan test | ✅ | |
+| Yuklangan fayllar ochiq edi | ✅ | maxfiy papka + X-Accel-Redirect |
+| nginx: admin CSS, `/api/v1/i18n/ru.js`, yuklangan fayllar 404 bo'lardi | ✅ | `^~`, haqiqiy nginx bilan sinaldi; HTTPS varianti `deploy/nginx-ssl.conf` |
+| Docker: fayl yuklash va celery beat ruxsat xatosi; zaxira nusxa media'ni olmasdi | ✅ | |
+| Kutubxonalardagi ma'lum zaifliklar (Django 5.1, DRF, simplejwt, Pillow, pytest) | ✅ | Django 5.2 LTS ga yangilandi, pip-audit CI'da majburiy |
+| Oflayn navbat boshqa o'quvchi nomidan yuborilardi; eski nusxa yangisini almashtirardi | ✅ | |
+| Nazorat testida savol o'tkazib yuborilishi, ruscha rejimda avto-yakunlash, ochiq yo'naltirish (next=) | ✅ | |
+| Excel/CSV formula in'ektsiyasi | ✅ | |
+| Kesh versiyasi qo'lda — `tools/bump_version.py` + CI tekshiruvi | ✅ | |
+| Mashq banki to'g'ri javoblar bilan ochiq; nazorat testi o'sha banklardan | 🟡 | buyurtmachi qarori kerak (README → «Muhim kelishuvlar») |
+| `?oqituvchi=1` bilan kutilgan natijalar hammaga ochiq | 🟡 | buyurtmachi qarori kerak |
 
 ## F-bosqich — Frontendni ulash (TZ 9) ✅
 Yondashuv: **Django template ishlatilmaydi.** Mavjud statik sayt o'zgarmaydi; `api.js` (oddiy `fetch`) qo'shildi,

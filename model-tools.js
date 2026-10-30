@@ -720,9 +720,14 @@
         if (on) showTeacherBox(TEACHER[currentFile()]);
     }
 
-    function showTeacherBox(list) {
+    function showTeacherBox(list, replace) {
         var card = document.querySelector('.task-card');
-        if (!list || !list.length || !card || document.querySelector('.teacher-box')) return;
+        var existing = document.querySelector('.teacher-box');
+        if (existing && replace && list && list.length) {
+            existing.querySelector('ul').innerHTML = list.map(function (t) { return '<li>' + t + '</li>'; }).join('');
+            return;
+        }
+        if (!list || !list.length || !card || existing) return;
         var box = document.createElement('div');
         box.className = 'teacher-box';
         box.innerHTML = '<div class="teacher-box__head"><strong>👩‍🏫 O\'qituvchi uchun: kutilgan natijalar</strong>' +
@@ -772,7 +777,8 @@
         if (api.isLoggedIn() && api.isTeacher()) {
             api.get('simulations/' + slug + '/expected/').then(function (rows) {
                 // Serverdagi matn admin paneldan keladi — faqat xavfsiz teglar (<b>, <sub> ...) qoldiriladi
-                showTeacherBox(rows.map(function (r) { return safeInline(r.text); }));
+                // Server ro'yxati bo'sh bo'lsa — sahifadagi zaxira ro'yxat; mavjud blok (?oqituvchi=1) yangilanadi
+                showTeacherBox(rows.length ? rows.map(function (r) { return safeInline(r.text); }) : TEACHER[currentFile()], true);
             }, function () { showTeacherBox(TEACHER[currentFile()]); });
         }
         if (!assignmentId) api.available().then(function (ok) { if (ok) syncTasks(api, slug); });

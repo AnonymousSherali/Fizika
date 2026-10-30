@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../img/icons/icon-192.png" type="image/png">
     <title>O'qituvchi paneli — Fizika 10–11</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101d">
-    <link rel="stylesheet" href="../app.css?v=20261101d">
+    <link rel="stylesheet" href="../styles.css?v=20261101e">
+    <link rel="stylesheet" href="../app.css?v=20261101e">
     <style>
         .cls-card { cursor: pointer; }
         .cls-card:hover { border-color: var(--a-blue); }
@@ -48,9 +48,9 @@
     </main>
     <div class="print-area" id="printArea"></div>
 
-    <script src="../theme.js?v=20261101d"></script>
-    <script src="../api.js?v=20261101d"></script>
-    <script src="../app.js?v=20261101d"></script>
+    <script src="../theme.js?v=20261101e"></script>
+    <script src="../api.js?v=20261101e"></script>
+    <script src="../app.js?v=20261101e"></script>
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); }, E = FA.esc;
@@ -162,7 +162,7 @@
                                     '<button class="btn-a ghost small" data-remove="' + s.id + '" aria-label="Sinfdan chiqarish">✕</button></td></tr>';
                             }).join('') + '</tbody></table></div>' : '<p class="muted">Hali o\'quvchi yo\'q.</p>') + '</div>';
 
-                    var reload = function () { classroom(id); };
+                    var reload = function () { classroom(id, tok); };   // tok: boshqa bo'limga o'tilgan bo'lsa chizilmaydi
                     var code = function (days) {
                         api.post('classrooms/' + id + '/join-code/', { expires_days: days }).then(reload, err);
                     };
@@ -195,7 +195,11 @@
                             req = api.post('classrooms/' + id + '/students/import/', { students: rows });
                         }
                         // Ro'yxat yangilanadi, keyin kartochkalar ko'rsatiladi (parollar faqat shu yerda)
-                        req.then(function (r) { return classroom(id).then(function () { showCredentials(c, r.created); }); }, err);
+                        // Parollar faqat shu javobda — ro'yxatni yangilash muvaffaqiyatsiz bo'lsa ham albatta ko'rsatiladi
+                        req.then(function (r) {
+                            var show = function () { showCredentials(c, r.created); };
+                            return classroom(id, tok).then(show, show);
+                        }, err);
                     };
                     document.querySelectorAll('[data-reset]').forEach(function (b) {
                         b.onclick = function () {
@@ -223,12 +227,14 @@
         // Login/parol kartochkalari — FT-1.2 (chop etish yoki PDF)
         function showCredentials(c, list) {
             var site = location.origin + FA.root.replace(location.origin, '');
-            $('imResult').innerHTML = '<div class="msg ok">✅ ' + list.length + ' ta hisob tayyor. Parollar faqat hozir ko\'rinadi — chop eting yoki saqlang.</div>' +
+            // Sinf sahifasi qayta chizilmagan bo'lsa ham (tarmoq xatosi) parollar albatta ko'rinsin
+            var box = $('imResult') || (function () { var d = document.createElement('div'); d.id = 'imResult'; view.prepend(d); return d; })();
+            box.innerHTML = '<div class="msg ok">✅ ' + list.length + ' ta hisob tayyor. Parollar faqat hozir ko\'rinadi — chop eting yoki saqlang.</div>' +
                 '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>F.I.Sh.</th><th>Login</th><th>Parol</th></tr></thead><tbody>' +
                 list.map(function (s) {
                     return '<tr><td>' + E(s.last_name + ' ' + s.first_name) + '</td><td><code>' + E(s.username) + '</code></td><td><code>' + E(s.password) + '</code></td></tr>';
                 }).join('') + '</tbody></table></div><div class="actions"><button type="button" class="btn-a" id="printCards">🖨️ Kartochkalarni chop etish</button></div>';
-            $('imResult').scrollIntoView({ behavior: 'smooth' });
+            box.scrollIntoView({ behavior: 'smooth' });
             $('printCards').onclick = function () {
                 $('printArea').innerHTML = '<div class="login-cards">' + list.map(function (s) {
                     return '<div class="login-card">🔬 <b>Fizika 10–11</b> · ' + E(c.name) + '<br>' + E(s.last_name + ' ' + s.first_name) +
@@ -283,7 +289,7 @@
                     '<div class="checks"><label><input type="checkbox" id="aGraph" checked> Grafik talab qilinadi (R² ≥ 0,98)</label><label><input type="checkbox" id="aConcl" checked> Xulosa talab qilinadi</label></div>' +
                     '<div class="field" style="margin-top:12px"><label for="aSteps">O\'z qadamlaringiz (ixtiyoriy, har qatorga bittasi)</label><textarea id="aSteps" placeholder="Bo\'sh qoldirilsa — modelning standart topshirig\'i"></textarea></div></fieldset>' +
                     '<fieldset id="testBox" hidden><legend>Test</legend><div class="field"><label>Mavzular</label><div class="checks">' + topics.map(function (t) {
-                        return '<label><input type="checkbox" name="topic" value="' + t.key + '"> ' + E(t.title) + ' <span class="muted small">(' + t.questions + '+' + t.problems + ')</span></label>';
+                        return '<label><input type="checkbox" name="topic" value="' + E(t.key) + '"> ' + E(t.title) + ' <span class="muted small">(' + t.questions + '+' + t.problems + ')</span></label>';
                     }).join('') + '</div></div><div class="row">' +
                     '<div class="field"><label for="tCount">Test savollari</label><input id="tCount" type="number" min="0" max="200" value="20"></div>' +
                     '<div class="field"><label for="tProb">Hisoblash masalalari</label><input id="tProb" type="number" min="0" max="60" value="2"></div>' +
@@ -405,13 +411,13 @@
                     $('fG').onsubmit = function (e) {
                         e.preventDefault();
                         api.post('submissions/' + id + '/grade/', { grade: +$('gVal').value, comment: $('gCom').value }).then(function () {
-                            ok('Baho qo\'yildi'); submission(id);
+                            ok('Baho qo\'yildi'); submission(id, tok);
                         }, err);
                     };
                     if ($('retBtn')) $('retBtn').onclick = function () {
                         var c = $('gCom').value.trim() || prompt('Nima uchun qaytaryapsiz? (o\'quvchi ko\'radi)');
                         if (!c) return;
-                        api.post('submissions/' + id + '/return/', { comment: c }).then(function () { ok('Qaytarildi'); submission(id); }, err);
+                        api.post('submissions/' + id + '/return/', { comment: c }).then(function () { ok('Qaytarildi'); submission(id, tok); }, err);
                     };
                 });
             });
@@ -526,7 +532,7 @@
                     '<button class="btn-a">Yuklash</button></form>';
                 document.querySelectorAll('[data-del]').forEach(function (b) {
                     b.onclick = function () {
-                        if (confirm('Ishlanma o\'chirilsinmi?')) api.del('lesson-plans/' + b.dataset.del + '/').then(function () { lessonPlans(); }, err);
+                        if (confirm('Ishlanma o\'chirilsinmi?')) api.del('lesson-plans/' + b.dataset.del + '/').then(function () { lessonPlans(null, tok); }, err);
                     };
                 });
                 $('fLP').onsubmit = function (e) {
@@ -539,7 +545,7 @@
                     if ($('lpPdf').files[0]) fd.append('pdf', $('lpPdf').files[0]);
                     if ($('lpDocx').files[0]) fd.append('docx', $('lpDocx').files[0]);
                     var btn = this.querySelector('button'); btn.disabled = true;
-                    api.post('lesson-plans/', fd).then(function () { ok('Yuklandi — moderatsiyaga yuborildi'); lessonPlans(); },
+                    api.post('lesson-plans/', fd).then(function () { ok('Yuklandi — moderatsiyaga yuborildi'); lessonPlans(null, tok); },
                         err).then(function () { btn.disabled = false; });
                 };
             });
@@ -561,7 +567,7 @@
                         }).join('') + '</tbody></table></div>' : '') + '</div>' +
                     '<div class="grid2" style="margin-top:var(--sp-4)"><form class="panel" id="fQ"><h2>➕ Savol qo\'shish</h2>' +
                     '<div class="row"><div class="field"><label for="qTopic">Mavzu</label><select id="qTopic">' + topics.map(function (t) {
-                        return '<option value="' + t.key + '">' + E(t.title) + '</option>'; }).join('') + '</select></div>' +
+                        return '<option value="' + E(t.key) + '">' + E(t.title) + '</option>'; }).join('') + '</select></div>' +
                     '<div class="field"><label for="qLevel">Daraja</label><select id="qLevel"><option value="asosiy">Asosiy (1 ball)</option><option value="chuqur">Chuqur (2 ball)</option></select></div></div>' +
                     '<div class="field"><label for="qText">Savol</label><textarea id="qText" required></textarea></div>' +
                     ['A', 'B', 'C', 'D'].map(function (l, i) {
@@ -571,14 +577,14 @@
                     'To\'g\'ri — A, B, C yoki D. Mavzu — masalan «Kepler», «Linza».</p><div class="field"><input type="file" id="xFile" accept=".xlsx" required></div>' +
                     '<button class="btn-a">Yuklash</button><div id="xRes"></div></form></div>' +
                     problemsHtml(probs, topics, st);
-                bindProblemForm();
+                bindProblemForm(tok);
                 $('fQ').onsubmit = function (e) {
                     e.preventDefault();
                     api.post('quiz/questions/', {
                         topic: $('qTopic').value, level: $('qLevel').value, text_uz: $('qText').value.trim(),
                         options: [0, 1, 2, 3].map(function (i) { return { uz: $('qO' + i).value.trim() }; }),
                         correct_index: +document.querySelector('input[name=qOk]:checked').value, explanation_uz: $('qEx').value.trim()
-                    }).then(function () { ok('Savol qo\'shildi'); questions(); }, err);
+                    }).then(function () { ok('Savol qo\'shildi'); questions(null, tok); }, err);
                 };
                 $('fX').onsubmit = function (e) {
                     e.preventDefault();
@@ -586,7 +592,7 @@
                     api.post('quiz/questions/import/', fd).then(function (r) {
                         ok(r.created + ' ta savol qo\'shildi' + (r.errors.length ? ' · ' + r.errors.length + ' ta xato' : ''));
                         if (r.errors.length) $('xRes').innerHTML = '<ul class="muted small">' + r.errors.map(function (x) { return '<li>' + E(x) + '</li>'; }).join('') + '</ul>';
-                        else questions();
+                        else questions(null, tok);
                     }, function (e2) {
                         err(e2);
                         if (e2.body && e2.body.errors) $('xRes').innerHTML = '<ul class="muted small">' + e2.body.errors.map(function (x) { return '<li>' + E(x) + '</li>'; }).join('') + '</ul>';
@@ -608,7 +614,7 @@
                     }).join('') + '</tbody></table></div>' : '<p class="muted small">Hali masala qo\'shmagansiz.</p>') + '</div>' +
                 '<form class="panel" id="fP" style="margin-top:var(--sp-4)"><h2>➕ Masala qo\'shish</h2>' +
                 '<div class="row"><div class="field"><label for="pTopic">Mavzu</label><select id="pTopic">' + topics.map(function (t) {
-                    return '<option value="' + t.key + '">' + E(t.title) + '</option>'; }).join('') + '</select></div>' +
+                    return '<option value="' + E(t.key) + '">' + E(t.title) + '</option>'; }).join('') + '</select></div>' +
                 '<div class="field"><label for="pKind">Turi</label><select id="pKind"><option value="fixed">Oddiy (bitta javob)</option>' +
                 '<option value="param">Parametrli (har o\'quvchiga boshqa sonlar)</option></select></div></div>' +
                 '<div class="field"><label for="pText">Masala matni</label><textarea id="pText" required placeholder="Masalan: Massasi {m} kg jism {h} m balandlikdan tushdi. Yerga urilish tezligini toping."></textarea>' +
@@ -626,7 +632,7 @@
                 '<div class="row" style="gap:8px"><button type="button" class="btn-a ghost" id="pPreview">👁 Namunani ko\'rish</button><button class="btn-a">Saqlash</button></div></form>';
         }
 
-        function bindProblemForm() {
+        function bindProblemForm(tok) {
             var box = $('pParams');
             function addRow(name, lo, hi, step) {
                 var r = document.createElement('div');
@@ -679,7 +685,7 @@
             };
             $('fP').onsubmit = function (e) {
                 e.preventDefault();
-                api.post('quiz/problems/', payload()).then(function () { ok('Masala qo\'shildi'); questions(); }, err);
+                api.post('quiz/problems/', payload()).then(function () { ok('Masala qo\'shildi'); questions(null, tok); }, err);
             };
         }
     })();

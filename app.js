@@ -70,13 +70,19 @@
         el.innerHTML = links.map(function (l) {
             return '<a href="' + ROOT + l[0] + '"' + (l[0] === active ? ' aria-current="page"' : '') + '>' + l[1] + '</a>';
         }).join('') + (u ? '<button type="button" id="navBell" class="bell" aria-haspopup="true" aria-expanded="false" ' +
-            'title="Bildirishnomalar">🔔<span class="bell__n" id="bellN" hidden></span></button>' +
+            'title="Bildirishnomalar" aria-label="Bildirishnomalar">🔔<span class="bell__n" id="bellN" hidden></span></button>' +
             '<button type="button" id="navLogout">Chiqish</button>' : '');
         if (u) initBell();
         var lo = document.getElementById('navLogout');
         if (lo) lo.onclick = function () { api.logout().then(function () { location.href = ROOT + 'index.html'; }); };
         var mb = document.querySelector('.app-nav .menu-btn');
-        if (mb) mb.onclick = function () { document.querySelector('.app-nav').classList.toggle('open'); };
+        if (mb) {
+            mb.setAttribute('aria-expanded', 'false');
+            mb.onclick = function () {
+                var open = document.querySelector('.app-nav').classList.toggle('open');
+                mb.setAttribute('aria-expanded', String(open));
+            };
+        }
     }
 
     // ---------- Bildirishnomalar (FT-9.1) ----------
@@ -112,7 +118,11 @@
                 panel.hidden = false;
                 btn.setAttribute('aria-expanded', 'true');
                 panel.querySelectorAll('.bell-item').forEach(function (a) {
-                    a.onclick = function () { api.post('notifications/' + a.dataset.id + '/read/').catch(function () {}); };
+                    a.onclick = function (e) {
+                        // Havolasiz bildirishnoma: «#» sahifa marshrutini buzmasin — faqat o'qilgan qilinadi
+                        if (a.getAttribute('href') === '#') { e.preventDefault(); a.classList.remove('unread'); }
+                        api.post('notifications/' + a.dataset.id + '/read/').then(count, function () {});
+                    };
                 });
                 document.getElementById('bellAll').onclick = function () {
                     api.post('notifications/read-all/').then(function () { count(); open(); });
@@ -125,6 +135,9 @@
         };
         document.addEventListener('click', function (e) {
             if (!panel.hidden && !panel.contains(e.target)) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !panel.hidden) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
         });
         count();
         clearInterval(bellTimer);

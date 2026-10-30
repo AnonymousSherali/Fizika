@@ -1,1 +1,0 @@
-    location /static/ { proxy_pass http://django; }   

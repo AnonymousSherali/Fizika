@@ -18,6 +18,9 @@ ENV FRONTEND_DIR=/frontend
 
 RUN DJANGO_SECRET_KEY=build-only-key python manage.py collectstatic --noinput --settings=config.settings.local
 
+# Yuklangan fayllar papkasi ilova foydalanuvchisiga tegishli (named volume shu egalikni oladi)
+RUN mkdir -p /app/media/private && chown -R app:app /app/media
+
 USER app
 EXPOSE 8000
 # gthread: har bir worker bir nechta so'rovni parallel bajaradi (yuklama testi asosida tanlangan)

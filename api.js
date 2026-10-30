@@ -255,6 +255,19 @@
         base: base,
         ApiError: ApiError,
         get: function (p, o) { return request('GET', p, null, o); },
+        /** Sahifalangan ro'yxatning barcha sahifalari (results birlashtiriladi; 100 tadan oshsa ham hech narsa tushib qolmaydi) */
+        getAll: function (p) {
+            var all = [];
+            var sep = p.indexOf('?') > -1 ? '&' : '?';
+            function page(n) {
+                return request('GET', p + sep + 'page_size=100&page=' + n).then(function (r) {
+                    if (Array.isArray(r)) return r;
+                    all = all.concat(r.results || []);
+                    return r.next && n < 50 ? page(n + 1) : all;
+                });
+            }
+            return page(1);
+        },
         post: function (p, b, o) { return request('POST', p, b === undefined ? {} : b, o); },
         patch: function (p, b) { return request('PATCH', p, b); },
         del: function (p) { return request('DELETE', p, null); },
