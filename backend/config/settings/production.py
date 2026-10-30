@@ -1,11 +1,13 @@
 from .base import *  # noqa: F403
-from .base import env
+from .base import REST_FRAMEWORK, env
 
 DEBUG = False
 ADMIN_2FA = env.bool("ADMIN_2FA", default=True)   # production'da standart — yoqilgan
 
 # TZ 11.3: faqat HTTPS, HSTS
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# Backend nginx ortida: mijoz IP si X-Forwarded-For ning oxirgi (nginx qo'shgan) qiymati
+REST_FRAMEWORK["NUM_PROXIES"] = env.int("NUM_PROXIES", default=1)
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

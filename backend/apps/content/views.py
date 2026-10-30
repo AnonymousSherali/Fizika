@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.conf import settings
 from django.db.models import F, Q
@@ -129,8 +130,14 @@ class LessonPlanViewSet(viewsets.ModelViewSet):
             return Response({"error": {"code": "not_found", "message": "Bu formatdagi fayl yo'q"}},
                             status=status.HTTP_404_NOT_FOUND)
         LessonPlan.objects.filter(pk=plan.pk).update(downloads=F("downloads") + 1)
+        if f:
+            # Yuklangan fayl maxfiy papkada: ruxsat get_queryset da tekshirildi (nashr etilgan / o'zining / admin)
+            from apps.core.files import serve_private
+
+            name = re.sub(r"[^\w.\-]+", "_", plan.title_uz)[:80] or "ishlanma"
+            return serve_private(f, f"{name}.{kind}")
         # Statik fayl saytning o'zida turadi (SITE_URL) — backend boshqa domenda bo'lsa ham to'g'ri manzil
-        return HttpResponseRedirect(f.url if f else settings.SITE_URL.rstrip("/") + "/" + static.lstrip("/"))
+        return HttpResponseRedirect(settings.SITE_URL.rstrip("/") + "/" + static.lstrip("/"))
 
     @extend_schema(request={"application/json": {"type": "object", "properties": {
         "action": {"type": "string", "enum": ["publish", "reject"]}, "comment": {"type": "string"}}}},

@@ -245,6 +245,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     def teachers(self, request, pk=None):
         """FT-2.5: sinfga ikkinchi (yordamchi) o'qituvchi qo'shish."""
         classroom = staff_classroom(request.user, pk)
+        _require_main_teacher(request.user, classroom)
         s = AddTeacherSerializer(data=request.data)
         s.is_valid(raise_exception=True)
         teacher = find_user(s.validated_data["login"])
@@ -261,11 +262,21 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["delete"], url_path=r"teachers/(?P<uid>[0-9a-f-]{36})")
     def remove_teacher(self, request, pk=None, uid=None):
         classroom = staff_classroom(request.user, pk)
+        _require_main_teacher(request.user, classroom)
         m = get_object_or_404(ClassroomMember, classroom=classroom, user_id=uid, role__in=STAFF_ROLES)
         if classroom.memberships.filter(role__in=STAFF_ROLES).count() == 1:
             raise ValidationError("Sinfda kamida bitta o'qituvchi qolishi kerak")
         m.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _require_main_teacher(user, classroom):
+    """O'qituvchilar tarkibini faqat asosiy o'qituvchi (yoki admin) o'zgartiradi — yordamchi asosiy
+    o'qituvchini sinfdan chiqarib yubora olmasin."""
+    if user.is_platform_admin:
+        return
+    if not classroom.memberships.filter(user=user, role=ClassroomMember.Role.TEACHER).exists():
+        raise PermissionDenied("Bu amal faqat sinfning asosiy o'qituvchisi uchun")
 
 
 class JoinClassroomView(APIView):

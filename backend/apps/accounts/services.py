@@ -47,6 +47,16 @@ def send_code(user: User, purpose: str) -> dict:
         channel, target = VerificationCode.Channel.EMAIL, user.email
     else:
         raise ValueError("Foydalanuvchida telefon ham, email ham yo'q")
+    # Bitta hisobga soatiga ko'pi bilan 5 ta kod (pullik SMS'ni IP almashtirib «portlatish»ning oldini olish)
+    sent_key = f"code-sent:{user.pk}"
+    if cache.get(sent_key, 0) >= settings.VERIFICATION_CODES_PER_HOUR:
+        from rest_framework.exceptions import Throttled
+
+        raise Throttled(detail="Juda ko'p kod so'raldi. Birozdan keyin qayta urinib ko'ring")
+    try:
+        cache.incr(sent_key)
+    except ValueError:
+        cache.set(sent_key, 1, 3600)
     code = random_code()
     # Oldingi ishlatilmagan kodlar bekor qilinadi
     VerificationCode.objects.filter(user=user, purpose=purpose, used_at__isnull=True).update(
@@ -85,7 +95,13 @@ def check_code(user: User, purpose: str, code: str) -> bool:
 
 # ---------- Kirishni bloklash (FT-1.8) ----------
 def _lock_key(login: str) -> str:
-    return "login-fail:" + hashlib.sha256(login.strip().lower().encode()).hexdigest()
+    # Hisob topilsa — uning id si bo'yicha: «+998 90…», «90-123…», «901234567» bitta hisobning
+    # turli yozilishi alohida hisoblagich bo'lib, bloklashni chetlab o'tishga imkon bermasin
+    from .backends import find_user
+
+    user = find_user(login)
+    ident = f"user:{user.pk}" if user else "login:" + login.strip().lower()
+    return "login-fail:" + hashlib.sha256(ident.encode()).hexdigest()
 
 
 def is_locked(login: str) -> bool:
@@ -105,8 +121,9 @@ def reset_failures(login: str) -> None:
 
 
 def client_ip(request) -> str | None:
-    fwd = request.META.get("HTTP_X_FORWARDED_FOR")
-    return fwd.split(",")[0].strip() if fwd else request.META.get("REMOTE_ADDR")
+    from apps.core.net import client_ip as _ip
+
+    return _ip(request)
 
 
 def blacklist_all_tokens(user: User) -> None:

@@ -29,3 +29,7 @@ class ClassroomAdmin(ModelAdmin):
     search_fields = ["name", "join_code", "school__name"]
     autocomplete_fields = ["school"]
     inlines = [MemberInline]
+
+    def has_delete_permission(self, request, obj=None):
+        # Sinf o'chirilmaydi — arxivlanadi (FT-2.6): o'chirish o'quvchilarning topshiriqlarga kirishini yo'qotardi
+        return False

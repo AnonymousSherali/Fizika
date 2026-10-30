@@ -52,7 +52,9 @@ class StudentCardView(APIView):
         allowed = student.id == u.id or u.is_platform_admin
         if not allowed and u.is_teacher:
             my_classes = ClassroomMember.objects.filter(user=u, role__in=STAFF_ROLES).values("classroom")
-            allowed = ClassroomMember.objects.filter(user=student, classroom__in=my_classes).exists()
+            # Faqat o'quvchi kartasi: hamkasb o'qituvchining «kartasi» ochilmasin
+            allowed = ClassroomMember.objects.filter(user=student, classroom__in=my_classes,
+                                                     role=ClassroomMember.Role.STUDENT).exists()
         if not allowed:
             raise PermissionDenied("Bu o'quvchi sizning sinfingizda emas")
         return Response(services.student_card(student))

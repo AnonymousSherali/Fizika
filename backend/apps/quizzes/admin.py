@@ -7,6 +7,10 @@ from .models import Attempt, AttemptItem, Problem, Question, Status, Topic
 
 @admin.register(Topic)
 class TopicAdmin(ModelAdmin):
+    # Topshiriq sozlamalarida mavzu kaliti matn sifatida saqlanadi — o'zgartirilsa testlar ochilmay qolardi
+    def get_readonly_fields(self, request, obj=None):
+        return ["key"] if obj else []
+
     list_display = ["order", "key", "title_uz", "title_ru", "simulation"]
     list_display_links = ["key"]
     list_editable = ["order"]
@@ -43,6 +47,14 @@ class QuestionAdmin(_BankAdmin):
     list_display = ["id", "topic", "level", "short", "status_label", "stats_total", "accuracy"]
     list_filter = ["status", "topic", "level"]
     readonly_fields = _BankAdmin.readonly_fields + ["choice_0", "choice_1", "choice_2", "choice_3"]
+
+    def get_readonly_fields(self, request, obj=None):
+        # Urinishlarda ishlatilgan savolning variantlari o'zgarmaydi: saqlangan urinishlardagi variantlar
+        # tartibi (option_order) noto'g'ri bo'lib qolardi. Matn va izohni tuzatish mumkin.
+        ro = list(super().get_readonly_fields(request, obj))
+        if obj and AttemptItem.objects.filter(question=obj).exists():
+            ro += ["options", "correct_index"]
+        return ro
 
     @admin.display(description="savol")
     def short(self, obj):

@@ -39,7 +39,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         u = self.request.user
         qs = services.assignments_for_teacher(u) if is_staff(u) else services.assignments_for_student(u)
-        qs = qs.select_related("teacher", "simulation").prefetch_related("classrooms")
+        qs = qs.select_related("teacher", "simulation").prefetch_related("classrooms", "simulation__tasks")
         p = self.request.query_params
         if p.get("type"):
             qs = qs.filter(type=p["type"])
@@ -84,7 +84,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         a = self.get_object()
         if not is_staff(request.user):
             raise PermissionDenied("Faqat o'qituvchi uchun")
-        rows = services.build_roster(a)
+        rows = services.build_roster(a, request.user)
         return Response(RosterRowSerializer(rows, many=True).data)
 
     @extend_schema(responses={(200, "text/csv"): bytes})
@@ -96,7 +96,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Faqat o'qituvchi uchun")
         from apps.analytics.exports import assignment_csv
 
-        return assignment_csv(a, services.build_roster(a))
+        return assignment_csv(a, services.build_roster(a, request.user))
 
     # ----- O'quvchi: laboratoriya ishini topshirish -----
     @extend_schema(request=SubmitLabSerializer, responses={200: SubmissionSerializer})
@@ -134,12 +134,24 @@ class SubmissionViewSet(viewsets.GenericViewSet):
         sub = get_object_or_404(Submission.objects.select_related("assignment", "student", "attempt"), pk=pk)
         if sub.student_id == u.id:
             return sub
-        if is_staff(u) and services.assignments_for_teacher(u).filter(pk=sub.assignment_id).exists():
+        if (is_staff(u) and services.assignments_for_teacher(u).filter(pk=sub.assignment_id).exists()
+                and services.can_staff_see_student(sub.assignment, u, sub.student_id)):
             return sub
         raise Http404
 
     def retrieve(self, request, pk=None):
         return Response(SubmissionSerializer(self._get(pk), context={"request": request}).data)
+
+    @extend_schema(responses={(200, "image/png"): bytes})
+    @action(detail=True, methods=["get"])
+    def image(self, request, pk=None):
+        """Topshirilgan grafik rasmi — faqat o'quvchining o'zi va uning o'qituvchilari (_get)."""
+        sub = self._get(pk)
+        if not sub.image:
+            raise Http404
+        from apps.core.files import serve_private
+
+        return serve_private(sub.image, f"grafik_{sub.id}.png", inline=True)
 
     def _staff_sub(self, pk):
         sub = self._get(pk)

@@ -138,14 +138,18 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    # TZ 11.3, 4-band
+    # TZ 11.3, 4-band. Cheklov IP bo'yicha: maktabda butun sinf bitta IP (NAT) orqali chiqadi — shuning
+    # uchun kirish va o'quvchi ro'yxati yetarlicha keng; parolni taxmin qilishdan hisob bo'yicha bloklash
+    # (10 xato → 15 daqiqa) himoya qiladi, SMS esa hisob bo'yicha alohida cheklanadi.
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "60/min",
-        "user": "120/min",
-        "login": "10/min",
-        "register": "5/hour",
-        "code": "5/hour",
+        "anon": "120/min",
+        "user": "240/min",
+        "login": "60/min",
+        "register": "60/hour",
+        "code": "20/hour",
     },
+    # Ishonchli proksilar soni (nginx → 1). X-Forwarded-For ni mijoz soxtalashtira olmasin (apps.core.net)
+    "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
 
 SIMPLE_JWT = {
@@ -178,6 +182,7 @@ SMS_PROVIDER = env("SMS_PROVIDER", default="console")
 SMS_API_TOKEN = env("SMS_API_TOKEN", default="")
 VERIFICATION_CODE_TTL_MINUTES = 10
 VERIFICATION_CODE_MAX_ATTEMPTS = 5
+VERIFICATION_CODES_PER_HOUR = 5   # bitta hisobga soatiga yuboriladigan kodlar
 
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = env("EMAIL_HOST", default="")

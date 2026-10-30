@@ -36,7 +36,9 @@ class ClassroomSerializer(serializers.ModelSerializer):
         roles = getattr(obj, "_my_role", None)
         if roles is not None:
             return roles
-        m = obj.memberships.filter(user=self.context["request"].user).first()
+        # memberships oldindan yuklangan (prefetch) — har qator uchun alohida so'rov yuborilmaydi
+        uid = self.context["request"].user.id
+        m = next((m for m in obj.memberships.all() if m.user_id == uid), None)
         return m.role if m else None
 
     def get_teachers(self, obj) -> list[dict]:

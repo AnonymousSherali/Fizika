@@ -108,8 +108,13 @@ class TeacherRegisterSerializer(PrivacyMixin):
     def create(self, data):
         school = data.get("school") or School.objects.create(**data["new_school"])
         login = data.get("phone") or data["email"]
+        username = base = login.lstrip("+")[:140]
+        n = 1
+        while User.objects.filter(username__iexact=username).exists():   # eski yozuv bilan to'qnashuv
+            n += 1
+            username = f"{base}_{n}"
         user = User(
-            username=login.lstrip("+"), first_name=data["first_name"], last_name=data["last_name"],
+            username=username, first_name=data["first_name"], last_name=data["last_name"],
             phone=data.get("phone"), email=data.get("email"), role=Role.TEACHER, school=school,
             is_verified=False, privacy_accepted_at=timezone.now(),
         )
@@ -119,10 +124,12 @@ class TeacherRegisterSerializer(PrivacyMixin):
 
 
 class UsernameField(serializers.RegexField):
+    # Kamida bitta harf: faqat raqamdan iborat login o'qituvchining telefon raqami bilan to'qnashardi
+    # (o'qituvchi logini — telefon raqami) va kirishda kim nazarda tutilgani noaniq bo'lardi
     def __init__(self, **kwargs):
         super().__init__(
-            r"^[a-zA-Z0-9._]{3,40}$", max_length=40,
-            error_messages={"invalid": "Login 3–40 belgi: lotin harflari, raqam, nuqta va _"},
+            r"^(?=.*[a-zA-Z])[a-zA-Z0-9._]{3,40}$", max_length=40,
+            error_messages={"invalid": "Login 3–40 belgi: lotin harflari (kamida bitta), raqam, nuqta va _"},
             **kwargs,
         )
 

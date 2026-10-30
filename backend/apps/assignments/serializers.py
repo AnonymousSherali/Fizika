@@ -48,7 +48,8 @@ class AssignmentSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at"]
 
     def get_teacher_name(self, obj) -> str:
-        return f"{obj.teacher.last_name} {obj.teacher.first_name}".strip()
+        t = obj.teacher
+        return f"{t.last_name} {t.first_name}".strip() if t else ""
 
     def get_stats(self, obj) -> dict | None:
         """O'qituvchi uchun qisqa holat: nechta topshirildi / baholandi."""
@@ -83,7 +84,16 @@ class AssignmentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"simulation": ["Laboratoriya ishi uchun model tanlang"]})
         if t == Assignment.Type.TEST and not qc:
             raise serializers.ValidationError({"quiz_config": ["Test sozlamasini kiriting"]})
-        starts, due = data.get("starts_at"), data.get("due_at")
+        if self.partial and data.get("quiz_config") is not None and self.instance is not None:
+            # Qisman o'zgartirish ({"count": 5}) eski sozlama bilan birlashtirib, to'liq tekshiriladi —
+            # aks holda «topics»siz sozlama saqlanib, topshiriqlar ro'yxati butunlay buzilardi
+            merged = {**(self.instance.quiz_config or {}), **self.initial_data.get("quiz_config", {})}
+            full = QuizConfigSerializer(data=merged)
+            if not full.is_valid():
+                raise serializers.ValidationError({"quiz_config": full.errors})
+            data["quiz_config"] = full.validated_data
+        starts = data.get("starts_at", getattr(self.instance, "starts_at", None))
+        due = data.get("due_at", getattr(self.instance, "due_at", None))
         if starts and due and due <= starts:
             raise serializers.ValidationError({"due_at": ["Muddat boshlanish vaqtidan keyin bo'lishi kerak"]})
         if "max_attempts" in data and not 1 <= data["max_attempts"] <= 3:
@@ -144,7 +154,8 @@ class StudentAssignmentSerializer(serializers.ModelSerializer):
         return max(0, obj.max_attempts - (s.attempts_used if s else 0))
 
     def get_teacher_name(self, obj) -> str:
-        return f"{obj.teacher.last_name} {obj.teacher.first_name}".strip()
+        t = obj.teacher
+        return f"{t.last_name} {t.first_name}".strip() if t else ""
 
 
 class SubmitLabSerializer(serializers.Serializer):
@@ -163,6 +174,8 @@ class SubmitLabSerializer(serializers.Serializer):
 class SubmissionSerializer(serializers.ModelSerializer):
     student = serializers.SerializerMethodField()
     attempt_result = serializers.SerializerMethodField()
+    # Rasm maxfiy papkada — to'g'ridan-to'g'ri media havolasi emas, ruxsat tekshiradigan API manzili
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
@@ -173,6 +186,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
     def get_student(self, obj) -> dict:
         return {"id": str(obj.student_id), "username": obj.student.username,
                 "name": f"{obj.student.last_name} {obj.student.first_name}".strip()}
+
+    def get_image(self, obj) -> str | None:
+        return f"submissions/{obj.id}/image/" if obj.image else None
 
     def get_attempt_result(self, obj) -> dict | None:
         a = obj.attempt

@@ -29,7 +29,7 @@ def _pool(model, topic_ids, author=None):
     q = Q(status=Status.APPROVED)
     if author is not None:  # o'qituvchi o'z topshirig'ida o'zi tuzgan savollarni ham ishlatadi
         q |= Q(author=author) & ~Q(status=Status.ARCHIVED)
-    return model.objects.filter(q, topic_id__in=topic_ids)
+    return model.objects.filter(q, topic_id__in=topic_ids).select_related("topic")
 
 
 def _round_robin(items_by_topic: "OrderedDict[int, list]", count: int | None, rng) -> list:
@@ -67,6 +67,15 @@ def select_items(topic_keys, count, problems_count, author=None, seed=None):
     return questions, problems, rng
 
 
+def _deadline(now, time_limit_min, assignment):
+    """Vaqt chegarasi; kech topshirish taqiqlangan topshiriqda — muddatdan oshmaydi (aks holda muddat
+    oldidan boshlangan test muddatdan keyin ham davom etib, javoblar ko'rsatilgandan keyin yakunlanardi)."""
+    deadline = now + timedelta(minutes=time_limit_min) if time_limit_min else None
+    if assignment is not None and assignment.due_at and not assignment.allow_late:
+        deadline = min(deadline, assignment.due_at) if deadline else assignment.due_at
+    return deadline
+
+
 @transaction.atomic
 def create_attempt(user, *, topics, count=20, problems=0, time_limit_min=None, assignment=None,
                    show_answers=Attempt.ShowAnswers.IMMEDIATELY, seed=None) -> Attempt:
@@ -78,7 +87,7 @@ def create_attempt(user, *, topics, count=20, problems=0, time_limit_min=None, a
     attempt = Attempt.objects.create(
         user=user, assignment=assignment, show_answers=show_answers,
         config={"topics": list(topics), "count": count, "problems": problems, "time_limit_min": time_limit_min},
-        deadline_at=now + timedelta(minutes=time_limit_min) if time_limit_min else None,
+        deadline_at=_deadline(now, time_limit_min, assignment),
     )
     items = []
     for i, q in enumerate(questions):

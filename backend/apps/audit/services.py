@@ -7,10 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 def _ip(request):
-    if request is None:
-        return None
-    fwd = request.META.get("HTTP_X_FORWARDED_FOR")
-    return fwd.split(",")[0].strip() if fwd else request.META.get("REMOTE_ADDR")
+    from apps.core.net import client_ip
+
+    return client_ip(request)
 
 
 def log(request, action, obj=None, before=None, after=None, actor=None):
