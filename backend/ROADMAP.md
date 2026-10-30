@@ -111,7 +111,7 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-6.8 Savollar statistikasi (har variant necha marta tanlangan) | ✅ | admin panelda «to'g'ri %» |
 | O'qituvchi o'z savollarini qo'shadi (qoralama), admin tasdiqlaydi | ✅ | o'z topshiriqlarida qoralamasi ham ishlatiladi |
 | FT-1.7 davomi: o'chirilgan foydalanuvchi test natijalari anonim saqlanadi | ✅ | |
-| Savollarning ruscha tarjimasi | ⬜ | bazada maydon bor, matnlar hali tarjima qilinmagan (4-bosqich) |
+| Savollarning ruscha tarjimasi | ✅ | 3-qadamda (2026-10-30) |
 
 ## 3-bosqich — Statistika va bildirishnomalar ✅
 | Band | Holat | Izoh |
@@ -143,7 +143,7 @@ Belgilar: ✅ bajarildi · 🟡 qisman · ⬜ navbatda · ➖ olib tashlandi (bu
 | FT-11.1 Audit: kirish, parol, hisob o'chirish, rol o'zgarishi, baho (oldin/keyin), qaytarish, o'chirishlar, moderatsiya | ✅ | |
 | FT-11.2 Kim, qachon, IP, amal, obyekt, oldingi/yangi qiymat | ✅ | |
 | FT-11.3 O'zgarmas (tahrir/o'chirish taqiqlangan), 1 yil saqlanadi | ✅ | haftalik tozalash (Celery Beat) |
-| Savollarning ruscha tarjimasi (170 + 48) | ⬜ | maydonlar tayyor; matnlarni tarjima qilish kerak |
+| Savollarning ruscha tarjimasi (170 + 48) | ✅ | lug'atda (mashq sahifasi) va bazada (`import_quiz_bank` ruscha maydonlarni to'ldiradi — nazorat testi) |
 
 ## 5-bosqich — Sifat va ishga tushirish 🟡
 | Band | Holat | Izoh |
@@ -189,7 +189,9 @@ yangi sahifalar shu uslubdagi statik HTML. Backend ishlamasa sayt hozirgidek (of
 | Ruscha tarjimalar admin paneldan (`i18n/ru.js` fayldagi lug'at ustiga) | ✅ | `export_i18n` shart emas; brauzer keshi 10 daqiqa |
 | O'qituvchi panelida masalalar: oddiy va parametrli, «Namunani ko'rish» (`quiz/problems/preview/`) | ✅ | |
 | Xavfsizlik: formula hisoblagichida daraja/uzunlik chegarasi (`9**9**9**9` serverni osib qo'yardi) | ✅ | |
-| Yangi sahifalarning ruscha tarjimasi (i18n-ru.js) | ⬜ | |
+| Yangi sahifalarning ruscha tarjimasi (kirish, profil, panellar, nazorat, maxfiylik, model hisobi/topshiriq rejimi) | ✅ | ruscha rejimda barcha sahifalar aylanib tekshirildi: qolgani faqat ism/sarlavha/formulalar |
+| Lug'atda andozalar: `"Savol {} / {}"` — son va ismli matnlar ham tarjima qilinadi | ✅ | `i18n.js` |
+| Server xabarlari (xatolar, bildirishnomalar) va confirm/alert oynalari ruscha | ✅ | |
 | `sw.js`: `/api/`, `/admin/`, `/media/` keshlanmaydi | ✅ | |
 
 ### Sahifalar va backend (tekshiruv, 2026-11-01)

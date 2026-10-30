@@ -11,8 +11,8 @@
     <meta property="og:type" content="website">
     <link rel="icon" href="img/icons/icon-192.png" type="image/png">
     <title>Fizik Modellar — Interaktiv O'quv Platformasi</title>
-    <link rel="stylesheet" href="styles.css?v=20261101b">
-    <link rel="stylesheet" href="model-tools.css?v=20261101b">
+    <link rel="stylesheet" href="styles.css?v=20261101c">
+    <link rel="stylesheet" href="model-tools.css?v=20261101c">
     <style>
         /* ============================================================
            Bosh sahifa: simulyatsiyalar katalogi (toza, yorug', rangli
@@ -708,7 +708,7 @@
         </div>
     </footer>
 
-    <script src="theme.js?v=20261101b"></script>
+    <script src="theme.js?v=20261101c"></script>
     <script>
         // ===== Katalog: qidiruv, bo'lim/sinf filtrlari, saralash, ko'rinish =====
         (function () {
@@ -806,16 +806,20 @@
                     if (!Array.isArray(list) || !list.length) return;
                     var byPath = {};
                     list.forEach(function (m) { byPath[m.page_path] = m; });
-                    var uz = (document.documentElement.lang || 'uz') === 'uz';
+                    // i18n.js lang atributini keyinroq o'zgartirishi mumkin — tanlangan tilni theme.js dan olamiz
+                    var uz = (window.fizikaLang ? window.fizikaLang() : 'uz') === 'uz';
                     sims = sims.filter(function (s) {
                         var m = byPath[s.getAttribute('href')];
                         if (!m) { s.remove(); return false; }
                         s.dataset.order = m.order;
                         // Ruscha rejimda matnlarni i18n lug'ati tarjima qiladi — faqat o'zbekchada almashtiramiz
                         if (uz && m.title) {
-                            s.querySelector('.sim__title').textContent = m.title;
+                            var tt = s.querySelector('.sim__title');
+                            if (norm(tt.textContent) !== norm(m.title)) tt.textContent = m.title;
                             s.dataset.name = m.title;
-                            if (m.description) s.querySelector('.sim__desc').textContent = m.description;
+                            // Tavsif o'zgarmagan bo'lsa tegilmaydi — sahifadagi formatlash (Eₖ, T½) saqlanadi
+                            var desc = s.querySelector('.sim__desc');
+                            if (m.description && norm(desc.textContent) !== norm(m.description)) desc.textContent = m.description;
                             s._text = norm(s.textContent);
                         }
                         return true;

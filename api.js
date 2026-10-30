@@ -57,13 +57,16 @@
     ApiError.prototype.toString = function () { return this.message; };
     /** Maydon xatolarini bitta matn qilib beradi (formalar uchun) */
     ApiError.prototype.text = function () {
-        if (!this.fields) return this.message;
+        // Ruscha rejimda server xabarlari lug'at bo'yicha (birlashtirilgan matn lug'atda topilmaydi)
+        var tr = window.fizikaTr || function (s) { return s; };
+        if (!this.fields) return tr(this.message);
         var parts = [];
         Object.keys(this.fields).forEach(function (k) {
             var v = this.fields[k];
-            parts.push(Array.isArray(v) ? v.join(' ') : (typeof v === 'object' ? JSON.stringify(v) : String(v)));
+            if (Array.isArray(v)) v.forEach(function (x) { parts.push(tr(String(x))); });
+            else parts.push(typeof v === 'object' ? JSON.stringify(v) : tr(String(v)));
         }, this);
-        return parts.join(' · ') || this.message;
+        return parts.join(' · ') || tr(this.message);
     };
 
     var refreshing = null;

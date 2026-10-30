@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../img/icons/icon-192.png" type="image/png">
     <title>Nazorat testi — Fizika 10–11</title>
-    <link rel="stylesheet" href="../styles.css?v=20261101b">
-    <link rel="stylesheet" href="../app.css?v=20261101b">
+    <link rel="stylesheet" href="../styles.css?v=20261101c">
+    <link rel="stylesheet" href="../app.css?v=20261101c">
     <style>
         .qbox { max-width: 760px; margin: 0 auto; }
         .qhead { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-3); }
@@ -56,9 +56,9 @@
         </div>
     </main>
 
-    <script src="../theme.js?v=20261101b"></script>
-    <script src="../api.js?v=20261101b"></script>
-    <script src="../app.js?v=20261101b"></script>
+    <script src="../theme.js?v=20261101c"></script>
+    <script src="../api.js?v=20261101c"></script>
+    <script src="../app.js?v=20261101c"></script>
     <script>
     (function () {
         var api = window.FizikaAPI, $ = function (id) { return document.getElementById(id); };
@@ -144,8 +144,9 @@
                     (it._ok != null ? '<p>' + (it._ok ? '✅ To\'g\'ri' : '❌ Noto\'g\'ri') + '</p>' : '');
             }
             $('view').innerHTML =
-                '<div class="qhead"><span class="muted">Savol ' + (cur + 1) + ' / ' + n + ' · ' + FA.esc(it.topic) + ' · ' + it.points +
-                ' ball</span><span class="timer" id="timer"' + (attempt.remaining_seconds == null ? ' hidden' : '') + '></span></div>' +
+                // Har bir qism alohida matn tugunida — ruscha rejimda lug'at bo'yicha to'g'ri tarjima qilinsin
+                '<div class="qhead"><span class="muted"><span>Savol ' + (cur + 1) + ' / ' + n + '</span> · <span>' + FA.esc(it.topic) +
+                '</span> · <span>' + it.points + ' ball</span></span><span class="timer" id="timer"' + (attempt.remaining_seconds == null ? ' hidden' : '') + '></span></div>' +
                 '<div class="qtext">' + FA.esc(it.text) + '</div>' + body +
                 '<div class="actions"><button class="btn-a ghost" id="prev"' + (cur === 0 ? ' disabled' : '') + '>← Oldingi</button>' +
                 (cur < n - 1 ? '<button class="btn-a ghost" id="next">Keyingi →</button>' : '') +

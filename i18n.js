@@ -5,7 +5,7 @@
    va placeholder/title/aria-label atributlari lug'at bo'yicha
    almashtiriladi. Keyin qo'shilgan elementlar (jurnal, natijalar)
    MutationObserver orqali tarjima qilinadi.
-   Lug'atda yo'q matn o'zbekcha qoladi (masalan test savollari).
+   Lug'atda yo'q matn o'zbekcha qoladi. Kalitdagi "{}" — o'zgaruvchan qism (andoza).
    ============================================================ */
 (function () {
     'use strict';
@@ -15,11 +15,38 @@
 
     function norm(t) { return t.replace(/\s+/g, ' ').trim(); }
 
+    // Andozalar: kalitda "{}" — o'zgaruvchan qism (son, ism, sana). Masalan
+    // "Savol {} / {}": "Вопрос {} / {}". Ushlangan qism ham lug'atda bo'lsa tarjima qilinadi
+    // ("Holat: {}" + "Qoralama" → "Статус: Черновик").
+    var PATTERNS = [];
+    Object.keys(DICT).forEach(function (k) {
+        if (k.indexOf('{}') < 0) return;
+        var parts = k.split('{}').map(function (x) { return x.replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace(/[{}]/g, '\\$&'); });
+        PATTERNS.push({ re: new RegExp('^' + parts.join('([\\s\\S]+?)') + '$'), to: DICT[k], lit: k.length });
+    });
+    PATTERNS.sort(function (a, b) { return b.lit - a.lit; });   // aniqroq (uzunroq) andoza oldin
+
+    function exact(k) {
+        var v = DICT[k];
+        return v === undefined ? null : v;
+    }
     function tr(text) {
         var k = norm(text);
         if (!k) return null;
-        var v = DICT[k];
-        return v === undefined ? null : v;
+        var v = exact(k);
+        if (v !== null || !PATTERNS.length || !/[A-Za-z]/.test(k)) return v;
+        for (var i = 0; i < PATTERNS.length; i++) {
+            var m = PATTERNS[i].re.exec(k);
+            if (!m) continue;
+            var n = 1;
+            return PATTERNS[i].to.replace(/\{\}/g, function () {
+                var part = m[n++] || '';
+                // Qism ham tarjima qilinadi (andoza bilan ham: "Kepler · Chuqur"); qism har doim qisqaroq — cheksiz takrorlanmaydi
+                var t = part.length < k.length ? tr(part) : exact(part);
+                return t === null ? part : t;
+            });
+        }
+        return null;
     }
 
     function textNode(n) {
@@ -45,8 +72,9 @@
 
     function walk(root) {
         if (root.nodeType === 3) { textNode(root); return; }
-        if (root.nodeType !== 1 || SKIP[root.nodeName]) return;
-        element(root);
+        if (root.nodeType !== 1) return;
+        element(root);   // textarea'ning ham placeholder'i tarjima qilinadi (ichki matni emas)
+        if (SKIP[root.nodeName]) return;
         var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
         var n;
         while ((n = w.nextNode())) {
@@ -87,6 +115,20 @@
             var args = Array.prototype.slice.call(arguments);
             if (typeof text === 'string') { var v = DICT[text] !== undefined ? DICT[text] : tr(text); if (v !== null && v !== undefined) args[0] = v; }
             return orig.apply(this, args);
+        };
+    });
+
+    // confirm/alert/prompt oynalari DOM'da emas — matni shu yerda tarjima qilinadi
+    ['alert', 'confirm', 'prompt'].forEach(function (fn) {
+        var orig = window[fn];
+        if (typeof orig !== 'function') return;
+        window[fn] = function (msg) {
+            var args = Array.prototype.slice.call(arguments);
+            if (typeof msg === 'string') {
+                // Ko'p qatorli xabar: har qator alohida
+                args[0] = msg.split('\n').map(function (line) { var v = tr(line); return v === null ? line : v; }).join('\n');
+            }
+            return orig.apply(window, args);
         };
     });
 

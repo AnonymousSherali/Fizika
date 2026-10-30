@@ -1,5 +1,6 @@
 """
 testlar/testlar_online.html dagi savollar banki (170 savol + 48 masala) ni bazaga ko'chiradi (FT-6.3).
+Ruscha matnlar i18n-ru.js lug'atidan olinadi.
 Qayta ishga tushirish xavfsiz: har bir savol matnidan olingan kalit bo'yicha yangilanadi.
 
     python manage.py import_quiz_bank [--frontend /yo'l/saytga]
@@ -72,21 +73,28 @@ class Command(BaseCommand):
                     key=slug, defaults={"title_uz": name, "title_ru": ru.get(name, ""), "order": i,
                                         "simulation": Simulation.objects.filter(slug=slug).first()})
             nq = np_ = 0
+
+            def r(text):  # ruscha matn i18n-ru.js lug'atidan (kalit — bo'shliqlari siqilgan o'zbekcha matn)
+                return ru.get(" ".join((text or "").split()), "")
+
             for q in questions:
                 name, level = q["tag"].split(" · ")
                 Question.objects.update_or_create(
                     source_key=source_key("q", q["q"]),
                     defaults={"topic": topics[name], "level": Level.CHUQUR if level == "Chuqur" else Level.ASOSIY,
-                              "text_uz": q["q"], "options": [{"uz": o, "ru": ""} for o in q["o"]],
+                              "text_uz": q["q"], "text_ru": r(q["q"]),
+                              "options": [{"uz": o, "ru": r(o)} for o in q["o"]],
                               "correct_index": q["correct"], "explanation_uz": q.get("ex", ""),
+                              "explanation_ru": r(q.get("ex", "")),
                               "status": Status.APPROVED})
                 nq += 1
             for p in problems:
                 name = p["tag"].split(" · ")[0]
                 Problem.objects.update_or_create(
                     source_key=source_key("p", p["q"]),
-                    defaults={"topic": topics[name], "text_uz": p["q"], "answer": p["ans"], "unit": p.get("unit", ""),
-                              "tolerance_pct": p["tol"], "solution_uz": p.get("sol", ""), "status": Status.APPROVED})
+                    defaults={"topic": topics[name], "text_uz": p["q"], "text_ru": r(p["q"]), "answer": p["ans"],
+                              "unit": p.get("unit", ""), "tolerance_pct": p["tol"], "solution_uz": p.get("sol", ""),
+                              "solution_ru": r(p.get("sol", "")), "status": Status.APPROVED})
                 np_ += 1
         self.stdout.write(self.style.SUCCESS(f"{len(topics)} mavzu, {nq} savol, {np_} masala import qilindi"))
 
